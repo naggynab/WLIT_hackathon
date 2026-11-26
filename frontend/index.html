@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#e149a0">
-    <meta name="description" content="A warm, Nepali-first pregnancy companion for mothers and families.">
-    <title>AamaCare · Pregnancy companion</title>
+    <meta name="description" content="A warm, Nepali-first pregnancy companion for mothers and families." data-i18n-content="meta.description">
+    <title data-i18n="meta.title">AamaCare · Pregnancy companion</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles.css">
   </head>
@@ -20,11 +20,11 @@
           <div class="art-leaf art-leaf--two">✧</div>
           <div class="art-card art-card--top">
             <span class="art-card__icon">♡</span>
-            <span><strong>Care, every week</strong><small>तपाईंको साथमा</small></span>
+            <span><strong data-i18n="auth.art.careTitle">Care, every week</strong><small data-i18n="auth.art.careSub">तपाईंको साथमा</small></span>
           </div>
           <div class="art-card art-card--bottom">
             <span class="art-card__icon art-card__icon--lavender">◌</span>
-            <span><strong>Family connected</strong><small>परिवारसँग जोडिएको</small></span>
+            <span><strong data-i18n="auth.art.familyTitle">Family connected</strong><small data-i18n="auth.art.familySub">परिवारसँग जोडिएको</small></span>
           </div>
           <div class="art-figure">
             <div class="figure-halo"></div>
@@ -38,166 +38,166 @@
         </div>
 
         <div class="auth-panel">
-          <a class="brand brand--auth" href="#" aria-label="AamaCare home">
+          <a class="brand brand--auth" href="#" aria-label="AamaCare home" data-i18n-aria-label="a11y.home">
             <span class="brand-mark">a</span>
             <span>Aama<span>Care</span></span>
           </a>
 
           <div class="auth-copy">
-            <p class="eyebrow">Your pregnancy companion</p>
-            <h1 id="login-title">Welcome back<span class="title-dot">.</span></h1>
-            <p>Personalized care, reminders, and trusted support for every step of your pregnancy.</p>
+            <p class="eyebrow" data-i18n="auth.eyebrow">Your pregnancy companion</p>
+            <h1 id="login-title" data-i18n="auth.welcome">Welcome back<span class="title-dot">.</span></h1>
+            <p data-i18n="auth.intro">Personalized care, reminders, and trusted support for every step of your pregnancy.</p>
           </div>
 
           <form class="auth-form" id="login-form">
-            <label for="phone">Mobile number</label>
+            <label for="phone" data-i18n="auth.phone">Mobile number</label>
             <div class="input-wrap">
               <span class="input-prefix">+977</span>
-              <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" autocomplete="tel" required>
+              <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" data-i18n-placeholder="auth.phonePlaceholder" autocomplete="tel" required>
             </div>
 
             <div class="form-label-row">
-              <label for="pin">Password or PIN</label>
-              <a href="#" class="text-link" id="forgot-link">Forgot PIN?</a>
+              <label for="pin" data-i18n="auth.pin">Password or PIN</label>
+              <a href="#" class="text-link" id="forgot-link" data-i18n="auth.forgot">Forgot PIN?</a>
             </div>
             <div class="input-wrap input-wrap--password">
-              <input id="pin" name="pin" type="password" placeholder="Enter your password or PIN" autocomplete="current-password" required>
-              <button class="input-action" type="button" id="toggle-pin" aria-label="Show password">◉</button>
+              <input id="pin" name="pin" type="password" placeholder="Enter your password or PIN" data-i18n-placeholder="auth.pinPlaceholder" autocomplete="current-password" required>
+              <button class="input-action" type="button" id="toggle-pin" aria-label="Show password" data-i18n-aria-label="a11y.showPassword">◉</button>
             </div>
 
             <label class="check-row" for="remember">
               <input id="remember" type="checkbox" checked>
               <span class="fake-check"></span>
-              <span>Keep me signed in</span>
+              <span data-i18n="auth.remember">Keep me signed in</span>
             </label>
 
-            <button class="button button--primary button--full" type="submit">Continue securely <span aria-hidden="true">→</span></button>
-            <div class="or-divider"><span>or</span></div>
-            <button class="button button--soft button--full" type="button" id="demo-login">Preview the dashboard</button>
+            <button class="button button--primary button--full" type="submit" data-i18n="auth.continue">Continue securely <span aria-hidden="true">→</span></button>
+            <div class="or-divider"><span data-i18n="auth.or">or</span></div>
+            <button class="button button--soft button--full" type="button" id="demo-login" data-i18n="auth.preview">Preview the dashboard</button>
           </form>
 
-          <p class="auth-footer">New to AamaCare? <a class="text-link" href="#">Create an account</a></p>
-          <p class="privacy-note"><span aria-hidden="true">⌁</span> Your health information stays private and secure.</p>
+          <p class="auth-footer" data-i18n="auth.new">New to AamaCare? <a class="text-link" href="#" data-i18n="auth.create">Create an account</a></p>
+          <p class="privacy-note" data-i18n="auth.privacy"><span aria-hidden="true">⌁</span> Your health information stays private and secure.</p>
         </div>
       </section>
 
-      <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="AamaCare dashboard">
+      <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="AamaCare dashboard" data-i18n-aria-label="a11y.dashboard">
         <aside class="sidebar" id="sidebar">
-          <a class="brand brand--sidebar" href="#" aria-label="AamaCare dashboard">
+          <a class="brand brand--sidebar" href="#" aria-label="AamaCare dashboard" data-i18n-aria-label="a11y.dashboard">
             <span class="brand-mark">a</span>
             <span>Aama<span>Care</span></span>
           </a>
-          <div class="sidebar-section-label">Your care space</div>
-          <nav class="side-nav" aria-label="Main navigation">
-            <button class="nav-item is-active" type="button"><span class="nav-icon">⌂</span><span>Overview</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">◒</span><span>Pregnancy journey</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">▤</span><span>Health records</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">♧</span><span>Family hub</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">⌖</span><span>Health services</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
+          <div class="sidebar-section-label" data-i18n="nav.section">Your care space</div>
+          <nav class="side-nav" aria-label="Main navigation" data-i18n-aria-label="a11y.mainNav">
+            <button class="nav-item is-active" type="button"><span class="nav-icon">⌂</span><span data-i18n="nav.overview">Overview</span></button>
+            <button class="nav-item" type="button"><span class="nav-icon">◒</span><span data-i18n="nav.journey">Pregnancy journey</span></button>
+            <button class="nav-item" type="button"><span class="nav-icon">▤</span><span data-i18n="nav.records">Health records</span></button>
+            <button class="nav-item" type="button"><span class="nav-icon">♧</span><span data-i18n="nav.family">Family hub</span></button>
+            <button class="nav-item" type="button"><span class="nav-icon">⌖</span><span data-i18n="nav.services">Health services</span></button>
+            <button class="nav-item" type="button"><span class="nav-icon">▱</span><span data-i18n="nav.learn">Learn &amp; prepare</span></button>
           </nav>
           <div class="sidebar-bottom">
             <div class="support-card">
               <div class="support-icon">?</div>
-              <strong>Need a little help?</strong>
-              <p>Ask Aama AI in Nepali or English.</p>
-              <button class="support-link" type="button" data-toast="Aama AI is ready to help">Ask Aama AI <span>↗</span></button>
+              <strong data-i18n="support.title">Need a little help?</strong>
+              <p data-i18n="support.text">Ask Aama AI in Nepali or English.</p>
+              <button class="support-link" type="button" data-toast="Aama AI is ready to help" data-i18n-data-toast="toast.aiHelp" data-i18n="support.ask">Ask Aama AI <span>↗</span></button>
             </div>
-            <button class="nav-item nav-item--quiet" type="button"><span class="nav-icon">⚙</span><span>Settings</span></button>
-            <button class="nav-item nav-item--quiet" type="button" id="logout-button"><span class="nav-icon">↪</span><span>Sign out</span></button>
+            <button class="nav-item nav-item--quiet" type="button"><span class="nav-icon">⚙</span><span data-i18n="nav.settings">Settings</span></button>
+            <button class="nav-item nav-item--quiet" type="button" id="logout-button"><span class="nav-icon">↪</span><span data-i18n="nav.signOut">Sign out</span></button>
           </div>
         </aside>
 
         <main class="dashboard-main">
           <header class="topbar">
-            <button class="mobile-menu" type="button" id="menu-button" aria-label="Open navigation">☰</button>
-            <div class="breadcrumb"><span>Overview</span><span class="breadcrumb-separator">/</span><strong>My care dashboard</strong></div>
+            <button class="mobile-menu" type="button" id="menu-button" aria-label="Open navigation" data-i18n-aria-label="a11y.openNav">☰</button>
+            <div class="breadcrumb"><span data-i18n="nav.overview">Overview</span><span class="breadcrumb-separator">/</span><strong data-i18n="top.myDashboard">My care dashboard</strong></div>
             <div class="topbar-actions">
-              <button class="icon-button language-button" type="button" aria-label="Change language">ने <span>EN</span></button>
-              <button class="icon-button notification-button" type="button" aria-label="View notifications"><span>♧</span><i></i></button>
-              <button class="profile-button" type="button" aria-label="Open profile menu"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><span class="chevron">⌄</span></button>
+              <button class="icon-button language-button" type="button" aria-label="Change language" data-i18n-aria-label="a11y.language">ने <span>EN</span></button>
+              <button class="icon-button notification-button" type="button" aria-label="View notifications" data-i18n-aria-label="a11y.notifications"><span>♧</span><i></i></button>
+              <button class="profile-button" type="button" aria-label="Open profile menu" data-i18n-aria-label="a11y.profile"><span class="avatar">SK</span><span class="profile-copy"><strong data-i18n="top.userShort">Sita K.</strong><small data-i18n="top.myProfile">My profile</small></span><span class="chevron">⌄</span></button>
             </div>
           </header>
 
           <div class="dashboard-content">
             <div class="welcome-row">
               <div>
-                <p class="eyebrow">Wednesday, 26 November 2026</p>
-                <h1>Good morning, Sita <span aria-hidden="true">✦</span></h1>
-                <p class="welcome-subtitle">You are doing a wonderful job taking care of you and your baby.</p>
+                <p class="eyebrow" data-i18n="home.date">Wednesday, 26 November 2026</p>
+                <h1 data-i18n="home.greeting">Good morning, Sita <span aria-hidden="true">✦</span></h1>
+                <p class="welcome-subtitle" data-i18n="home.subtitle">You are doing a wonderful job taking care of you and your baby.</p>
               </div>
-              <button class="button button--primary button--compact" type="button" data-toast="Your care plan is up to date">View today's plan <span aria-hidden="true">→</span></button>
+              <button class="button button--primary button--compact" type="button" data-toast="Your care plan is up to date" data-i18n-data-toast="toast.planUpdated" data-i18n="home.viewPlan">View today's plan <span aria-hidden="true">→</span></button>
             </div>
 
-            <section class="alert-banner" aria-label="Weather alert">
+            <section class="alert-banner" aria-label="Weather alert" data-i18n-aria-label="a11y.weatherAlert">
               <div class="alert-badge">!</div>
-              <div class="alert-copy"><strong>Weather watch for Lalitpur</strong><span>Heavy rain is expected tonight. Keep your emergency contacts close.</span></div>
-              <button class="alert-action" type="button" data-toast="Emergency preparation checklist opened">Prepare with family <span aria-hidden="true">→</span></button>
-              <button class="alert-close" type="button" aria-label="Dismiss weather alert">×</button>
+              <div class="alert-copy"><strong data-i18n="alert.title">Weather watch for Lalitpur</strong><span data-i18n="alert.text">Heavy rain is expected tonight. Keep your emergency contacts close.</span></div>
+              <button class="alert-action" type="button" data-toast="Emergency preparation checklist opened" data-i18n-data-toast="toast.checklist" data-i18n="alert.action">Prepare with family <span aria-hidden="true">→</span></button>
+              <button class="alert-close" type="button" aria-label="Dismiss weather alert" data-i18n-aria-label="a11y.dismissAlert">×</button>
             </section>
 
-            <section class="overview-grid" aria-label="Pregnancy overview">
+            <section class="overview-grid" aria-label="Pregnancy overview" data-i18n-aria-label="a11y.overview">
               <article class="pregnancy-card panel">
-                <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2>24 weeks <span>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options">•••</button></div>
-                <div class="journey-progress"><div class="progress-line"><span></span></div><div class="progress-labels"><span>Week 1</span><strong>Week 24</strong><span>Week 40</span></div></div>
-                <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small>Estimated due date</small><strong>15 March 2027</strong></span></div><div><span class="meta-icon">♡</span><span><small>Baby's size</small><strong>About an eggplant</strong></span></div></div>
-                <button class="text-action" type="button" data-toast="Pregnancy journey opened">Explore this week's journey <span>→</span></button>
+                <div class="panel-heading"><div><p class="card-kicker" data-i18n="journey.kicker">Your pregnancy journey</p><h2 data-i18n="journey.weeks">24 weeks <span data-i18n="journey.trimester">· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options" data-i18n-aria-label="a11y.journeyMore">•••</button></div>
+                <div class="journey-progress"><div class="progress-line"><span></span></div><div class="progress-labels"><span data-i18n="journey.week1">Week 1</span><strong data-i18n="journey.week24">Week 24</strong><span data-i18n="journey.week40">Week 40</span></div></div>
+                <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small data-i18n="journey.dueLabel">Estimated due date</small><strong data-i18n="journey.dueDate">15 March 2027</strong></span></div><div><span class="meta-icon">♡</span><span><small data-i18n="journey.sizeLabel">Baby's size</small><strong data-i18n="journey.size">About an eggplant</strong></span></div></div>
+                <button class="text-action" type="button" data-toast="Pregnancy journey opened" data-i18n-data-toast="toast.journey" data-i18n="journey.explore">Explore this week's journey <span>→</span></button>
               </article>
               <article class="next-care-card panel">
-                <div class="panel-heading"><div><p class="card-kicker">Next up</p><h2>Health checkup</h2></div><span class="date-tile"><strong>03</strong><small>DEC</small></span></div>
-                <div class="appointment-info"><span class="appointment-icon">✚</span><div><strong>Routine antenatal visit</strong><span>Thu, 3 December · 10:30 AM</span><small>Patan Hospital · Outpatient wing</small></div></div>
-                <div class="appointment-actions"><button class="button button--outline" type="button" data-toast="Appointment details opened">View details</button><button class="button button--lavender" type="button" data-toast="Reminder sent to your phone">Remind me</button></div>
+                <div class="panel-heading"><div><p class="card-kicker" data-i18n="next.kicker">Next up</p><h2 data-i18n="next.title">Health checkup</h2></div><span class="date-tile"><strong data-i18n="next.day">03</strong><small data-i18n="next.month">DEC</small></span></div>
+                <div class="appointment-info"><span class="appointment-icon">✚</span><div><strong data-i18n="next.visit">Routine antenatal visit</strong><span data-i18n="next.time">Thu, 3 December · 10:30 AM</span><small data-i18n="next.place">Patan Hospital · Outpatient wing</small></div></div>
+                <div class="appointment-actions"><button class="button button--outline" type="button" data-toast="Appointment details opened" data-i18n-data-toast="toast.appointment" data-i18n="next.details">View details</button><button class="button button--lavender" type="button" data-toast="Reminder sent to your phone" data-i18n-data-toast="toast.reminderSent" data-i18n="next.remind">Remind me</button></div>
               </article>
             </section>
 
-            <section class="quick-actions" aria-label="Quick actions">
-              <div class="section-title-row"><div><p class="card-kicker">Here when you need it</p><h2>Quick actions</h2></div></div>
+            <section class="quick-actions" aria-label="Quick actions" data-i18n-aria-label="a11y.quickActions">
+              <div class="section-title-row"><div><p class="card-kicker" data-i18n="quick.kicker">Here when you need it</p><h2 data-i18n="quick.title">Quick actions</h2></div></div>
               <div class="action-grid">
-                <button class="quick-action quick-action--pink" type="button" data-toast="Aama AI is ready for your questions"><span class="quick-icon">✦</span><span><strong>Ask Aama AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--lavender" type="button" data-toast="New health record form opened"><span class="quick-icon">＋</span><span><strong>Add health record</strong><small>Keep your care history close</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--peach" type="button" data-toast="Showing nearby health services"><span class="quick-icon">⌖</span><span><strong>Find nearby care</strong><small>Health posts &amp; hospitals</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--mint" type="button" data-toast="Family hub opened"><span class="quick-icon">♧</span><span><strong>Open family hub</strong><small>Keep your circle connected</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--pink" type="button" data-toast="Aama AI is ready for your questions" data-i18n-data-toast="toast.aiQuestions"><span class="quick-icon">✦</span><span><strong data-i18n="support.ask">Ask Aama AI</strong><small data-i18n="quick.askSub">Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--lavender" type="button" data-toast="New health record form opened" data-i18n-data-toast="toast.newRecord"><span class="quick-icon">＋</span><span><strong data-i18n="quick.record">Add health record</strong><small data-i18n="quick.recordSub">Keep your care history close</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--peach" type="button" data-toast="Showing nearby health services" data-i18n-data-toast="toast.nearby"><span class="quick-icon">⌖</span><span><strong data-i18n="quick.nearby">Find nearby care</strong><small data-i18n="quick.nearbySub">Health posts &amp; hospitals</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--mint" type="button" data-toast="Family hub opened" data-i18n-data-toast="toast.familyHub"><span class="quick-icon">♧</span><span><strong data-i18n="family.open">Open family hub</strong><small data-i18n="quick.familySub">Keep your circle connected</small></span><span class="action-arrow">↗</span></button>
               </div>
             </section>
 
             <section class="content-grid">
               <div class="main-column">
                 <article class="panel checklist-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Small steps, big care</p><h2>Today's checklist</h2></div><span class="completion-pill">2 of 4 done</span></div>
+                  <div class="panel-heading"><div><p class="card-kicker" data-i18n="check.kicker">Small steps, big care</p><h2 data-i18n="check.title">Today's checklist</h2></div><span class="completion-pill" data-i18n="check.progress">2 of 4 done</span></div>
                   <div class="checklist">
-                    <label class="task-row is-complete"><input type="checkbox" checked><span class="task-check"></span><span class="task-copy"><strong>Drink 8 glasses of water</strong><small>Stay hydrated throughout the day</small></span><span class="task-time">8:00 AM</span></label>
-                    <label class="task-row is-complete"><input type="checkbox" checked><span class="task-check"></span><span class="task-copy"><strong>Take your prescribed supplement</strong><small>As advised by your health worker</small></span><span class="task-time">9:00 AM</span></label>
-                    <label class="task-row"><input type="checkbox"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
-                    <label class="task-row"><input type="checkbox"><span class="task-check"></span><span class="task-copy"><strong>Share the weather watch with family</strong><small>Keep your support circle informed</small></span><span class="task-time">Today</span></label>
+                    <label class="task-row is-complete"><input type="checkbox" checked><span class="task-check"></span><span class="task-copy"><strong data-i18n="check.water">Drink 8 glasses of water</strong><small data-i18n="check.waterSub">Stay hydrated throughout the day</small></span><span class="task-time" data-i18n="check.waterTime">8:00 AM</span></label>
+                    <label class="task-row is-complete"><input type="checkbox" checked><span class="task-check"></span><span class="task-copy"><strong data-i18n="check.supplement">Take your prescribed supplement</strong><small data-i18n="check.supplementSub">As advised by your health worker</small></span><span class="task-time" data-i18n="check.supplementTime">9:00 AM</span></label>
+                    <label class="task-row"><input type="checkbox"><span class="task-check"></span><span class="task-copy"><strong data-i18n="check.video">Watch this week's care video</strong><small data-i18n="check.videoSub">Movement and comfort in trimester two</small></span><span class="task-time" data-i18n="check.today">Today</span></label>
+                    <label class="task-row"><input type="checkbox"><span class="task-check"></span><span class="task-copy"><strong data-i18n="check.share">Share the weather watch with family</strong><small data-i18n="check.shareSub">Keep your support circle informed</small></span><span class="task-time" data-i18n="check.today">Today</span></label>
                   </div>
-                  <button class="text-action" type="button" data-toast="All reminders opened">See all reminders <span>→</span></button>
+                  <button class="text-action" type="button" data-toast="All reminders opened" data-i18n-data-toast="toast.reminders" data-i18n="check.all">See all reminders <span>→</span></button>
                 </article>
 
                 <article class="panel guide-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Made for week 24</p><h2>Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened">See all <span>→</span></button></div>
+                  <div class="panel-heading"><div><p class="card-kicker" data-i18n="guide.kicker">Made for week 24</p><h2 data-i18n="guide.title">Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened" data-i18n-data-toast="toast.learning" data-i18n="guide.all">See all <span>→</span></button></div>
                   <div class="guide-grid">
-                    <button class="guide-card guide-card--food" type="button" data-toast="Local food guide opened"><span class="guide-visual">◒</span><span class="guide-tag">Nutrition</span><strong>Simple local foods for you and baby</strong><span class="guide-link">Read guide →</span></button>
-                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened"><span class="guide-visual">◌</span><span class="guide-tag">Video · 04 min</span><strong>Gentle movement for a growing belly</strong><span class="guide-link">Watch now →</span></button>
+                    <button class="guide-card guide-card--food" type="button" data-toast="Local food guide opened" data-i18n-data-toast="toast.food"><span class="guide-visual">◒</span><span class="guide-tag" data-i18n="guide.nutrition">Nutrition</span><strong data-i18n="guide.food">Simple local foods for you and baby</strong><span class="guide-link" data-i18n="guide.read">Read guide →</span></button>
+                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened" data-i18n-data-toast="toast.movement"><span class="guide-visual">◌</span><span class="guide-tag" data-i18n="guide.videoTag">Video · 04 min</span><strong data-i18n="guide.movement">Gentle movement for a growing belly</strong><span class="guide-link" data-i18n="guide.watch">Watch now →</span></button>
                   </div>
                 </article>
               </div>
 
               <aside class="side-column">
                 <article class="panel family-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Your support circle</p><h2>Family hub</h2></div><button class="more-button" type="button" aria-label="More family hub options">•••</button></div>
-                  <div class="family-members"><div class="member-avatar member-avatar--one">RK</div><div class="member-avatar member-avatar--two">AM</div><div class="member-avatar member-avatar--three">SK</div><button class="add-member" type="button" data-toast="Invite a family member">＋</button></div>
-                  <p class="family-copy"><strong>Ram and Asha</strong> are following your care plan.</p>
-                  <button class="button button--soft button--full" type="button" data-toast="Family hub opened">Open family hub <span>→</span></button>
+                  <div class="panel-heading"><div><p class="card-kicker" data-i18n="family.kicker">Your support circle</p><h2 data-i18n="nav.family">Family hub</h2></div><button class="more-button" type="button" aria-label="More family hub options" data-i18n-aria-label="a11y.familyMore">•••</button></div>
+                  <div class="family-members"><div class="member-avatar member-avatar--one">RK</div><div class="member-avatar member-avatar--two">AM</div><div class="member-avatar member-avatar--three">SK</div><button class="add-member" type="button" data-toast="Invite a family member" data-i18n-data-toast="toast.invite">＋</button></div>
+                  <p class="family-copy" data-i18n="family.following"><strong data-i18n="family.names">Ram and Asha</strong> are following your care plan.</p>
+                  <button class="button button--soft button--full" type="button" data-toast="Family hub opened" data-i18n-data-toast="toast.familyHub" data-i18n="family.open">Open family hub <span>→</span></button>
                 </article>
                 <article class="panel care-panel">
-                  <div class="care-panel-icon">⌖</div><p class="card-kicker">Nearby care</p><h2>Patan Hospital</h2><p>2.4 km away · Open today until 5:00 PM</p><button class="text-action" type="button" data-toast="Directions opened">Get directions <span>↗</span></button>
+                  <div class="care-panel-icon">⌖</div><p class="card-kicker" data-i18n="care.kicker">Nearby care</p><h2 data-i18n="care.name">Patan Hospital</h2><p data-i18n="care.info">2.4 km away · Open today until 5:00 PM</p><button class="text-action" type="button" data-toast="Directions opened" data-i18n-data-toast="toast.directions" data-i18n="care.directions">Get directions <span>↗</span></button>
                 </article>
                 <article class="emergency-card">
-                  <div><span class="emergency-icon">!</span><div><strong>Need urgent help?</strong><p>Call your trusted contact or find emergency care.</p></div></div><button type="button" data-toast="Emergency contacts opened">Get help <span>→</span></button>
+                  <div><span class="emergency-icon">!</span><div><strong data-i18n="urgent.title">Need urgent help?</strong><p data-i18n="urgent.text">Call your trusted contact or find emergency care.</p></div></div><button type="button" data-toast="Emergency contacts opened" data-i18n-data-toast="toast.emergency" data-i18n="urgent.button">Get help <span>→</span></button>
                 </article>
               </aside>
             </section>
-            <footer class="dashboard-footer"><span>AamaCare is here to support, not replace, your health worker.</span><span><a href="#">Privacy</a><a href="#">Help center</a></span></footer>
+            <footer class="dashboard-footer"><span data-i18n="footer.disclaimer">AamaCare is here to support, not replace, your health worker.</span><span><a href="#" data-i18n="footer.privacy">Privacy</a><a href="#" data-i18n="footer.help">Help center</a></span></footer>
           </div>
         </main>
       </section>
