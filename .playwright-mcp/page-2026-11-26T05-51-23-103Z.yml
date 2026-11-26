@@ -1,0 +1,57 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - paragraph [ref=e4]: Campus life, all in one place
+    - heading "Campus Event & Club Hub" [level=1] [ref=e5]
+    - paragraph [ref=e6]: Find your next workshop, meet-up, or game day. Here are a few events happening around campus.
+  - region "Upcoming events" [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - paragraph [ref=e10]: Make a plan
+        - heading "Upcoming events" [level=2] [ref=e11]
+      - paragraph [ref=e12]: 3 events
+    - generic [ref=e13]:
+      - article [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e16]: Workshop
+          - generic [aria-hidden] [ref=e17]: "01"
+        - generic [ref=e18]:
+          - heading "Build a Better Study Routine" [level=3] [ref=e19]
+          - paragraph [ref=e20]: Pick up practical planning tips and make a study schedule that works for you.
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - term [ref=e23]: Date & time
+            - definition [ref=e24]:
+              - time [ref=e25]: Dec 3, 2026 · 4:00 PM
+          - generic [ref=e26]:
+            - term [ref=e27]: Location
+            - definition [ref=e28]: Innovation Lab, Student Center
+      - article [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Social
+          - generic [aria-hidden] [ref=e32]: "02"
+        - generic [ref=e33]:
+          - heading "Campus Coffee & Conversation" [level=3] [ref=e34]
+          - paragraph [ref=e35]: Meet new people, swap campus tips, and enjoy a relaxed afternoon together.
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - term [ref=e38]: Date & time
+            - definition [ref=e39]:
+              - time [ref=e40]: Dec 5, 2026 · 2:30 PM
+          - generic [ref=e41]:
+            - term [ref=e42]: Location
+            - definition [ref=e43]: North Quad Commons
+      - article [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]: Sports
+          - generic [aria-hidden] [ref=e47]: "03"
+        - generic [ref=e48]:
+          - heading "Open Court Volleyball" [level=3] [ref=e49]
+          - paragraph [ref=e50]: Drop in for friendly games. All experience levels are welcome.
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - term [ref=e53]: Date & time
+            - definition [ref=e54]:
+              - time [ref=e55]: Dec 8, 2026 · 6:00 PM
+          - generic [ref=e56]:
+            - term [ref=e57]: Location
+            - definition [ref=e58]: Recreation Center, Court 2
