@@ -7,6 +7,11 @@ window.AAMA_API_URL = '';
 // you can also set GOOGLE_MAPS_API_KEY in the project .env file.
 window.MATRI_SATHI_GOOGLE_MAPS_API_KEY = '';
 
+// Google Maps Demo Keys are free for educational prototypes and support live
+// maps and Place data, but Google does not make Place Photos or reviews
+// available to them. Set this to true only when using a billing-enabled key.
+window.MATRI_SATHI_GOOGLE_MAPS_INCLUDE_PHOTOS = false;
+
 // Movement videos: paste a YouTube link between each pair of quotes.
 // Supports youtube.com/watch?v=..., youtu.be/..., and YouTube Shorts links.
 // Leave a link empty to show the video placeholder.

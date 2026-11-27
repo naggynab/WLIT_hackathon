@@ -210,6 +210,7 @@
     const mapElement = root?.querySelector('#care-map');
     if (!mapElement) return;
     try {
+      const includePhotos = Boolean(window.MATRI_SATHI_GOOGLE_MAPS_INCLUDE_PHOTOS);
       const maps = await loadGoogleMaps();
       const [{ Map }, { AdvancedMarkerElement }, { Place, SearchNearbyRankPreference }] = await Promise.all([
         maps.importLibrary('maps'),
@@ -226,8 +227,10 @@
         fullscreenControl: true,
       });
       const infoWindow = new google.maps.InfoWindow();
+      const fields = ['id', 'displayName', 'formattedAddress', 'location', 'primaryType', 'types', 'nationalPhoneNumber', 'regularOpeningHours'];
+      if (includePhotos) fields.push('photos', 'rating', 'userRatingCount');
       const response = await Place.searchNearby({
-        fields: ['id', 'displayName', 'formattedAddress', 'location', 'primaryType', 'types', 'photos', 'rating', 'userRatingCount', 'nationalPhoneNumber', 'regularOpeningHours'],
+        fields,
         locationRestriction: { center: origin, radius: 9000 },
         includedPrimaryTypes: ['hospital', 'medical_clinic', 'pharmacy'],
         maxResultCount: 8,
