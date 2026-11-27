@@ -5,31 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#e149a0">
     <meta name="description" content="A warm, Nepali-first pregnancy companion for mothers and families.">
-    <title>AamaCare · Pregnancy companion</title>
+    <title>MatriSathi · Pregnancy companion</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3J8mX4Q1d+8wQ1U8s1kN1d5c4M4yQ=" crossorigin="">
+    <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <div class="app-shell">
       <section class="auth-screen" id="login-screen" aria-labelledby="login-title">
         <div class="auth-art" aria-hidden="true">
-          <img class="auth-illustration" src="assets/login-hands-transparent.png" alt="">
+          <img class="auth-illustration" src="/assets/login-hands-transparent.png" alt="">
         </div>
 
         <div class="auth-panel">
           <button class="icon-button language-button language-button--auth" type="button" aria-label="Change language">ने <span>EN</span></button>
-          <a class="brand brand--auth" href="/login" aria-label="AamaCare home">
-            <span class="brand-mark">a</span>
-            <span>Aama<span>Care</span></span>
-          </a>
-
           <div class="auth-copy">
+            <a class="brand brand--auth" href="/login" aria-label="MatriSathi home">
+              <span class="brand-mark">m</span>
+              <span>Matri<span>Sathi</span></span>
+            </a>
             <p class="eyebrow">Your pregnancy companion</p>
-            <h1 id="login-title">Welcome back<span class="title-dot">.</span></h1>
+            <h1 id="login-title">Welcome back</h1>
             <p>Personalized care, reminders, and trusted support for every step of your pregnancy.</p>
           </div>
 
           <form class="auth-form" id="login-form">
+            <label for="login-role">I am signing in as</label>
+            <div class="input-wrap"><select id="login-role" name="role"><option value="user">Pregnant user</option><option value="health_worker">Health worker</option></select></div>
             <label for="phone">Mobile number</label>
             <div class="input-wrap">
               <span class="input-prefix">+977</span>
@@ -37,11 +39,11 @@
             </div>
 
             <div class="form-label-row">
-              <label for="pin">Password or PIN</label>
-              <a href="#" class="text-link" id="forgot-link">Forgot PIN?</a>
+              <label for="pin">Password</label>
+              <a href="#" class="text-link" id="forgot-link">Forgot Password?</a>
             </div>
             <div class="input-wrap input-wrap--password">
-              <input id="pin" name="pin" type="password" placeholder="Enter your password or PIN" autocomplete="current-password" required>
+              <input id="pin" name="pin" type="password" placeholder="Enter your password" autocomplete="current-password" required>
               <button class="input-action" type="button" id="toggle-pin" aria-label="Show password">◉</button>
             </div>
 
@@ -54,18 +56,54 @@
             <button class="button button--primary button--full" type="submit">Continue securely <span aria-hidden="true">→</span></button>
             <div class="or-divider"><span>or</span></div>
             <button class="button button--soft button--full" type="button" id="demo-login">Preview the dashboard</button>
+            <button class="button button--outline button--full" type="button" id="health-post-preview">Preview the Health Post dashboard</button>
           </form>
 
-          <p class="auth-footer">New to AamaCare? <a class="text-link" href="#">Create an account</a></p>
+          <p class="auth-footer">New to MatriSathi? <a class="text-link" id="show-signup" href="/sign">Create an account</a></p>
+          <div class="auth-signup is-hidden" id="signup-view" aria-labelledby="signup-title">
+            <div class="auth-copy">
+              <p class="eyebrow">Start your care journey</p>
+              <h1 id="signup-title">Create your account</h1>
+              <p>Set up your profile to follow your pregnancy week by week.</p>
+            </div>
+            <form class="auth-form" id="signup-form">
+              <label for="signup-role">I am creating an account as</label>
+              <div class="input-wrap"><select id="signup-role" name="role"><option value="user">Pregnant user</option><option value="health_worker">Health worker</option></select></div>
+              <label for="signup-name">Full name</label>
+              <div class="input-wrap"><input id="signup-name" name="name" type="text" placeholder="Your name" autocomplete="name" required></div>
+              <label for="signup-phone">Mobile number</label>
+              <div class="input-wrap"><span class="input-prefix">+977</span><input id="signup-phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" required></div>
+              <div class="signup-worker-fields" hidden>
+                <label for="signup-facility">Health post or facility</label>
+                <div class="input-wrap"><input id="signup-facility" name="facilityName" type="text" maxlength="120" placeholder="Facility name"></div>
+              </div>
+              <div class="signup-user-fields">
+              <label for="signup-due-date">Estimated due date</label>
+              <div class="input-wrap"><input id="signup-due-date" name="dueDate" type="date" autocomplete="off" required></div>
+              <div class="signup-health-grid">
+                <div><label for="signup-age">Age</label><div class="input-wrap"><input id="signup-age" name="age" type="number" min="10" max="60" step="1" inputmode="numeric" placeholder="Years" required></div></div>
+                <div><label for="signup-weight">Current weight</label><div class="input-wrap"><input id="signup-weight" name="weightKg" type="number" min="20" max="300" step="0.1" inputmode="decimal" placeholder="kg" required></div></div>
+                <div><label for="signup-height">Height</label><div class="input-wrap"><input id="signup-height" name="height" type="number" min="80" max="250" step="0.1" inputmode="decimal" placeholder="cm" required></div></div>
+                <div><label for="signup-blood-type">Blood group</label><div class="input-wrap"><select id="signup-blood-type" name="bloodType" required><option value="">Select</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option><option value="Unknown">I don't know</option></select></div></div>
+              </div>
+              <label for="signup-health-notes">Health conditions <span class="form-label-hint">optional</span></label>
+              <textarea class="signup-health-notes" id="signup-health-notes" name="healthNotes" rows="2" maxlength="500" placeholder="Anything your care team should know"></textarea>
+              </div>
+              <label for="signup-password">Create password or PIN</label>
+              <div class="input-wrap"><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
+              <button class="button button--primary button--full" type="submit">Create account <span aria-hidden="true">→</span></button>
+            </form>
+            <p class="auth-footer">Already have an account? <a class="text-link" id="show-login" href="/login">Sign in</a></p>
+          </div>
           <p class="privacy-note"><span aria-hidden="true">⌁</span> Your health information stays private and secure.</p>
         </div>
       </section>
 
-      <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="AamaCare dashboard">
+      <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="MatriSathi dashboard">
         <aside class="sidebar" id="sidebar">
-          <a class="brand brand--sidebar" href="/home" aria-label="AamaCare dashboard">
-            <span class="brand-mark">a</span>
-            <span>Aama<span>Care</span></span>
+          <a class="brand brand--sidebar" href="/home" aria-label="MatriSathi dashboard">
+            <span class="brand-mark">m</span>
+            <span>Matri<span>Sathi</span></span>
           </a>
           <div class="sidebar-section-label">Your care space</div>
           <nav class="side-nav" aria-label="Main navigation">
@@ -86,8 +124,8 @@
             <div class="support-card">
               <div class="support-icon">?</div>
               <strong>Need a little help?</strong>
-              <p>Ask Aama AI in Nepali or English.</p>
-              <button class="support-link ai-launcher" type="button">Ask Aama AI <span>↗</span></button>
+              <p>Ask MatriSathi AI in Nepali or English.</p>
+              <button class="support-link ai-launcher" type="button">Ask MatriSathi AI <span>↗</span></button>
             </div>
             <button class="nav-item nav-item--quiet" type="button" data-view="settings" data-route="/home/settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
             <button class="nav-item nav-item--quiet" type="button" id="logout-button"><span class="nav-icon">↪</span><span>Sign out</span></button>
@@ -101,15 +139,15 @@
             <div class="topbar-actions">
               <button class="icon-button language-button" type="button" aria-label="Change language">ने <span>EN</span></button>
               <button class="icon-button notification-button" type="button" aria-label="View notifications"><span>♧</span><i></i></button>
-              <button class="profile-button" type="button" aria-label="Open profile menu"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><span class="chevron">⌄</span></button>
+              <button class="profile-button" type="button" aria-label="Open profile menu" aria-haspopup="dialog" aria-expanded="false"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><span class="chevron">⌄</span></button>
             </div>
           </header>
 
           <div class="dashboard-content">
             <div class="welcome-row">
               <div>
-                <p class="eyebrow">Wednesday, 26 November 2026</p>
-                <h1>Good morning, Sita <span aria-hidden="true">✦</span></h1>
+                <p class="eyebrow" id="dashboard-current-date"></p>
+                <h1><span data-welcome-greeting>Good morning</span> <span aria-hidden="true">✦</span></h1>
                 <p class="welcome-subtitle">You are doing a wonderful job taking care of you and your baby.</p>
               </div>
               <button class="button button--primary button--compact" type="button" data-action="today-plan">View today's plan <span aria-hidden="true">→</span></button>
@@ -123,12 +161,15 @@
             </section>
 
             <section class="overview-grid" aria-label="Pregnancy overview">
-              <article class="pregnancy-card panel">
-                <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2>24 weeks <span>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options">•••</button></div>
-                <div class="journey-progress"><div class="progress-line"><span></span></div><div class="progress-labels"><span>Week 1</span><strong>Week 24</strong><span>Week 40</span></div></div>
-                <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small>Estimated due date</small><strong>15 March 2027</strong></span></div><div><span class="meta-icon">♡</span><span><small>Baby's size</small><strong>About an eggplant</strong></span></div></div>
-                <button class="text-action" type="button" data-route="/home/pregnancy-journey">Explore this week's journey <span>→</span></button>
-              </article>
+             <article class="pregnancy-card panel" data-due-date="2027-03-15">
+  <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2><b data-week-title>24 weeks</b> <span data-trimester>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options">•••</button></div>
+  <div class="journey-slider">
+    <input class="week-slider" type="range" min="1" max="40" step="1" value="24" aria-label="Pregnancy week">
+    <div class="week-labels"><span data-week-start>Week 1</span><strong data-week-label>Week 24</strong><span data-week-end>Week 40</span></div>
+  </div>
+  <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small>Estimated due date</small><input class="due-date-input" type="date" aria-label="Estimated due date"><small class="due-date-error" role="alert"></small></span></div><div><span class="meta-icon">♡</span><span><small>Baby's size</small><strong data-baby-size>About an eggplant</strong></span></div></div>
+  <button class="text-action" type="button" data-route="/home/pregnancy-journey">Explore this week's journey <span>→</span></button>
+</article>
               <article class="next-care-card panel">
                 <div class="panel-heading"><div><p class="card-kicker">Next up</p><h2>Health checkup</h2></div><span class="date-tile"><strong>03</strong><small>DEC</small></span></div>
                 <div class="appointment-info"><span class="appointment-icon">✚</span><div><strong>Routine antenatal visit</strong><span>Thu, 3 December · 10:30 AM</span><small>Patan Hospital · Outpatient wing</small></div></div>
@@ -139,7 +180,7 @@
             <section class="quick-actions" aria-label="Quick actions">
               <div class="section-title-row"><div><p class="card-kicker">Here when you need it</p><h2>Quick actions</h2></div></div>
               <div class="action-grid">
-                <button class="quick-action quick-action--pink ai-launcher" type="button"><span class="quick-icon">✦</span><span><strong>Ask Aama AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--pink ai-launcher" type="button"><span class="quick-icon">✦</span><span><strong>Ask MatriSathi AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
                 <button class="quick-action quick-action--lavender" type="button" data-route="/home/health-records"><span class="quick-icon">＋</span><span><strong>Add health record</strong><small>Keep your care history close</small></span><span class="action-arrow">↗</span></button>
                 <button class="quick-action quick-action--peach" type="button" data-route="/home/health-services"><span class="quick-icon">⌖</span><span><strong>Find nearby care</strong><small>Health posts &amp; hospitals</small></span><span class="action-arrow">↗</span></button>
                 <button class="quick-action quick-action--mint" type="button" data-route="/home/family-hub"><span class="quick-icon">♧</span><span><strong>Open family hub</strong><small>Keep your circle connected</small></span><span class="action-arrow">↗</span></button>
@@ -153,17 +194,17 @@
                   <div class="checklist">
                     <label class="task-row is-complete"><input type="checkbox" checked data-task-id="water"><span class="task-check"></span><span class="task-copy"><strong>Drink 8 glasses of water</strong><small>Stay hydrated throughout the day</small></span><span class="task-time">8:00 AM</span></label>
                     <label class="task-row is-complete"><input type="checkbox" checked data-task-id="supplement"><span class="task-check"></span><span class="task-copy"><strong>Take your prescribed supplement</strong><small>As advised by your health worker</small></span><span class="task-time">9:00 AM</span></label>
-                    <label class="task-row"><input type="checkbox" data-task-id="video"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
+                    <label class="task-row"><input type="checkbox" data-task-id="video"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small data-week-task-trimester>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
                     <label class="task-row"><input type="checkbox" data-task-id="weather"><span class="task-check"></span><span class="task-copy"><strong>Share the weather watch with family</strong><small>Keep your support circle informed</small></span><span class="task-time">Today</span></label>
                   </div>
                   <button class="text-action" type="button" data-action="show-reminders">See all reminders <span>→</span></button>
                 </article>
 
                 <article class="panel guide-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Made for week 24</p><h2>Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened">See all <span>→</span></button></div>
+                  <div class="panel-heading"><div><p class="card-kicker" data-week-guide>Made for week 24</p><h2>Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened">See all <span>→</span></button></div>
                   <div class="guide-grid">
                     <button class="guide-card guide-card--food" type="button" data-toast="Local food guide opened"><span class="guide-visual">◒</span><span class="guide-tag">Nutrition</span><strong>Simple local foods for you and baby</strong><span class="guide-link">Read guide →</span></button>
-                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened"><span class="guide-visual">◌</span><span class="guide-tag">Video · 04 min</span><strong>Gentle movement for a growing belly</strong><span class="guide-link">Watch now →</span></button>
+                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened"><span class="guide-visual">◌</span><span class="guide-tag" data-week-trimester>Movement and comfort in trimester two</span><strong>Gentle movement for a growing belly</strong><span class="guide-link">Watch now →</span></button>
                   </div>
                 </article>
               </div>
@@ -171,9 +212,10 @@
               <aside class="side-column">
                 <article class="panel family-panel">
                   <div class="panel-heading"><div><p class="card-kicker">Your support circle</p><h2>Family hub</h2></div><button class="more-button" type="button" aria-label="More family hub options">•••</button></div>
+                  <div class="family-panel__photo"><img src="/assets/mom4.jpg" alt="A mother and child sharing a joyful moment"></div>
                   <div class="family-members"><div class="member-avatar member-avatar--one">RK</div><div class="member-avatar member-avatar--two">AM</div><div class="member-avatar member-avatar--three">SK</div><button class="add-member" type="button" data-toast="Invite a family member">＋</button></div>
                   <p class="family-copy"><strong>Ram and Asha</strong> are following your care plan.</p>
-                  <button class="button button--soft button--full" type="button" data-toast="Family hub opened">Open family hub <span>→</span></button>
+                  <button class="button button--soft button--full" type="button" data-route="/home/family-hub">Open family hub <span>→</span></button>
                 </article>
                 <article class="panel care-panel">
                   <div class="care-panel-icon">⌖</div><p class="card-kicker">Nearby care</p><h2>Patan Hospital</h2><p>2.4 km away · Open today until 5:00 PM</p><button class="text-action" type="button" data-toast="Directions opened">Get directions <span>↗</span></button>
@@ -183,7 +225,7 @@
                 </article>
               </aside>
             </section>
-            <footer class="dashboard-footer"><span>AamaCare is here to support, not replace, your health worker.</span><span><a href="#">Privacy</a><a href="#">Help center</a></span></footer>
+            <footer class="dashboard-footer"><span>MatriSathi is here to support, not replace, your health worker.</span><span><a href="#">Privacy</a><a href="#">Help center</a></span></footer>
           </div>
           <section class="secondary-view is-hidden" id="secondary-view" aria-live="polite"></section>
         </main>
@@ -193,23 +235,33 @@
           <div class="assistant-panel__header">
             <div>
               <p class="card-kicker">Your trusted companion</p>
-              <h2 id="assistant-title">Ask Aama AI</h2>
+              <h2 id="assistant-title">Ask MatriSathi AI</h2>
             </div>
-            <button class="assistant-close" id="assistant-close" type="button" aria-label="Close Aama AI">×</button>
+            <button class="assistant-close" id="assistant-close" type="button" aria-label="Close MatriSathi AI">×</button>
           </div>
           <p class="assistant-intro">Ask a pregnancy-care question in English or Nepali. You can type or use your voice.</p>
           <div class="assistant-messages" id="assistant-messages" aria-live="polite">
-            <div class="assistant-message assistant-message--bot">Namaste, I’m Aama AI. How can I support you today?</div>
+            <div class="assistant-message assistant-message--bot">Namaste, I’m MatriSathi AI. How can I support you today?</div>
           </div>
+          <label class="assistant-read-aloud">
+            <span class="assistant-read-aloud__copy">
+              <strong>Read answers aloud</strong>
+              <small>Speak the latest AI reply automatically</small>
+            </span>
+            <span class="assistant-switch">
+              <input type="checkbox" id="assistant-read-aloud" aria-label="Read answers aloud">
+              <span class="assistant-switch__track" aria-hidden="true"></span>
+            </span>
+          </label>
           <div class="assistant-compose">
-            <textarea id="assistant-input" rows="2" placeholder="Type your question..." aria-label="Message for Aama AI"></textarea>
+            <textarea id="assistant-input" rows="2" placeholder="Type your question..." aria-label="Message for MatriSathi AI"></textarea>
             <div class="assistant-compose__actions">
               <button class="button button--lavender" id="assistant-voice" type="button">🎙 Speak</button>
               <button class="button button--primary" id="assistant-send" type="button">Send <span aria-hidden="true">→</span></button>
             </div>
             <p class="assistant-status" id="assistant-status" role="status" aria-live="polite">Press Speak, then ask your question.</p>
           </div>
-          <p class="assistant-disclaimer">Aama AI supports—not replaces—your health worker. For urgent symptoms, contact local emergency care.</p>
+          <p class="assistant-disclaimer">MatriSathi AI supports—not replaces—your health worker. For urgent symptoms, contact local emergency care.</p>
         </section>
       </div>
       <div class="interaction-modal is-hidden" id="interaction-modal" aria-hidden="true">
@@ -220,11 +272,14 @@
       </div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
-    <script src="config.js"></script>
-    <script src="i18n.js"></script>
-    <script src="views.js"></script>
-    <script src="learn.js"></script>
-    <script src="learn.js"></script>
-    <script src="app.js"></script>
+    <script src="/config.js"></script>
+    <script src="/i18n.js"></script>
+    <script src="/views.js"></script>
+    <script src="/health-post.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="/google-maps.js"></script>
+    <script src="/learn.js"></script>
+    <script src="/app.js"></script>
+    <script src="/pregnancy-card.js"></script>
   </body>
 </html>

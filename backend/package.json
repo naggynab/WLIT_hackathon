@@ -1,5 +1,5 @@
 {
-  "name": "aamacare",
+  "name": "matrisathi",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@google/genai": "^1.52.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.7",
-    "express": "^5.1.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.13.1"
   }
 }
