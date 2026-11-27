@@ -30,6 +30,8 @@
           </div>
 
           <form class="auth-form" id="login-form">
+            <label for="login-role">I am signing in as</label>
+            <div class="input-wrap"><select id="login-role" name="role"><option value="user">Pregnant user</option><option value="health_worker">Health worker</option></select></div>
             <label for="phone">Mobile number</label>
             <div class="input-wrap">
               <span class="input-prefix">+977</span>
@@ -65,10 +67,17 @@
               <p>Set up your profile to follow your pregnancy week by week.</p>
             </div>
             <form class="auth-form" id="signup-form">
+              <label for="signup-role">I am creating an account as</label>
+              <div class="input-wrap"><select id="signup-role" name="role"><option value="user">Pregnant user</option><option value="health_worker">Health worker</option></select></div>
               <label for="signup-name">Full name</label>
               <div class="input-wrap"><input id="signup-name" name="name" type="text" placeholder="Your name" autocomplete="name" required></div>
               <label for="signup-phone">Mobile number</label>
               <div class="input-wrap"><span class="input-prefix">+977</span><input id="signup-phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" required></div>
+              <div class="signup-worker-fields" hidden>
+                <label for="signup-facility">Health post or facility</label>
+                <div class="input-wrap"><input id="signup-facility" name="facilityName" type="text" maxlength="120" placeholder="Facility name"></div>
+              </div>
+              <div class="signup-user-fields">
               <label for="signup-due-date">Estimated due date</label>
               <div class="input-wrap"><input id="signup-due-date" name="dueDate" type="date" autocomplete="off" required></div>
               <div class="signup-health-grid">
@@ -79,6 +88,7 @@
               </div>
               <label for="signup-health-notes">Health conditions <span class="form-label-hint">optional</span></label>
               <textarea class="signup-health-notes" id="signup-health-notes" name="healthNotes" rows="2" maxlength="500" placeholder="Anything your care team should know"></textarea>
+              </div>
               <label for="signup-password">Create password or PIN</label>
               <div class="input-wrap"><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
               <button class="button button--primary button--full" type="submit">Create account <span aria-hidden="true">→</span></button>
