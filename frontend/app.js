@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('#login-form');
   const demoLogin = document.querySelector('#demo-login');
   const logoutButton = document.querySelector('#logout-button');
+  const profileButton = document.querySelector('.profile-button');
   const togglePin = document.querySelector('#toggle-pin');
   const pinInput = document.querySelector('#pin');
   const toast = document.querySelector('#toast');
@@ -37,10 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
     'Health records': false,
     'Emergency alerts': true,
   };
+  const profileStorageKey = 'aamacare-profile';
   let toastTimer;
   let activeRecognition = null;
   let latestAssistantReply = null;
   let currentAssistantAudio = null;
+  let interactionReturnFocus = null;
 
   function getWeekSnapshot() {
     const source = window.AamaPregnancy?.getSnapshot?.() || {};
@@ -310,6 +313,70 @@ document.addEventListener('DOMContentLoaded', () => {
     window.setTimeout(refreshMapSize, 500);
   }
 
+  function getProfile() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(profileStorageKey) || '{}');
+      return {
+        name: typeof saved.name === 'string' ? saved.name : 'Sita K.',
+        phone: typeof saved.phone === 'string' ? saved.phone : '',
+        location: typeof saved.location === 'string' ? saved.location : 'Lalitpur',
+        age: typeof saved.age === 'string' ? saved.age : '',
+        bloodType: typeof saved.bloodType === 'string' ? saved.bloodType : '',
+        height: typeof saved.height === 'string' ? saved.height : '',
+        prePregnancyWeight: typeof saved.prePregnancyWeight === 'string' ? saved.prePregnancyWeight : '',
+      };
+    } catch (error) {
+      return { name: 'Sita K.', phone: '', location: 'Lalitpur', age: '', bloodType: '', height: '', prePregnancyWeight: '' };
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[character]);
+  }
+
+  function profileInitials(name) {
+    return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'SK';
+  }
+
+  function updateProfileDisplay(profile) {
+    const name = profile.name.trim() || 'Sita K.';
+    const avatar = profileInitials(name);
+    const nameNode = profileButton?.querySelector('.profile-copy strong');
+    const avatarNode = profileButton?.querySelector('.avatar');
+    if (nameNode) nameNode.textContent = name;
+    if (avatarNode) avatarNode.textContent = avatar;
+  }
+  updateProfileDisplay(getProfile());
+
+  function openProfileDialog() {
+    const profile = getProfile();
+    const name = escapeHtml(profile.name);
+    const initials = escapeHtml(profileInitials(profile.name));
+    const location = escapeHtml(profile.location);
+    const phone = escapeHtml(profile.phone || 'Add a mobile number');
+    const age = profile.age ? translate('{count} years', { count: escapeHtml(profile.age) }) : 'Not added';
+    const bloodType = escapeHtml(profile.bloodType || 'Not added');
+    const height = profile.height ? `${escapeHtml(profile.height)} cm` : 'Not added';
+    const weight = profile.prePregnancyWeight ? `${escapeHtml(profile.prePregnancyWeight)} kg` : 'Not added';
+    openInteraction(
+      'Your account',
+      'Your profile',
+      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-health-details"><div><small>Age</small><strong>${age}</strong></div><div><small>Blood type</small><strong>${bloodType}</strong></div><div><small>Height</small><strong>${height}</strong></div><div><small>Pre-pregnancy weight</small><strong>${weight}</strong></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon" aria-hidden="true">✎</span><span><strong>Edit profile</strong><small>Update your personal details</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon" aria-hidden="true">⚙</span><span><strong>Settings</strong><small>Language and care preferences</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon" aria-hidden="true">?</span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon" aria-hidden="true">↪</span><span><strong>Sign out</strong><small>End this session safely</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button></div>`,
+    );
+  }
+
+  function openProfileEditor() {
+    const profile = getProfile();
+    openInteraction(
+      'Your account',
+      'Edit profile',
+      `<form class="interaction-form profile-edit-form" id="profile-form"><label for="profile-name">Full name</label><input id="profile-name" name="name" value="${escapeHtml(profile.name)}" autocomplete="name" required maxlength="80"><label for="profile-phone">Mobile number <span class="form-label-hint">optional</span></label><input id="profile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(profile.phone)}" placeholder="Add a mobile number" maxlength="30"><label for="profile-location">Care location</label><input id="profile-location" name="location" value="${escapeHtml(profile.location)}" autocomplete="address-level2" maxlength="80"><div class="profile-edit-grid"><div><label for="profile-age">Age (years) <span class="form-label-hint">optional</span></label><input id="profile-age" name="age" type="number" min="10" max="60" step="1" inputmode="numeric" value="${escapeHtml(profile.age)}"></div><div><label for="profile-blood-type">Blood type <span class="form-label-hint">optional</span></label><select id="profile-blood-type" name="bloodType"><option value="">Select blood type</option>${['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => `<option value="${type}" ${profile.bloodType === type ? 'selected' : ''}>${type}</option>`).join('')}</select></div><div><label for="profile-height">Height (cm) <span class="form-label-hint">optional</span></label><input id="profile-height" name="height" type="number" min="80" max="250" step="0.1" inputmode="decimal" value="${escapeHtml(profile.height)}"></div><div><label for="profile-pre-pregnancy-weight">Pre-pregnancy weight (kg) <span class="form-label-hint">optional</span></label><input id="profile-pre-pregnancy-weight" name="prePregnancyWeight" type="number" min="20" max="300" step="0.1" inputmode="decimal" value="${escapeHtml(profile.prePregnancyWeight)}"></div></div><div class="interaction-actions"><button class="button button--outline" type="button" data-action="open-profile">Cancel</button><button class="button button--primary" type="submit">Save profile</button></div></form>`,
+    );
+    document.querySelector('#profile-name')?.focus();
+  }
+
   function getChecklistTasks() {
     return Array.from(document.querySelectorAll('.task-row input[type="checkbox"]'));
   }
@@ -320,6 +387,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.checklist-panel .completion-pill').forEach((pill) => {
       pill.textContent = `${completed} of ${tasks.length} done`;
     });
+  }
+
+  function updateSharedChecklistSummary() {
+    const tasks = Array.from(document.querySelectorAll('.shared-panel .shared-item'));
+    const completed = tasks.filter((task) => task.querySelector('.shared-check')?.classList.contains('is-done')).length;
+    const pill = document.querySelector('.shared-panel .completion-pill');
+    if (pill) pill.textContent = translate(`${completed} of ${tasks.length} done`);
   }
 
   function restoreChecklist() {
@@ -393,12 +467,6 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 'rain-prep', title: 'Share heavy-rain preparation tips', owner: 'Everyone', time: 'Today', completed: false },
     { id: 'care-bag', title: 'Prepare a small care bag', owner: 'Sita', time: 'This week', completed: false },
   ];
-
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, (character) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[character]));
-  }
 
   function getFamilyChecklistItems() {
     try {
@@ -508,6 +576,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeNav = document.querySelector(`.nav-item[data-view="${view}"]`);
     activeNav?.classList.add('is-active');
     activeNav?.setAttribute('aria-current', 'page');
+    const learnNav = document.querySelector('.nav-item[data-view="learn"]');
+    const learnSubnav = document.querySelector('#learn-subnav');
+    learnSubnav?.classList.toggle('is-hidden', view !== 'learn');
+    learnNav?.setAttribute('aria-expanded', String(view === 'learn'));
+    document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+      item.classList.remove('is-active');
+      item.removeAttribute('aria-current');
+    });
     sidebar?.classList.remove('is-open');
     if (view === 'overview') {
       dashboardContent?.classList.remove('is-hidden');
@@ -517,7 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView.innerHTML = views[view];
       secondaryView.classList.remove('is-hidden');
       if (view === 'settings') restoreSettings();
-      if (view === 'family') renderFamilyChecklist();
+      if (view === 'learn') window.AamaLearn?.init(secondaryView);
+      if (view === 'family') {
+        renderFamilyChecklist();
+        updateSharedChecklistSummary();
+      }
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
     window.AamaI18n?.translatePage();
@@ -627,15 +707,20 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeInteraction() {
     interactionModal?.classList.add('is-hidden');
     interactionModal?.setAttribute('aria-hidden', 'true');
+    profileButton?.setAttribute('aria-expanded', 'false');
     if (interactionContent) interactionContent.innerHTML = '';
+    if (interactionReturnFocus?.isConnected) interactionReturnFocus.focus();
+    interactionReturnFocus = null;
   }
 
   function openInteraction(eyebrow, title, body, actions = '') {
     if (!interactionModal || !interactionContent) return;
+    interactionReturnFocus = document.activeElement;
     interactionContent.innerHTML = `<p class="card-kicker">${eyebrow}</p><h2 id="interaction-title">${title}</h2>${body}${actions ? `<div class="interaction-actions">${actions}</div>` : ''}`;
     window.AamaI18n?.translatePage();
     interactionModal.classList.remove('is-hidden');
     interactionModal.setAttribute('aria-hidden', 'false');
+    profileButton?.setAttribute('aria-expanded', String(document.activeElement === profileButton));
     interactionClose?.focus();
   }
 
@@ -671,7 +756,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleAction(action, target) {
-    if (action === 'today-plan') {
+    if (action === 'open-profile') {
+      openProfileDialog();
+    } else if (action === 'edit-profile') {
+      openProfileEditor();
+    } else if (action === 'account-settings') {
+      closeInteraction();
+      navigate('/home/settings');
+    } else if (action === 'account-help') {
+      closeInteraction();
+      openAssistant();
+    } else if (action === 'open-logout') {
+      openInteraction('Sign out', 'Leave MatriSathi for now?', '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>');
+    } else if (action === 'today-plan') {
       openInteraction("Today's plan", 'Your care plan for today', '<div class="detail-list"><div class="detail-row"><span>Morning</span><strong>Hydrate and take your prescribed supplement</strong></div><div class="detail-row"><span>Afternoon</span><strong>Watch your weekly movement video</strong></div><div class="detail-row"><span>Evening</span><strong>Keep emergency contacts close during heavy rain</strong></div></div>', '<button class="button button--primary" type="button" data-action="close-modal">Got it</button>');
     } else if (action === 'appointment-detail') {
       openInteraction('Next up', 'Routine antenatal visit', '<div class="detail-list"><div class="detail-row"><span>Date</span><strong>Thursday, 3 December 2026</strong></div><div class="detail-row"><span>Time</span><strong>10:30 AM</strong></div><div class="detail-row"><span>Location</span><strong>Patan Hospital · Outpatient wing</strong></div></div><div class="modal-callout">Bring your previous records and write down any questions you want to ask your health worker.</div>', '<button class="button button--soft" type="button" data-action="appointment-reminder">Remind me</button><button class="button button--primary" type="button" data-action="close-modal">Close</button>');
@@ -717,6 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveFamilyChecklistItems(tasks);
       renderFamilyChecklist();
       const task = tasks.find((item) => item.id === taskId);
+      target.setAttribute('aria-pressed', String(Boolean(task?.completed)));
       showToast(task?.completed ? 'Family task marked complete.' : 'Family task added back.');
     } else if (action === 'add-family-task') {
       openInteraction('Shared support', 'Add a family task', '<form class="interaction-form" id="family-task-form"><label for="family-task-title">Task</label><input id="family-task-title" name="title" maxlength="90" placeholder="e.g. Pack hospital documents" required><label for="family-task-owner">Who is responsible?</label><select id="family-task-owner" name="owner"><option>Everyone</option><option>Sita</option><option>Ram</option><option>Asha</option></select><label for="family-task-time">When?</label><input id="family-task-time" name="time" maxlength="30" placeholder="e.g. Today or This week"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add task</button></div></form>');
@@ -928,6 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>'
     );
   });
+  profileButton?.addEventListener('click', openProfileDialog);
   togglePin?.addEventListener('click', () => {
     if (!pinInput) return;
     const isPassword = pinInput.type === 'password';
@@ -951,6 +1050,42 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch { /* preference is session-only */ }
   document.querySelectorAll('.ai-launcher').forEach((button) => button.addEventListener('click', openAssistant));
   document.addEventListener('click', (event) => {
+    const learnNavItem = event.target.closest('[data-learn-nav]');
+    if (learnNavItem) {
+      const openBranch = () => {
+        window.AamaLearn?.open(secondaryView, learnNavItem.dataset.learnNav);
+        document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+          const selected = item === learnNavItem;
+          item.classList.toggle('is-active', selected);
+          if (selected) item.setAttribute('aria-current', 'page');
+          else item.removeAttribute('aria-current');
+        });
+      };
+      if (window.location.pathname !== '/home/learn-prepare') {
+        navigate('/home/learn-prepare');
+        openBranch();
+      } else openBranch();
+      return;
+    }
+    const learnTopic = event.target.closest('[data-learn-page]');
+    if (learnTopic) {
+      window.AamaLearn?.open(secondaryView, learnTopic.dataset.learnPage);
+      document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+        const selected = item.dataset.learnNav === learnTopic.dataset.learnPage;
+        item.classList.toggle('is-active', selected);
+        if (selected) item.setAttribute('aria-current', 'page');
+        else item.removeAttribute('aria-current');
+      });
+      return;
+    }
+    if (event.target.closest('[data-learn-back]')) {
+      window.AamaLearn?.back(secondaryView);
+      document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+        item.classList.remove('is-active');
+        item.removeAttribute('aria-current');
+      });
+      return;
+    }
     const routeButton = event.target.closest('[data-route]');
     if (routeButton) {
       event.preventDefault();
@@ -959,6 +1094,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const actionButton = event.target.closest('[data-action]');
     if (actionButton) {
+      if (actionButton.dataset.action === 'learn-use-location') { window.AamaLearn?.locate(secondaryView); return; }
       handleAction(actionButton.dataset.action, actionButton);
       return;
     }
@@ -967,6 +1103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.target.closest('.ai-launcher')) openAssistant();
   });
   interactionClose?.addEventListener('click', closeInteraction);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && interactionModal && !interactionModal.classList.contains('is-hidden')) closeInteraction();
+  });
   interactionModal?.addEventListener('click', (event) => {
     if (event.target === interactionModal) closeInteraction();
   });
@@ -982,6 +1121,30 @@ document.addEventListener('DOMContentLoaded', () => {
       closeInteraction();
       showToast('Permissions saved for your family member.');
       return;
+    }
+    if (event.target.id === 'profile-form') {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const profile = {
+        name: String(formData.get('name') || '').trim(),
+        phone: String(formData.get('phone') || '').trim(),
+        location: String(formData.get('location') || '').trim(),
+        age: String(formData.get('age') || '').trim(),
+        bloodType: String(formData.get('bloodType') || '').trim(),
+        height: String(formData.get('height') || '').trim(),
+        prePregnancyWeight: String(formData.get('prePregnancyWeight') || '').trim(),
+      };
+      if (!profile.name) return;
+      try {
+        window.localStorage.setItem(profileStorageKey, JSON.stringify(profile));
+      } catch (error) {
+        console.warn('Profile could not be saved locally.', error);
+        showToast('Profile could not be saved on this device.');
+        return;
+      }
+      updateProfileDisplay(profile);
+      closeInteraction();
+      showToast('Your profile has been updated.');
     }
     if (event.target.id === 'checklist-form') {
       event.preventDefault();
@@ -1120,6 +1283,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   menuButton?.addEventListener('click', () => sidebar?.classList.toggle('is-open'));
   window.addEventListener('popstate', () => navigate(window.location.pathname, true));
-  navigate(window.location.pathname, true);
+  window.addEventListener('aama-language-change', updateSharedChecklistSummary);
+  const navigation = window.performance?.getEntriesByType?.('navigation')?.[0];
+  const initialPath = navigation?.type === 'reload' ? '/login' : window.location.pathname;
+  navigate(initialPath, true);
   restoreChecklist();
 });

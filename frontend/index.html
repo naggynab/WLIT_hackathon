@@ -8,13 +8,13 @@
     <title>MatriSathi · Pregnancy companion</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3J8mX4Q1d+8wQ1U8s1kN1d5c4M4yQ=" crossorigin="">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <div class="app-shell">
       <section class="auth-screen" id="login-screen" aria-labelledby="login-title">
         <div class="auth-art" aria-hidden="true">
-          <img class="auth-illustration" src="assets/login-hands-transparent.png" alt="">
+          <img class="auth-illustration" src="/assets/login-hands-transparent.png" alt="">
         </div>
 
         <div class="auth-panel">
@@ -75,7 +75,13 @@
             <button class="nav-item" type="button" data-view="records" data-route="/home/health-records"><span class="nav-icon">▤</span><span>Health records</span></button>
             <button class="nav-item" type="button" data-view="family" data-route="/home/family-hub"><span class="nav-icon">♧</span><span>Family hub</span></button>
             <button class="nav-item" type="button" data-view="services" data-route="/home/health-services"><span class="nav-icon">⌖</span><span>Health services</span></button>
-            <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
+            <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare" aria-expanded="false" aria-controls="learn-subnav"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
+            <div class="learn-subnav is-hidden" id="learn-subnav" aria-label="Learn and prepare topics">
+              <button class="learn-subnav-item" type="button" data-learn-nav="food">Food &amp; nutrition</button>
+              <button class="learn-subnav-item" type="button" data-learn-nav="movement">Movement</button>
+              <button class="learn-subnav-item" type="button" data-learn-nav="birth">Birth preparation</button>
+              <button class="learn-subnav-item" type="button" data-learn-nav="support">Support information</button>
+            </div>
           </nav>
           <div class="sidebar-bottom">
             <div class="support-card">
@@ -96,7 +102,7 @@
             <div class="topbar-actions">
               <button class="icon-button language-button" type="button" aria-label="Change language">ने <span>EN</span></button>
               <button class="icon-button notification-button" type="button" aria-label="View notifications"><span>♧</span><i></i></button>
-              <button class="profile-button" type="button" aria-label="Open profile menu"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><span class="chevron">⌄</span></button>
+              <button class="profile-button" type="button" aria-label="Open profile menu" aria-haspopup="dialog" aria-expanded="false"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><span class="chevron">⌄</span></button>
             </div>
           </header>
 
@@ -229,11 +235,12 @@
       </div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
-    <script src="config.js"></script>
-    <script src="i18n.js"></script>
-    <script src="views.js"></script>
+    <script src="/config.js"></script>
+    <script src="/i18n.js"></script>
+    <script src="/views.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="app.js"></script>
-    <script src="pregnancy-card.js"></script>
+    <script src="/learn.js"></script>
+    <script src="/app.js"></script>
+    <script src="/pregnancy-card.js"></script>
   </body>
 </html>
