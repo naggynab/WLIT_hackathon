@@ -30,6 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const translate = (value) => window.AamaI18n?.t(value) || value;
   const checklistStorageKey = 'aamacare-checklist';
   const customChecklistStorageKey = 'aamacare-custom-checklist';
+  const familyPermissionsStorageKey = 'matrisathi-family-permissions';
+  const defaultFamilyPermissions = {
+    'Tasks and appointments': true,
+    'Pregnancy journey': true,
+    'Health records': false,
+    'Emergency alerts': true,
+  };
   let toastTimer;
   let activeRecognition = null;
   let latestAssistantReply = null;
@@ -359,6 +366,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getFamilyPermissions(member) {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(familyPermissionsStorageKey) || '{}');
+      return { ...defaultFamilyPermissions, ...(saved[member] || {}) };
+    } catch (error) {
+      console.warn('Family permissions could not be restored.', error);
+      return { ...defaultFamilyPermissions };
+    }
+  }
+
+  function saveFamilyPermissions(member, permissions) {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(familyPermissionsStorageKey) || '{}');
+      saved[member] = permissions;
+      window.localStorage.setItem(familyPermissionsStorageKey, JSON.stringify(saved));
+    } catch (error) {
+      console.warn('Family permissions could not be saved locally.', error);
+    }
+  }
+
+  const familyChecklistStorageKey = 'matrisathi-family-checklist';
+  const defaultFamilyChecklist = [
+    { id: 'transport', title: 'Confirm transport for checkup', owner: 'Ram', time: 'Done', completed: true },
+    { id: 'contacts', title: 'Keep emergency contacts updated', owner: 'Asha', time: 'Done', completed: true },
+    { id: 'rain-prep', title: 'Share heavy-rain preparation tips', owner: 'Everyone', time: 'Today', completed: false },
+    { id: 'care-bag', title: 'Prepare a small care bag', owner: 'Sita', time: 'This week', completed: false },
+  ];
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[character]));
+  }
+
+  function getFamilyChecklistItems() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(familyChecklistStorageKey) || 'null');
+      return Array.isArray(saved) && saved.length ? saved : defaultFamilyChecklist.map((task) => ({ ...task }));
+    } catch (error) {
+      console.warn('Family checklist could not be restored.', error);
+      return defaultFamilyChecklist.map((task) => ({ ...task }));
+    }
+  }
+
+  function saveFamilyChecklistItems(items) {
+    try {
+      window.localStorage.setItem(familyChecklistStorageKey, JSON.stringify(items));
+    } catch (error) {
+      console.warn('Family checklist could not be saved.', error);
+    }
+  }
+
+  function renderFamilyChecklist() {
+    const list = secondaryView?.querySelector('[data-family-checklist]');
+    if (!list) return;
+    const tasks = getFamilyChecklistItems();
+    const completed = tasks.filter((task) => task.completed).length;
+    const progress = secondaryView.querySelector('[data-family-progress]');
+    if (progress) progress.textContent = `${completed} of ${tasks.length} done`;
+    list.innerHTML = tasks.map((task) => `
+      <button class="shared-item${task.completed ? ' is-complete' : ''}" type="button" data-action="toggle-shared" data-family-task-id="${escapeHtml(task.id)}">
+        <span class="shared-check${task.completed ? ' is-done' : ''}">${task.completed ? '✓' : ''}</span>
+        <strong>${escapeHtml(task.title)}</strong>
+        <small>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.completed ? 'Done' : task.time || 'This week')}</small>
+      </button>
+    `).join('');
+  }
+
   function createChecklistRow(item) {
     const row = document.createElement('label');
     row.className = 'task-row';
@@ -442,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView.innerHTML = views[view];
       secondaryView.classList.remove('is-hidden');
       if (view === 'settings') restoreSettings();
+      if (view === 'family') renderFamilyChecklist();
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
     window.AamaI18n?.translatePage();
@@ -563,6 +639,37 @@ document.addEventListener('DOMContentLoaded', () => {
     interactionClose?.focus();
   }
 
+  function openPermissionEditor(member) {
+    const memberName = member || 'Circle member';
+    const permissions = getFamilyPermissions(memberName);
+    const rows = [
+      ['Tasks and appointments', 'See shared tasks and upcoming visits.'],
+      ['Pregnancy journey', 'View your weekly care updates and progress.'],
+      ['Health records', 'View records you choose to share with your circle.'],
+      ['Emergency alerts', 'Receive important safety and emergency updates.'],
+    ];
+
+    const permissionRows = rows.map(([label, description]) => {
+      const inputId = `permission-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      return `
+        <label class="permission-row" for="${inputId}">
+          <span class="permission-copy"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span>
+          <span class="permission-switch">
+            <input id="${inputId}" name="${escapeHtml(label)}" type="checkbox"${permissions[label] ? ' checked' : ''}>
+            <span class="permission-switch__track" aria-hidden="true"></span>
+          </span>
+        </label>
+      `;
+    });
+
+    openInteraction(
+      'Family hub',
+      `Edit permissions for ${escapeHtml(memberName)}`,
+      `<p>Choose what this person can see and which updates they should receive.</p><form class="permission-form" id="permission-form" data-member="${escapeHtml(memberName)}"><div class="permission-group"><div class="permission-group__heading"><span>Shared access</span><small>Visible in their Family Hub</small></div>${permissionRows.slice(0, 3).join('')}</div><div class="permission-group"><div class="permission-group__heading"><span>Alerts</span><small>Keep them informed when it matters</small></div>${permissionRows.slice(3).join('')}</div><p class="permission-note"><span aria-hidden="true">⌁</span> You can change these permissions at any time.</p><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Save permissions</button></div></form>`
+    );
+    document.querySelector('#permission-form input')?.focus();
+  }
+
   function handleAction(action, target) {
     if (action === 'today-plan') {
       openInteraction("Today's plan", 'Your care plan for today', '<div class="detail-list"><div class="detail-row"><span>Morning</span><strong>Hydrate and take your prescribed supplement</strong></div><div class="detail-row"><span>Afternoon</span><strong>Watch your weekly movement video</strong></div><div class="detail-row"><span>Evening</span><strong>Keep emergency contacts close during heavy rain</strong></div></div>', '<button class="button button--primary" type="button" data-action="close-modal">Got it</button>');
@@ -596,16 +703,27 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (action === 'invite-member') {
       openInteraction('Family hub', 'Invite someone you trust', '<form class="interaction-form" id="invite-form"><label for="invite-name">Name</label><input id="invite-name" placeholder="e.g. Ram K." required><label for="invite-relation">Relationship</label><select id="invite-relation"><option>Partner</option><option>Family member</option><option>Neighbour</option><option>Health worker</option></select><label for="invite-phone">Mobile number</label><input id="invite-phone" type="tel" placeholder="98XXXXXXXX" required><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Send invite</button></div></form>');
     } else if (action === 'member-detail') {
-      openInteraction('Family hub', target.dataset.member || 'Circle member', '<p>This person can receive the permissions you choose.</p><div class="detail-list"><div class="detail-row"><span>Shared access</span><strong>Tasks and appointments</strong></div><div class="detail-row"><span>Emergency alerts</span><strong>Enabled</strong></div></div>', '<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-toast="Permission editor opened">Edit permissions</button>');
+      const member = target.dataset.member || 'Circle member';
+      const permissions = getFamilyPermissions(member);
+      openInteraction('Family hub', member, '<p>This person can receive the permissions you choose.</p><div class="detail-list"><div class="detail-row"><span>Shared access</span><strong>Tasks and appointments</strong></div><div class="detail-row"><span>Emergency alerts</span><strong>' + (permissions['Emergency alerts'] ? 'Enabled' : 'Disabled') + '</strong></div></div>', `<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-action="edit-permissions" data-member="${escapeHtml(member)}">Edit permissions</button>`);
+    } else if (action === 'edit-permissions') {
+      openPermissionEditor(target.dataset.member || 'Circle member');
     } else if (action === 'family-options') {
       openInteraction('Family hub', 'Family permissions', '<p>Review who can see tasks, appointments, and selected care updates.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Review access</button>');
     } else if (action === 'toggle-shared') {
-      const check = target.querySelector('.shared-check');
-      check?.classList.toggle('is-done');
-      if (check) check.textContent = check.classList.contains('is-done') ? '✓' : '';
-      showToast(check?.classList.contains('is-done') ? 'Family task marked complete.' : 'Family task added back.');
+      const taskId = target.dataset.familyTaskId;
+      if (!taskId) return;
+      const tasks = getFamilyChecklistItems().map((task) => task.id === taskId ? { ...task, completed: !task.completed } : task);
+      saveFamilyChecklistItems(tasks);
+      renderFamilyChecklist();
+      const task = tasks.find((item) => item.id === taskId);
+      showToast(task?.completed ? 'Family task marked complete.' : 'Family task added back.');
+    } else if (action === 'add-family-task') {
+      openInteraction('Shared support', 'Add a family task', '<form class="interaction-form" id="family-task-form"><label for="family-task-title">Task</label><input id="family-task-title" name="title" maxlength="90" placeholder="e.g. Pack hospital documents" required><label for="family-task-owner">Who is responsible?</label><select id="family-task-owner" name="owner"><option>Everyone</option><option>Sita</option><option>Ram</option><option>Asha</option></select><label for="family-task-time">When?</label><input id="family-task-time" name="time" maxlength="30" placeholder="e.g. Today or This week"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add task</button></div></form>');
     } else if (action === 'shared-checklist') {
-      openInteraction('Shared support', 'Everyone knows the next step', '<p>Your family checklist keeps transport, emergency preparation, and shared support visible to the people you trust.</p><div class="modal-callout">You can pause family notifications or change sharing permissions at any time.</div>', '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
+      const tasks = getFamilyChecklistItems();
+      const rows = tasks.map((task) => `<div class="detail-row"><span>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.time || 'This week')}</span><strong>${task.completed ? '✓ ' : ''}${escapeHtml(task.title)}</strong></div>`).join('');
+      openInteraction('Shared support', 'Everyone knows the next step', `<div class="detail-list">${rows}</div><div class="modal-callout">Your family checklist is saved on this device. Add or update tasks from the Family Hub.</div>`, '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
     } else if (action === 'show-reminders') {
       openReminders();
     } else if (action === 'add-checklist') {
@@ -853,6 +971,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.target === interactionModal) closeInteraction();
   });
   document.addEventListener('submit', (event) => {
+    if (event.target.id === 'permission-form') {
+      event.preventDefault();
+      const form = event.target;
+      const permissions = {};
+      form.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+        permissions[input.name] = input.checked;
+      });
+      saveFamilyPermissions(form.dataset.member || 'Circle member', permissions);
+      closeInteraction();
+      showToast('Permissions saved for your family member.');
+      return;
+    }
     if (event.target.id === 'checklist-form') {
       event.preventDefault();
       const formData = new FormData(event.target);
@@ -881,6 +1011,24 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
       closeInteraction();
       showToast('Family invitation prepared.');
+    }
+    if (event.target.id === 'family-task-form') {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const title = String(formData.get('title') || '').trim();
+      if (!title) return;
+      const tasks = getFamilyChecklistItems();
+      tasks.push({
+        id: `family-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        title,
+        owner: String(formData.get('owner') || 'Everyone'),
+        time: String(formData.get('time') || '').trim() || 'This week',
+        completed: false,
+      });
+      saveFamilyChecklistItems(tasks);
+      closeInteraction();
+      renderFamilyChecklist();
+      showToast('Family task added.');
     }
   });
   document.addEventListener('change', (event) => {
