@@ -38,10 +38,12 @@
   function getOpeningLabel(place) {
     if (place?.regularOpeningHours?.openNow === true) return 'Open now';
     if (place?.regularOpeningHours?.openNow === false) return 'Closed now';
+    if (place?.openingHours) return `Hours: ${place.openingHours}`;
     return 'Hours unavailable';
   }
 
   function getPhotoData(place) {
+    if (place?.photoUrl) return { url: place.photoUrl, attribution: place.photoAttribution || '' };
     const photo = place?.photos?.[0];
     if (!photo) return null;
     try {
@@ -69,11 +71,11 @@
     }
   }
 
-  async function loadGoogleMaps() {
+  async function loadGoogleMaps(configuredApiKey = '') {
     if (window.google?.maps?.importLibrary) return window.google.maps;
     if (loadPromise) return loadPromise;
 
-    loadPromise = getConfiguredApiKey().then((apiKey) => {
+    loadPromise = Promise.resolve(configuredApiKey || getConfiguredApiKey()).then((apiKey) => {
       if (!apiKey) {
         throw new Error('Google Maps API key is not configured.');
       }
@@ -104,7 +106,11 @@
   function cleanup() {
     if (!activeState) return;
     activeState.infoWindow?.close();
-    activeState.markers?.forEach((marker) => { marker.map = null; });
+    activeState.markers?.forEach((marker) => {
+      if (activeState.provider === 'leaflet') marker.remove();
+      else marker.map = null;
+    });
+    activeState.map?.remove?.();
     activeState = null;
   }
 
@@ -197,6 +203,11 @@
       card.classList.toggle('is-selected', selected);
       card.setAttribute('aria-pressed', String(selected));
     });
+    if (state.provider === 'leaflet') {
+      state.map.setView([entry.position.lat, entry.position.lng], 16, { animate: true });
+      if (openInfo) entry.marker.openPopup();
+      return;
+    }
     state.map.panTo(entry.position);
     if (openInfo) {
       state.map.setZoom(Math.max(state.map.getZoom() || 14, 15));
@@ -205,13 +216,137 @@
     }
   }
 
+  function osmPlace(element) {
+    const tags = element.tags || {};
+    const position = getCoordinates({
+      lat: element.lat ?? element.center?.lat,
+      lng: element.lon ?? element.center?.lon,
+    });
+    if (!position) return null;
+    const name = tags.name || tags['name:en'] || 'Nearby health service';
+    const type = tags.amenity || tags.healthcare || 'health service';
+    const address = [
+      tags['addr:housenumber'],
+      tags['addr:street'],
+      tags['addr:suburb'] || tags['addr:city'],
+    ].filter(Boolean).join(', ') || 'Address unavailable';
+    const photoUrl = /^https?:\/\//i.test(tags.image || '') ? tags.image : '';
+    return {
+      id: `osm-${element.type}-${element.id}`,
+      displayName: name,
+      formattedAddress: address,
+      location: position,
+      primaryType: type,
+      nationalPhoneNumber: tags.phone || tags['contact:phone'] || '',
+      openingHours: tags.opening_hours || '',
+      photoUrl,
+      photoAttribution: photoUrl ? 'OpenStreetMap listing' : '',
+    };
+  }
+
+  function nominatimPlace(result, category) {
+    const position = getCoordinates({ lat: result.lat, lng: result.lon });
+    if (!position) return null;
+    const extra = result.extratags || {};
+    const address = result.display_name || 'Address unavailable';
+    const photoUrl = /^https?:\/\//i.test(extra.image || '') ? extra.image : '';
+    return {
+      id: `osm-${result.osm_type || 'place'}-${result.osm_id || result.place_id}`,
+      displayName: result.name || `${category} near Lalitpur`,
+      formattedAddress: address,
+      location: position,
+      primaryType: result.type || category,
+      nationalPhoneNumber: extra.phone || extra['contact:phone'] || '',
+      openingHours: extra.opening_hours || '',
+      photoUrl,
+      photoAttribution: photoUrl ? 'OpenStreetMap listing' : '',
+    };
+  }
+
+  async function fetchFreeHealthPlaces() {
+    // Nominatim is used only for the user opening this page and requests are
+    // spaced out to respect its public-service limit of one request per second.
+    const categories = ['hospital', 'clinic', 'pharmacy'];
+    const results = [];
+    for (const [index, category] of categories.entries()) {
+      if (index) await new Promise((resolve) => window.setTimeout(resolve, 1100));
+      const params = new URLSearchParams({
+        format: 'jsonv2',
+        addressdetails: '1',
+        extratags: '1',
+        limit: '8',
+        q: `${category} Lalitpur Nepal`,
+      });
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) throw new Error(`OpenStreetMap search returned ${response.status}.`);
+      const healthResults = (await response.json()).filter((result) => {
+        const type = String(result.type || '').toLowerCase();
+        return ['hospital', 'clinic', 'doctors', 'pharmacy', 'chemist', 'health_centre', 'health_center', 'healthcare'].some((allowed) => type.includes(allowed));
+      });
+      results.push(...healthResults.map((result) => nominatimPlace(result, category)).filter(Boolean));
+    }
+    const unique = new Map();
+    results.forEach((place) => {
+      if (!unique.has(place.displayName)) unique.set(place.displayName, place);
+    });
+    return Array.from(unique.values())
+      .map((place) => ({ place, position: getCoordinates(place.location) }))
+      .map((entry) => ({ ...entry, distance: distanceInKilometres(origin, entry.position) }))
+      .sort((left, right) => left.distance - right.distance)
+      .slice(0, 8);
+  }
+
+  async function initOpenStreetMap(root) {
+    if (!window.L) throw new Error('The free map library is not available.');
+    const mapElement = root?.querySelector('#care-map');
+    if (!mapElement) return;
+    mapElement.replaceChildren();
+    const map = window.L.map(mapElement, { scrollWheelZoom: false, zoomControl: true }).setView([origin.lat, origin.lng], 14);
+    window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+    let places;
+    try {
+      places = await fetchFreeHealthPlaces();
+    } catch (error) {
+      map.remove();
+      throw error;
+    }
+    if (!root.isConnected) {
+      map.remove();
+      return;
+    }
+    const markers = new Map();
+    const placesById = new Map();
+    activeState = { provider: 'leaflet', root, map, markers, placesById };
+    renderPlaces(root, places);
+    places.forEach(({ place, position, distance }) => {
+      const marker = window.L.marker([position.lat, position.lng]).addTo(map);
+      marker.bindPopup(infoContent(place, distance));
+      marker.on('click', () => selectPlace(place.id));
+      markers.set(place.id, marker);
+      placesById.set(place.id, { place, position, distance, marker });
+    });
+    const credit = root.querySelector('.map-credit');
+    if (credit) credit.textContent = 'Map and place data © OpenStreetMap contributors.';
+    if (places.length) selectPlace(places[0].place.id, false);
+  }
+
   async function init(root) {
     cleanup();
     const mapElement = root?.querySelector('#care-map');
     if (!mapElement) return;
     try {
       const includePhotos = Boolean(window.MATRI_SATHI_GOOGLE_MAPS_INCLUDE_PHOTOS);
-      const maps = await loadGoogleMaps();
+      const configuredApiKey = await getConfiguredApiKey();
+      if (!configuredApiKey) {
+        await initOpenStreetMap(root);
+        return;
+      }
+      const maps = await loadGoogleMaps(configuredApiKey);
       const [{ Map }, { AdvancedMarkerElement }, { Place, SearchNearbyRankPreference }] = await Promise.all([
         maps.importLibrary('maps'),
         maps.importLibrary('marker'),
@@ -261,17 +396,22 @@
       if (places.length) selectPlace(places[0].place.id || places[0].place.name || 'place-0', false);
     } catch (error) {
       console.error('Google Maps could not load nearby care data.', error);
-      showMapStatus(root, 'Google Maps is not connected yet', 'Add a browser-restricted Google Maps API key in config.js or GOOGLE_MAPS_API_KEY in .env, then refresh this page.');
-      const list = root.querySelector('[data-service-list]');
-      if (list) {
-        list.replaceChildren();
-        const message = document.createElement('div');
-        message.className = 'service-loading';
-        message.textContent = 'Live hospital data will appear here after Google Maps is configured.';
-        list.appendChild(message);
+      try {
+        await initOpenStreetMap(root);
+      } catch (freeMapError) {
+        console.error('The free OpenStreetMap fallback could not load nearby care data.', freeMapError);
+        showMapStatus(root, 'Map data is temporarily unavailable', 'Please check your internet connection and refresh the page.');
+        const list = root.querySelector('[data-service-list]');
+        if (list) {
+          list.replaceChildren();
+          const message = document.createElement('div');
+          message.className = 'service-loading';
+          message.textContent = 'Nearby health services could not be loaded right now.';
+          list.appendChild(message);
+        }
+        const count = root.querySelector('[data-service-count]');
+        if (count) count.textContent = 'Unavailable';
       }
-      const count = root.querySelector('[data-service-count]');
-      if (count) count.textContent = 'Setup needed';
     }
   }
 

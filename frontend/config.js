@@ -5,7 +5,7 @@ window.AAMA_API_URL = '';
 // Use a browser-restricted Google Maps Platform key. Enable Maps JavaScript API
 // and Places API (New) for the same Google Cloud project. For local development
 // you can also set GOOGLE_MAPS_API_KEY in the project .env file.
-window.MATRI_SATHI_GOOGLE_MAPS_API_KEY = '';
+window.MATRI_SATHI_GOOGLE_MAPS_API_KEY = 'AIzaSyASmZ-Si42MWqt_uyRF1xka91LUf5V7NKQ';
 
 // Google Maps Demo Keys are free for educational prototypes and support live
 // maps and Place data, but Google does not make Place Photos or reviews
