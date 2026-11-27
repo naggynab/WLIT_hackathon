@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const originalSideNav = sideNav?.innerHTML || '';
   const sidebarSectionLabel = document.querySelector('.sidebar-section-label');
   const supportCard = document.querySelector('.support-card');
+  const maternalSettingsItem = document.querySelector('.sidebar-bottom .nav-item[data-view="settings"]');
+  const notificationButton = document.querySelector('.notification-button');
   const healthPostPreview = document.querySelector('#health-post-preview');
   const menuButton = document.querySelector('#menu-button');
   const forgotLink = document.querySelector('#forgot-link');
@@ -47,7 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const interactionClose = document.querySelector('#interaction-close');
   const views = window.AamaViews || {};
   const apiBaseUrl = String(window.AAMA_API_URL || '').replace(/\/$/, '');
-  const translate = (value, values) => window.AamaI18n?.t(value, values) || value;
+  const translate = (value) => window.AamaI18n?.t(value) || value;
+  window.AamaBenefits?.renderTeaser();
   // Keep the existing storage keys so saved user data survives the rebrand.
   const checklistStorageKey = 'aamacare-checklist';
   const customChecklistStorageKey = 'aamacare-custom-checklist';
@@ -357,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/home/family-hub': { view: 'family', label: 'Family hub' },
     '/home/health-services': { view: 'services', label: 'Health services' },
     '/home/learn-prepare': { view: 'learn', label: 'Learn & prepare' },
+    '/home/learn-prepare/benefits': { view: 'benefits', label: 'Benefits & support' },
     '/home/settings': { view: 'settings', label: 'Settings' },
     '/health-post': { view: 'hp-dashboard', label: 'Health Post Dashboard' },
     '/health-post/mothers': { view: 'hp-mothers', label: 'All Registered Mothers' },
@@ -473,17 +477,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('aama-language-change', () => updateProfileDisplay(getProfile()));
 
   function openProfileDialog() {
-    const account = readAuthUser();
-    if (account?.role === 'health_worker') {
-      const name = escapeHtml(account.name || 'Health Worker');
-      const initials = escapeHtml(profileInitials(account.name || 'Health Worker'));
-      const phone = escapeHtml(account.phone || 'Not added');
-      const facility = escapeHtml(account.facilityName || 'Not added');
+    if (window.location.pathname.startsWith('/health-post')) {
       openInteraction(
-        'Health worker account',
-        'My profile',
-        `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>Health worker</span><span>${phone}</span></div></div><div class="profile-health-details"><div><small>Role</small><strong>Health worker</strong></div><div><small>Health post or facility</small><strong>${facility}</strong></div><div><small>Mobile number</small><strong>${phone}</strong></div></div>`,
-        '<button class="button button--primary" type="button" data-action="close-modal">Close</button>',
+        'Health Post Personnel',
+        'Assistant profile',
+        '<div class="profile-dialog-summary"><span class="avatar">SK</span><div><strong>Saraswati K.C.</strong><span>Health Assistant</span><span>Lagankhel Health Post · Lalitpur</span></div></div><div class="hp-assistant-profile"><div><small>Staff contact</small><strong>9800000401</strong></div><div><small>Account type</small><strong>Health Post Personnel · Preview</strong></div></div><p class="hp-profile-note">This is a fictional assistant profile for the dashboard preview.</p>',
+        '<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-action="open-logout">Sign out</button>',
       );
       return;
     }
@@ -733,11 +732,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileSubtitle = profileButton?.querySelector('.profile-copy small');
     const profileAvatar = profileButton?.querySelector('.avatar');
     if (isHealthPost) {
-      const account = readAuthUser();
-      const name = account?.name || 'Health Worker';
-      if (profileName) profileName.textContent = name;
-      if (profileSubtitle) profileSubtitle.textContent = account?.facilityName || 'Health worker';
-      if (profileAvatar) profileAvatar.textContent = profileInitials(name);
+      if (profileName) profileName.textContent = 'Saraswati K.C.';
+      if (profileSubtitle) profileSubtitle.textContent = 'Health Assistant';
+      if (profileAvatar) profileAvatar.textContent = 'SK';
     } else {
       updateProfileDisplay(getProfile());
       if (profileSubtitle) profileSubtitle.textContent = 'My profile';
@@ -745,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isHealthPost && sideNav) {
       const items = [
         ['hp-dashboard', '/health-post', '⌂', 'Dashboard'],
-        ['hp-mothers', '/health-post/mothers', '♧', 'All Registered Mothers'],
+        ['hp-mothers', '/health-post/mothers', '♡', 'All Registered Mothers'],
         ['hp-due-soon', '/health-post/due-soon', '◷', 'Due Soon Mothers'],
         ['hp-appointments', '/health-post/appointments', '▦', 'Appointments'],
         ['hp-followups', '/health-post/follow-ups', '↻', 'Follow-ups'],
@@ -755,26 +752,36 @@ document.addEventListener('DOMContentLoaded', () => {
       sideNav.innerHTML = items.map(([key, route, icon, text]) => `<a class="nav-item${view === key ? ' is-active' : ''}" data-view="${key}" data-route="${route}" href="${route}"${view === key ? ' aria-current="page"' : ''}><span class="nav-icon" aria-hidden="true">${icon}</span><span>${text}</span></a>`).join('');
       if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Health post';
       supportCard?.classList.add('is-hidden');
+      maternalSettingsItem?.classList.add('is-hidden');
+      notificationButton?.classList.add('is-hidden');
     } else if (sideNav) {
       sideNav.innerHTML = originalSideNav;
       if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Your care space';
       supportCard?.classList.remove('is-hidden');
+      maternalSettingsItem?.classList.remove('is-hidden');
+      notificationButton?.classList.remove('is-hidden');
     }
     document.querySelectorAll('.nav-item[data-route]').forEach((nav) => {
       nav.classList.remove('is-active');
       nav.removeAttribute('aria-current');
     });
-    const activeNav = document.querySelector(`.nav-item[data-view="${view}"]`);
+    const activeNav = document.querySelector(`.nav-item[data-view="${view === 'benefits' ? 'learn' : view}"]`);
     activeNav?.classList.add('is-active');
     activeNav?.setAttribute('aria-current', 'page');
     const learnNav = document.querySelector('.nav-item[data-view="learn"]');
     const learnSubnav = document.querySelector('#learn-subnav');
-    learnSubnav?.classList.toggle('is-hidden', view !== 'learn');
-    learnNav?.setAttribute('aria-expanded', String(view === 'learn'));
+    const learnExpanded = view === 'learn' || view === 'benefits';
+    learnSubnav?.classList.toggle('is-hidden', !learnExpanded);
+    learnNav?.setAttribute('aria-expanded', String(learnExpanded));
     document.querySelectorAll('.learn-subnav-item').forEach((item) => {
       item.classList.remove('is-active');
       item.removeAttribute('aria-current');
     });
+    if (view === 'benefits') {
+      const benefitsNav = learnSubnav?.querySelector('[data-route="/home/learn-prepare/benefits"]');
+      benefitsNav?.classList.add('is-active');
+      benefitsNav?.setAttribute('aria-current', 'page');
+    }
     sidebar?.classList.remove('is-open');
     if (view === 'overview') {
       dashboardContent?.classList.remove('is-hidden');
@@ -797,12 +804,16 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView.classList.remove('is-hidden');
       if (view === 'settings') restoreSettings();
       if (view === 'learn') window.AamaLearn?.init(secondaryView);
+      if (view === 'benefits') window.AamaBenefits?.render(secondaryView);
       if (view === 'family') {
         renderFamilyChecklist();
         updateSharedChecklistSummary();
       }
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
+    document.querySelector('.breadcrumb')?.classList.toggle('breadcrumb--benefits', view === 'benefits');
+    document.querySelector('.breadcrumb-learn')?.classList.toggle('is-hidden', view !== 'benefits');
+    document.querySelector('.breadcrumb-learn-separator')?.classList.toggle('is-hidden', view !== 'benefits');
     document.title = isHealthPost ? `MatriSathi · ${label}` : 'MatriSathi · My care dashboard';
     window.AamaI18n?.translatePage();
     if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
@@ -929,6 +940,26 @@ document.addEventListener('DOMContentLoaded', () => {
     interactionClose?.focus();
   }
 
+  function openEmergencyHelplines() {
+    const contacts = [
+      ['Patan Hospital', 'Hospital · Emergency department', '01-5522295'],
+      ['Lagankhel Health Post', 'Health post · Lalitpur', '01-5537711'],
+    ];
+    const rows = contacts.map(([name, type, phone]) => `
+      <article class="helpline-row">
+        <span class="helpline-row__icon" aria-hidden="true">+</span>
+        <div class="helpline-row__details"><strong>${name}</strong><span>${type}</span></div>
+        <a class="helpline-call" href="tel:${phone}" aria-label="Call ${name} at ${phone}"><span aria-hidden="true">☎</span>${phone}</a>
+      </article>
+    `).join('');
+    openInteraction(
+      translate('Emergency support'),
+      translate('Nearby emergency helplines'),
+      `<div class="helpline-list">${rows}</div>`,
+      `<button class="button button--primary" type="button" data-action="close-modal">${translate('Close')}</button>`
+    );
+  }
+
   function openPermissionEditor(member) {
     const memberName = member || 'Circle member';
     const permissions = getFamilyPermissions(memberName);
@@ -961,7 +992,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleAction(action, target) {
-    if (action === 'open-profile') {
+    if (action === 'toggle-patient-contact') {
+      const isRevealed = target.getAttribute('aria-pressed') === 'true';
+      const value = target.querySelector('[data-contact-value]');
+      const actionLabel = target.querySelector('[data-contact-action]');
+      target.setAttribute('aria-pressed', String(!isRevealed));
+      target.setAttribute('aria-label', `${isRevealed ? 'Show' : 'Hide'} contact number for ${target.dataset.contactName || 'mother'}`);
+      if (value) value.textContent = isRevealed ? target.dataset.masked : target.dataset.phone;
+      if (actionLabel) actionLabel.textContent = isRevealed ? 'Show' : 'Hide';
+    } else if (action === 'open-profile') {
       openProfileDialog();
     } else if (action === 'edit-profile') {
       openProfileEditor();
@@ -1052,6 +1091,10 @@ document.addEventListener('DOMContentLoaded', () => {
       openInteraction('Learn & prepare', target.dataset.title || 'Recommended learning', '<div class="video-player-placeholder"><span>▶</span><p>Preview player</p></div><p>This video placeholder is ready for the Ministry of Health media URL.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Close player</button>');
     } else if (action === 'close-modal') {
       closeInteraction();
+    } else if (action === 'benefits-retry') {
+      window.AamaBenefits?.render(secondaryView);
+    } else if (action === 'benefits-ask-ai') {
+      openAssistant();
     } else if (action === 'save-settings') {
       saveSettings();
     } else if (action === 'confirm-logout') {
@@ -1273,6 +1316,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
   profileButton?.addEventListener('click', openProfileDialog);
+  notificationButton?.addEventListener('click', openEmergencyHelplines);
   togglePin?.addEventListener('click', () => {
     if (!pinInput) return;
     const isPassword = pinInput.type === 'password';
@@ -1533,7 +1577,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('popstate', () => navigate(window.location.pathname, true));
   window.addEventListener('aama-language-change', updateSharedChecklistSummary);
   const navigation = window.performance?.getEntriesByType?.('navigation')?.[0];
-  const initialPath = navigation?.type === 'reload' ? '/login' : window.location.pathname;
+  const isPageRefresh = navigation?.type === 'reload' || window.performance?.navigation?.type === 1;
+  const initialPath = isPageRefresh ? '/login' : window.location.pathname;
   navigate(initialPath, true);
   restoreChecklist();
 });
