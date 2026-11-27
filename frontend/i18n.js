@@ -5,8 +5,8 @@
   // dynamically-rendered screens. Keeping this map in one place means new
   // views and modal content get the same language behavior automatically.
   const translations = {
-    'AamaCare · Pregnancy companion': 'आमाकेयर · गर्भावस्था सहयात्री',
-    'AamaCare · My care dashboard': 'आमाकेयर · मेरो हेरचाह ड्यासबोर्ड',
+    'MatriSathi · Pregnancy companion': 'मातृसाथी · गर्भावस्था सहयात्री',
+    'MatriSathi · My care dashboard': 'मातृसाथी · मेरो हेरचाह ड्यासबोर्ड',
     'Care, every week': 'हरेक हप्ता हेरचाह',
     'तपाईंको साथमा': 'तपाईंको साथमा',
     'Family connected': 'परिवार जोडिएको',
@@ -21,7 +21,7 @@
     'Continue securely': 'सुरक्षित रूपमा जारी राख्नुहोस्',
     'or': 'वा',
     'Preview the dashboard': 'ड्यासबोर्ड हेर्नुहोस्',
-    'New to AamaCare?': 'आमाकेयरमा नयाँ हुनुहुन्छ?',
+    'New to MatriSathi?': 'मातृसाथीमा नयाँ हुनुहुन्छ?',
     'Create an account': 'खाता बनाउनुहोस्',
     'Your health information stays private and secure.': 'तपाईंको स्वास्थ्य जानकारी निजी र सुरक्षित रहन्छ।',
     'Your care space': 'तपाईंको हेरचाह क्षेत्र',
@@ -32,8 +32,8 @@
     'Health services': 'स्वास्थ्य सेवाहरू',
     'Learn & prepare': 'सिक्नुहोस् र तयारी गर्नुहोस्',
     'Need a little help?': 'अलिकति सहयोग चाहिन्छ?',
-    'Ask Aama AI in Nepali or English.': 'नेपाली वा अंग्रेजीमा आमाकेयर AI लाई सोध्नुहोस्।',
-    'Ask Aama AI': 'आमाकेयर AI लाई सोध्नुहोस्',
+    'Ask MatriSathi AI in Nepali or English.': 'नेपाली वा अंग्रेजीमा मातृसाथी AI लाई सोध्नुहोस्।',
+    'Ask MatriSathi AI': 'मातृसाथी AI लाई सोध्नुहोस्',
     'Settings': 'सेटिङहरू',
     'Sign out': 'साइन आउट',
     'My care dashboard': 'मेरो हेरचाह ड्यासबोर्ड',
@@ -110,7 +110,7 @@
     'Need urgent help?': 'तत्काल सहयोग चाहिन्छ?',
     'Call your trusted contact or find emergency care.': 'आफ्नो भरपर्दो सम्पर्कमा फोन गर्नुहोस् वा आपतकालीन हेरचाह खोज्नुहोस्।',
     'Get help': 'सहयोग लिनुहोस्',
-    'AamaCare is here to support, not replace, your health worker.': 'आमाकेयर तपाईंको स्वास्थ्यकर्मीको सहयोगी हो, विकल्प होइन।',
+    'MatriSathi is here to support, not replace, your health worker.': 'मातृसाथी तपाईंको स्वास्थ्यकर्मीको सहयोगी हो, विकल्प होइन।',
     'Privacy': 'गोपनीयता',
     'Help center': 'सहयोग केन्द्र',
     'Your nine-month story': 'तपाईंको नौ महिनाको कथा',
@@ -196,12 +196,15 @@
     'Near Lalitpur': 'ललितपुर नजिक',
     'Recommended for you': 'तपाईंका लागि सिफारिस',
     '3 places': '३ ठाउँ',
+    'Mental Hospital Lagankhel': 'लगनखेल मानसिक अस्पताल',
+    'Patan Pharmacy': 'पाटन फार्मेसी',
     'Maternity care · Emergency · Open until 5 PM': 'प्रसूति हेरचाह · आपतकालीन · बेलुका ५ बजेसम्म खुला',
-    'Antenatal care · Health post · Open until 4 PM': 'गर्भ जाँच · स्वास्थ्य चौकी · बेलुका ४ बजेसम्म खुला',
+    'Government mental health care · Open until 4 PM': 'सरकारी मानसिक स्वास्थ्य सेवा · बेलुका ४ बजेसम्म खुला',
     'Pharmacy · Prescriptions · Open until 8 PM': 'औषधि पसल · प्रिस्क्रिप्सन · बेलुका ८ बजेसम्म खुला',
     'Your care map': 'तपाईंको हेरचाह नक्सा',
     'Nearby support': 'नजिकको सहयोग',
     'Tap a place to see directions, phone numbers, and available services.': 'बाटो, फोन नम्बर र उपलब्ध सेवाहरू हेर्न ठाउँमा ट्याप गर्नुहोस्।',
+    'Map data © OpenStreetMap contributors': 'नक्सा डेटा © OpenStreetMap योगदानकर्ता',
     'Trusted, simple guidance': 'भरपर्दो, सरल मार्गदर्शन',
     'Explore trimester-specific food, exercise, videos, birth preparation, and government support information.': 'त्रैमासिकअनुसार खाना, व्यायाम, भिडियो, प्रसूति तयारी र सरकारी सहयोगसम्बन्धी जानकारी हेर्नुहोस्।',
     'Saved for later ♡': 'पछि हेर्न सुरक्षित ♡',
@@ -245,7 +248,13 @@
     'Open profile menu': 'प्रोफाइल मेनु खोल्नुहोस्',
     'My profile': 'मेरो प्रोफाइल',
     'Dismiss weather alert': 'मौसम चेतावनी हटाउनुहोस्',
-    'Close Aama AI': 'आमाकेयर AI बन्द गर्नुहोस्',
+    'Close MatriSathi AI': 'मातृसाथी AI बन्द गर्नुहोस्',
+    'Read answers aloud': 'जवाफ ठूलो स्वरमा पढ्नुहोस्',
+    'Speak the latest AI reply automatically': 'AI को पछिल्लो जवाफ स्वतः सुनाउनुहोस्',
+    'Read-aloud is on.': 'ठूलो स्वरमा पढ्ने सुविधा अन छ।',
+    'Read-aloud is off.': 'ठूलो स्वरमा पढ्ने सुविधा अफ छ।',
+    'Reading latest answer aloud.': 'पछिल्लो जवाफ ठूलो स्वरमा पढिँदैछ।',
+    'Audio playback is not available in this browser.': 'यो ब्राउजरमा अडियो चलाउन सकिँदैन।',
     'Close dialog': 'संवाद बन्द गर्नुहोस्',
     'Pregnancy care': 'गर्भावस्था हेरचाह',
     'Frequently asked questions': 'बारम्बार सोधिने प्रश्नहरू',
@@ -292,7 +301,7 @@
     'What should I pay attention to after delivery?': 'सुत्केरी भएपछि के ध्यान दिने?',
     'Have a health check within 24 hours after delivery, then on day 3 and day 7. Breastfeed your newborn within 1 hour of birth and give only breast milk for the first 6 months.': 'सुत्केरी भएको २४ घन्टा भित्र, ३ दिन, र ७ दिनमा स्वास्थ्य जाँच गराउनुहोस्। नवजात शिशुलाई जन्मको १ घन्टा भित्र आमाको दूध खुवाउनुहोस् र ६ महिनासम्म आमाको दूध मात्र खुवाउनुहोस्।',
     'If you want, we can also turn this into a printable or shareable PDF or Word file, or expand a topic such as nutrition or danger signs.': 'चाहनुहुन्छ भने हामी यसलाई छापेर वा सेयर गर्न मिल्ने PDF वा Word फाइलमा बनाउन सक्छौँ, वा पोषण अथवा खतराका चिन्ह जस्तो कुनै विषयलाई थप विस्तारमा लेख्न सक्छौँ।',
-    'AamaCare dashboard': 'आमाकेयर ड्यासबोर्ड',
+    'MatriSathi dashboard': 'मातृसाथी ड्यासबोर्ड',
     'Weather alert': 'मौसम चेतावनी',
     'Pregnancy overview': 'गर्भावस्था अवलोकन',
     'More pregnancy journey options': 'गर्भावस्था यात्राका थप विकल्प',
@@ -315,7 +324,7 @@
     'Save changes': 'परिवर्तन सुरक्षित गर्नुहोस्',
     'Your settings have been saved': 'तपाईंका सेटिङहरू सुरक्षित गरियो',
     'Personal preferences': 'व्यक्तिगत प्राथमिकताहरू',
-    'Make AamaCare feel right for you': 'आमाकेयरलाई आफ्ना लागि उपयुक्त बनाउनुहोस्',
+    'Make MatriSathi feel right for you': 'मातृसाथीलाई आफ्ना लागि उपयुक्त बनाउनुहोस्',
     'Language': 'भाषा',
     'Choose the language used in guidance and reminders.': 'मार्गदर्शन र सम्झनामा प्रयोग हुने भाषा छान्नुहोस्।',
     'English': 'अंग्रेजी',
@@ -327,7 +336,7 @@
     'Receive local safety alerts for Lalitpur.': 'ललितपुरका स्थानीय सुरक्षा सूचना पाउनुहोस्।',
     'Privacy and support': 'गोपनीयता र सहयोग',
     'Your information stays in your control.': 'तपाईंको जानकारीमाथि नियन्त्रण तपाईंसँगै रहन्छ।',
-    'AamaCare supports your conversations with your health worker. You decide what to share with family, and you can change these choices whenever you want.': 'आमाकेयरले स्वास्थ्यकर्मीसँगको कुराकानीमा सहयोग गर्छ। परिवारसँग के बाँड्ने भन्ने निर्णय तपाईंले गर्नुहुन्छ र चाहेको बेला परिवर्तन गर्न सक्नुहुन्छ।',
+    'MatriSathi supports your conversations with your health worker. You decide what to share with family, and you can change these choices whenever you want.': 'मातृसाथीले स्वास्थ्यकर्मीसँगको कुराकानीमा सहयोग गर्छ। परिवारसँग के बाँड्ने भन्ने निर्णय तपाईंले गर्नुहुन्छ र चाहेको बेला परिवर्तन गर्न सक्नुहुन्छ।',
     'Review privacy controls': 'गोपनीयता नियन्त्रण हेर्नुहोस्',
     'Privacy controls opened': 'गोपनीयता नियन्त्रण खोलियो',
     'Open help center': 'सहयोग केन्द्र खोल्नुहोस्',
@@ -420,8 +429,8 @@
       select.value = language === 'ne' ? 'नेपाली' : 'English';
     });
     document.title = language === 'ne'
-      ? (document.querySelector('#dashboard-screen:not(.is-hidden)') ? translations['AamaCare · My care dashboard'] : translations['AamaCare · Pregnancy companion'])
-      : (document.querySelector('#dashboard-screen:not(.is-hidden)') ? 'AamaCare · My care dashboard' : 'AamaCare · Pregnancy companion');
+      ? (document.querySelector('#dashboard-screen:not(.is-hidden)') ? translations['MatriSathi · My care dashboard'] : translations['MatriSathi · Pregnancy companion'])
+      : (document.querySelector('#dashboard-screen:not(.is-hidden)') ? 'MatriSathi · My care dashboard' : 'MatriSathi · Pregnancy companion');
   }
 
   function setLanguage(nextLanguage) {

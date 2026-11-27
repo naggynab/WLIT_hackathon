@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const assistantInput = document.querySelector('#assistant-input');
   const assistantSend = document.querySelector('#assistant-send');
   const assistantVoice = document.querySelector('#assistant-voice');
+  const assistantReadAloud = document.querySelector('#assistant-read-aloud');
   const assistantStatus = document.querySelector('#assistant-status');
   const assistantMessages = document.querySelector('#assistant-messages');
   const interactionModal = document.querySelector('#interaction-modal');
@@ -31,6 +32,165 @@ document.addEventListener('DOMContentLoaded', () => {
   const customChecklistStorageKey = 'aamacare-custom-checklist';
   let toastTimer;
   let activeRecognition = null;
+  let latestAssistantReply = null;
+  let currentAssistantAudio = null;
+
+  function getWeekSnapshot() {
+    const source = window.AamaPregnancy?.getSnapshot?.() || {};
+    const week = Math.min(40, Math.max(1, Number(source.week) || 1));
+    const language = window.AamaI18n?.getLanguage?.() || source.language || 'en';
+    const trimesterIndex = week <= 13 ? 0 : week <= 27 ? 1 : 2;
+    const trimesterNames = language === 'ne'
+      ? ['पहिलो त्रैमासिक', 'दोस्रो त्रैमासिक', 'तेस्रो त्रैमासिक']
+      : ['1st trimester', '2nd trimester', '3rd trimester'];
+    const babySize = window.AamaPregnancy?.getBabySize?.(week, language) || '—';
+    const progress = Math.round(((week - 1) / 39) * 100);
+    const weeksUntilDue = Math.max(0, 40 - week);
+    return {
+      week,
+      language,
+      trimester: trimesterNames[trimesterIndex],
+      babySize,
+      progress,
+      weeksUntilDue,
+      dueDate: source.dueDate || ''
+    };
+  }
+
+  function weekLabel(week, language) {
+    if (language === 'ne') return `हप्ता ${String(week).replace(/\d/g, (digit) => '०१२३४५६७८९'[digit])}`;
+    return `Week ${week}`;
+  }
+
+  function syncWeekReferences(snapshot = getWeekSnapshot()) {
+    const { week, language, trimester, babySize, progress, weeksUntilDue } = snapshot;
+    const label = weekLabel(week, language);
+    const number = language === 'ne' ? String(week).replace(/\d/g, (digit) => '०१२३४५६७८९'[digit]) : String(week);
+    const progressText = `${progress}%`;
+    const trimesterText = language === 'ne'
+      ? `पोषण · ${trimester}`
+      : `Nutrition · ${trimester}`;
+    const movementText = language === 'ne'
+      ? `भिडियो · ०४ मिनेट · ${trimester}`
+      : `Video · 04 min · ${trimester}`;
+    const taskMovementText = language === 'ne'
+      ? `${trimester} मा चालचलन र आराम`
+      : `Movement and comfort in ${trimester}`;
+    const babyText = language === 'ne'
+      ? `${babySize} जत्रो`
+      : babySize.toLowerCase().startsWith('about ') ? babySize.toLowerCase() : `about ${babySize.toLowerCase()}`;
+
+    document.querySelectorAll('[data-current-week-heading]').forEach((element) => { element.textContent = label; });
+    document.querySelectorAll('[data-current-baby-size]').forEach((element) => { element.textContent = babyText; });
+    document.querySelectorAll('[data-journey-progress]').forEach((element) => { element.textContent = progressText; });
+    document.querySelectorAll('[data-weeks-until-due]').forEach((element) => {
+      element.textContent = language === 'ne' ? `${number} हप्ता बाँकी` : `${weeksUntilDue} weeks`;
+    });
+    document.querySelectorAll('[data-journey-week-of]').forEach((element) => {
+      element.textContent = language === 'ne' ? `४० मध्ये हप्ता ${number}` : `${label} of 40`;
+    });
+    document.querySelectorAll('[data-week-guide]').forEach((element) => {
+      element.textContent = language === 'ne' ? `हप्ता ${number} का लागि तयार` : `Made for week ${week}`;
+    });
+    document.querySelectorAll('[data-week-trimester]').forEach((element) => { element.textContent = movementText; });
+    document.querySelectorAll('[data-week-task-trimester]').forEach((element) => { element.textContent = taskMovementText; });
+    document.querySelectorAll('[data-learning-week]').forEach((element) => {
+      element.textContent = language === 'ne' ? `हप्ता ${number} का लागि सिफारिस` : `Recommended for week ${week}`;
+    });
+    document.querySelectorAll('[data-video-week]').forEach((element) => {
+      element.textContent = language === 'ne' ? `स्वास्थ्य मन्त्रालय · हप्ता ${number}` : `Ministry of Health · Week ${week}`;
+    });
+    document.querySelectorAll('[data-video-trimester]').forEach((element) => { element.textContent = trimesterText; });
+
+    const progressBar = secondaryView?.querySelector('.mini-progress span');
+    if (progressBar) progressBar.style.width = progressText;
+
+    const weekGrid = secondaryView?.querySelector('[data-week-grid]');
+    if (weekGrid) {
+      secondaryView.querySelectorAll('.trimester-tab').forEach((tab, index) => {
+        tab.classList.toggle('is-active', index === (week <= 13 ? 0 : week <= 27 ? 1 : 2));
+      });
+      const start = Math.max(1, Math.min(37, week - 1));
+      weekGrid.innerHTML = Array.from({ length: 4 }, (_, index) => start + index).map((itemWeek) => {
+        const state = itemWeek < week ? (language === 'ne' ? 'सम्पन्न' : 'Done')
+          : itemWeek === week ? (language === 'ne' ? 'हाल' : 'Current')
+            : (language === 'ne' ? 'आउँदैछ' : 'Coming up');
+        const title = itemWeek === week
+          ? (language === 'ne' ? 'तपाईंको अहिलेको हेरचाह' : 'Care for this week')
+          : itemWeek < week
+            ? (language === 'ne' ? 'तपाईंको प्रगति' : 'Finding your rhythm')
+            : (language === 'ne' ? 'अर्को चरणको तयारी' : 'A little more movement');
+        const description = itemWeek === week
+          ? (language === 'ne' ? 'पानी पिउनुहोस् र आफ्नो अर्को जाँचका लागि तयार हुनुहोस्।' : 'Keep hydrated and prepare for your next checkup.')
+          : (language === 'ne' ? 'यस हप्ताका परिवर्तन र हेरचाहका कुरा हेर्नुहोस्।' : 'Explore the changes and care reminders for this week.');
+        return `<article class="week-card${itemWeek === week ? ' is-current' : ''}" data-action="week-card" data-week="${itemWeek}"><div class="week-card__top"><span class="week-number">${itemWeek}</span><span class="week-state">${state}</span></div><strong>${title}</strong><small>${description}</small></article>`;
+      }).join('');
+    }
+  }
+
+  document.addEventListener('aama-week-change', (event) => syncWeekReferences(event.detail));
+  document.addEventListener('aama-language-change', () => syncWeekReferences());
+
+  function getAssistantSpeechText(text) {
+    return String(text || '')
+      .replace(/^#{1,3}\s+/gm, '')
+      .replace(/(\*\*|__)(.*?)\1/g, '$2')
+      .replace(/^\s*[-*•]\s+/gm, '')
+      .replace(/^\s*\d+[.)]\s+/gm, '')
+      .replace(/[ \t]+(?=[*-]\s+(?:\*\*|__))/g, ' ')
+      .replace(/\n{2,}/g, '. ')
+      .replace(/\n/g, ' ')
+      .trim();
+  }
+
+  function stopAssistantAudio() {
+    window.speechSynthesis?.cancel();
+    if (currentAssistantAudio) {
+      currentAssistantAudio.pause();
+      currentAssistantAudio.currentTime = 0;
+      currentAssistantAudio = null;
+    }
+  }
+
+  function speakWithBrowser(text) {
+    if (!('speechSynthesis' in window)) {
+      if (assistantStatus) assistantStatus.textContent = translate('Audio playback is not available in this browser.');
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(getAssistantSpeechText(text));
+    utterance.lang = window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en-US';
+    utterance.rate = 0.94;
+    utterance.onstart = () => {
+      if (assistantStatus) assistantStatus.textContent = translate('Reading latest answer aloud.');
+    };
+    utterance.onend = () => {
+      if (assistantReadAloud?.checked && assistantStatus) assistantStatus.textContent = translate('Read-aloud is on.');
+    };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  async function speakAssistantReply(reply) {
+    if (!assistantReadAloud?.checked || !reply?.text) return;
+    stopAssistantAudio();
+    if (!reply.audio) {
+      speakWithBrowser(reply.text);
+      return;
+    }
+    currentAssistantAudio = new Audio(`data:${reply.mimeType || 'audio/mpeg'};base64,${reply.audio}`);
+    currentAssistantAudio.onended = () => {
+      currentAssistantAudio = null;
+      if (assistantReadAloud?.checked && assistantStatus) assistantStatus.textContent = translate('Read-aloud is on.');
+    };
+    try {
+      if (assistantStatus) assistantStatus.textContent = translate('Reading latest answer aloud.');
+      await currentAssistantAudio.play();
+    } catch (error) {
+      currentAssistantAudio = null;
+      speakWithBrowser(reply.text);
+      console.warn('Audio response could not play; used browser speech instead.', error);
+    }
+  }
 
   const routeMap = {
     '/home': { view: 'overview', label: 'My care dashboard' },
@@ -48,6 +208,99 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.classList.add('is-visible');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2600);
+  }
+
+  function setupScrollReveal() {
+    if (!dashboardContent) return;
+
+    const targets = dashboardContent.querySelectorAll(
+      '.welcome-row, .alert-banner, .overview-grid > .panel, .quick-actions, .content-grid > .main-column > .panel, .content-grid > .side-column > .panel, .dashboard-footer',
+    );
+    targets.forEach((element, index) => {
+      element.classList.add('scroll-reveal');
+      element.style.setProperty('--reveal-delay', `${Math.min(index * 55, 220)}ms`);
+    });
+
+    if (!('IntersectionObserver' in window)) {
+      targets.forEach((element) => element.classList.add('is-revealed'));
+      return;
+    }
+
+    if (!window.aamaScrollRevealObserver) {
+      window.aamaScrollRevealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-revealed');
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    }
+
+    targets.forEach((element) => window.aamaScrollRevealObserver.observe(element));
+  }
+
+  function focusCareMap(card, openPopup = false) {
+    const place = window.aamaCareMap?.places?.get(card?.dataset.service);
+    if (!place) return;
+    secondaryView?.querySelectorAll('.service-card').forEach((item) => item.classList.remove('is-selected'));
+    card.classList.add('is-selected');
+    window.aamaCareMap.map.setView([place.lat, place.lng], 16, { animate: true });
+    if (openPopup) place.marker.openPopup();
+  }
+
+  function initCareMap() {
+    const mapElement = secondaryView?.querySelector('#care-map');
+    if (!mapElement) return;
+
+    window.aamaCareMap?.cleanup?.();
+
+    if (!window.L) {
+      mapElement.innerHTML = '<div class="map-unavailable"><strong>Map unavailable</strong><span>OpenStreetMap could not load right now. Try refreshing the page.</span></div>';
+      return;
+    }
+
+    const map = window.L.map(mapElement, { scrollWheelZoom: false, zoomControl: true }).setView([27.6683, 85.3204], 15);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    const places = new Map();
+    secondaryView.querySelectorAll('.service-card').forEach((card, index) => {
+      const name = card.dataset.service || `Care place ${index + 1}`;
+      const lat = Number(card.dataset.lat);
+      const lng = Number(card.dataset.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      const icon = window.L.divIcon({
+        className: 'care-map-marker-wrap',
+        html: `<span class="care-map-marker"><span class="care-map-marker-symbol">${index === 0 ? '✚' : index === 1 ? '♡' : '＋'}</span></span>`,
+        iconSize: [38, 44],
+        iconAnchor: [19, 40],
+        popupAnchor: [0, -38],
+      });
+      const marker = window.L.marker([lat, lng], { icon }).addTo(map);
+      marker.bindPopup(`<strong>${translate(name)}</strong><br><span>${translate('Tap a place to see directions, phone numbers, and available services.')}</span>`);
+      marker.on('click', () => focusCareMap(card));
+      places.set(name, { card, lat, lng, marker });
+    });
+
+    window.aamaCareMap = { map, places };
+    const selected = secondaryView.querySelector('.service-card.is-selected');
+    if (selected) focusCareMap(selected);
+    const refreshMapSize = () => map.invalidateSize({ pan: false, animate: false });
+    const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(refreshMapSize) : null;
+    resizeObserver?.observe(mapElement);
+    window.addEventListener('resize', refreshMapSize, { passive: true });
+    window.aamaCareMap.cleanup = () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', refreshMapSize);
+      map.remove();
+    };
+    window.requestAnimationFrame(() => {
+      refreshMapSize();
+      window.requestAnimationFrame(refreshMapSize);
+    });
+    window.setTimeout(refreshMapSize, 500);
   }
 
   function getChecklistTasks() {
@@ -157,15 +410,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function showDashboard() {
     loginScreen?.classList.add('is-hidden');
     dashboardScreen?.classList.remove('is-hidden');
-    document.title = translate('AamaCare · My care dashboard');
+    document.title = translate('MatriSathi · My care dashboard');
     window.AamaI18n?.translatePage();
+    syncWeekReferences();
+    setupScrollReveal();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function showLogin() {
     dashboardScreen?.classList.add('is-hidden');
     loginScreen?.classList.remove('is-hidden');
-    document.title = translate('AamaCare · Pregnancy companion');
+    document.title = translate('MatriSathi · Pregnancy companion');
     window.AamaI18n?.translatePage();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -191,6 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
     window.AamaI18n?.translatePage();
     if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
+    syncWeekReferences();
+    if (view === 'services') initCareMap();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -354,19 +611,21 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (action === 'add-checklist') {
       openInteraction('Small steps, big care', 'Add a checklist item', '<form class="interaction-form" id="checklist-form"><label for="checklist-title">What do you want to remember?</label><input id="checklist-title" name="title" placeholder="e.g. Take a short walk" required maxlength="80"><label for="checklist-details">Details <span class="form-label-hint">optional</span></label><input id="checklist-details" name="details" placeholder="e.g. Move gently for 10 minutes" maxlength="120"><label for="checklist-time">When?</label><input id="checklist-time" name="time" placeholder="e.g. Today or 4:00 PM" maxlength="30"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add to checklist</button></div></form>');
     } else if (action === 'use-location') {
-      openInteraction('Nearby care', 'Use your current location?', '<p>Location helps AamaCare sort health posts and hospitals by distance. You can also keep using the Lalitpur location already selected.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Keep Lalitpur</button><button class="button button--primary" type="button" data-action="location-confirm">Use location</button>');
+      openInteraction('Nearby care', 'Use your current location?', '<p>Location helps MatriSathi sort health posts and hospitals by distance. You can also keep using the Lalitpur location already selected.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Keep Lalitpur</button><button class="button button--primary" type="button" data-action="location-confirm">Use location</button>');
     } else if (action === 'location-confirm') {
       closeInteraction();
       showToast('Location access will be connected to the service directory.');
     } else if (action === 'service-filter') {
-      openInteraction('Health services', 'Filter nearby care', '<div class="interaction-form"><label><input type="checkbox" checked> Maternity care</label><label><input type="checkbox"> Emergency care</label><label><input type="checkbox"> Pharmacy</label><label><input type="checkbox"> Open now</label></div>', '<button class="button button--primary" type="button" data-action="close-modal">Apply filters</button>');
+      openInteraction('Health services', 'Filter nearby care', '<div class="interaction-form interaction-form--filters"><label class="filter-option"><input type="checkbox" checked><span>Maternity care</span></label><label class="filter-option"><input type="checkbox"><span>Emergency care</span></label><label class="filter-option"><input type="checkbox"><span>Pharmacy</span></label><label class="filter-option"><input type="checkbox"><span>Open now</span></label></div>', '<button class="button button--primary" type="button" data-action="close-modal">Apply filters</button>');
     } else if (action === 'select-service') {
       secondaryView?.querySelectorAll('.service-card').forEach((card) => card.classList.remove('is-selected'));
       target.classList.add('is-selected');
+      focusCareMap(target, true);
       const service = target.dataset.service || 'Health service';
       openInteraction('Nearby care', service, '<div class="detail-list"><div class="detail-row"><span>Distance</span><strong>2.4 km from you</strong></div><div class="detail-row"><span>Services</span><strong>Maternity care · Emergency</strong></div><div class="detail-row"><span>Phone</span><strong>01-5522295</strong></div></div>', '<button class="button button--outline" type="button" data-toast="Calling the health service">Call</button><button class="button button--primary" type="button" data-toast="Directions opened">Get directions</button>');
     } else if (action === 'topic-filter') {
-      openInteraction('Learn & prepare', target.dataset.topic || 'Learning topic', '<p>We will show week 24 content, Nepali audio, and trusted videos for this topic.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Show content</button>');
+      const currentWeek = getWeekSnapshot().week;
+      openInteraction('Learn & prepare', target.dataset.topic || 'Learning topic', `<p>We will show week ${currentWeek} content, Nepali audio, and trusted videos for this topic.</p>`, '<button class="button button--primary" type="button" data-action="close-modal">Show content</button>');
     } else if (action === 'play-learning') {
       openInteraction('Learn & prepare', target.dataset.title || 'Recommended learning', '<div class="video-player-placeholder"><span>▶</span><p>Preview player</p></div><p>This video placeholder is ready for the Ministry of Health media URL.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Close player</button>');
     } else if (action === 'close-modal') {
@@ -416,6 +675,98 @@ document.addEventListener('DOMContentLoaded', () => {
     return message;
   }
 
+  function appendAssistantInlineContent(parent, value) {
+    const text = String(value || '');
+    const boldPattern = /(\*\*|__)(.+?)\1/g;
+    let cursor = 0;
+    let match;
+
+    while ((match = boldPattern.exec(text))) {
+      if (match.index > cursor) parent.appendChild(document.createTextNode(text.slice(cursor, match.index)));
+      const strong = document.createElement('strong');
+      strong.textContent = match[2];
+      parent.appendChild(strong);
+      cursor = match.index + match[0].length;
+    }
+
+    if (cursor < text.length) parent.appendChild(document.createTextNode(text.slice(cursor)));
+  }
+
+  function renderAssistantReply(message, reply) {
+    if (!message) return;
+    message.replaceChildren();
+
+    const normalizedReply = String(reply || '')
+      .replace(/\r\n?/g, '\n')
+      // Some model responses place Markdown bullets on one line. Split only
+      // clear list markers before bold labels, leaving italic text untouched.
+      .replace(/[ \t]+(?=[*-]\s+(?:\*\*|__))/g, '\n')
+      .replace(/[ \t]+(?=\d+[.)]\s+)/g, '\n');
+    const lines = normalizedReply.split('\n');
+    let paragraphLines = [];
+    let activeList = null;
+
+    const flushParagraph = () => {
+      if (!paragraphLines.length) return;
+      const paragraph = document.createElement('p');
+      appendAssistantInlineContent(paragraph, paragraphLines.join(' '));
+      message.appendChild(paragraph);
+      paragraphLines = [];
+    };
+
+    const flushList = () => {
+      if (!activeList) return;
+      const list = document.createElement(activeList.type);
+      activeList.items.forEach((item) => {
+        const listItem = document.createElement('li');
+        appendAssistantInlineContent(listItem, item);
+        list.appendChild(listItem);
+      });
+      message.appendChild(list);
+      activeList = null;
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushParagraph();
+        flushList();
+        return;
+      }
+
+      const headingMatch = trimmed.match(/^#{1,3}\s+(.+)$/);
+      const orderedMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
+      const unorderedMatch = trimmed.match(/^[-*•]\s+(.+)$/);
+
+      if (headingMatch) {
+        flushParagraph();
+        flushList();
+        const heading = document.createElement('h4');
+        appendAssistantInlineContent(heading, headingMatch[1]);
+        message.appendChild(heading);
+        return;
+      }
+
+      if (orderedMatch || unorderedMatch) {
+        flushParagraph();
+        const type = orderedMatch ? 'ol' : 'ul';
+        const item = (orderedMatch || unorderedMatch)[1];
+        if (!activeList || activeList.type !== type) {
+          flushList();
+          activeList = { type, items: [] };
+        }
+        activeList.items.push(item);
+        return;
+      }
+
+      if (activeList) flushList();
+      paragraphLines.push(trimmed);
+    });
+
+    flushParagraph();
+    flushList();
+  }
+
   async function askAssistant(message) {
     const cleanMessage = message.trim();
     if (!cleanMessage || !assistantSend) return;
@@ -430,13 +781,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`${apiBaseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: cleanMessage }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Request failed');
-      if (thinkingMessage) thinkingMessage.textContent = data.reply;
-      if (data.audio) {
-        const audio = new Audio(`data:${data.mimeType};base64,${data.audio}`);
-        await audio.play();
-      }
+      renderAssistantReply(thinkingMessage, data.reply);
+      latestAssistantReply = { text: data.reply, audio: data.audio, mimeType: data.mimeType };
+      await speakAssistantReply(latestAssistantReply);
     } catch (error) {
-      if (thinkingMessage) thinkingMessage.textContent = translate('I could not connect right now. Please try again.');
+      renderAssistantReply(thinkingMessage, translate('I could not connect right now. Please try again.'));
       console.error(error);
     } finally {
       assistantSend.disabled = false;
@@ -456,7 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
   logoutButton?.addEventListener('click', () => {
     openInteraction(
       'Sign out',
-      'Leave AamaCare for now?',
+      'Leave MatriSathi for now?',
       '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>',
       '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>'
     );
@@ -472,6 +821,16 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     showToast('PIN recovery will be connected to SMS in the next build.');
   });
+  assistantReadAloud?.addEventListener('change', () => {
+    const enabled = assistantReadAloud.checked;
+    try { window.localStorage.setItem('aamacare-read-aloud', enabled ? 'on' : 'off'); } catch { /* preference is session-only */ }
+    if (assistantStatus) assistantStatus.textContent = translate(enabled ? 'Read-aloud is on.' : 'Read-aloud is off.');
+    if (enabled) speakAssistantReply(latestAssistantReply);
+    else stopAssistantAudio();
+  });
+  try {
+    if (window.localStorage.getItem('aamacare-read-aloud') === 'on' && assistantReadAloud) assistantReadAloud.checked = true;
+  } catch { /* preference is session-only */ }
   document.querySelectorAll('.ai-launcher').forEach((button) => button.addEventListener('click', openAssistant));
   document.addEventListener('click', (event) => {
     const routeButton = event.target.closest('[data-route]');

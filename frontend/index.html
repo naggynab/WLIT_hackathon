@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#e149a0">
     <meta name="description" content="A warm, Nepali-first pregnancy companion for mothers and families.">
-    <title>AamaCare · Pregnancy companion</title>
+    <title>MatriSathi · Pregnancy companion</title>
     <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3J8mX4Q1d+8wQ1U8s1kN1d5c4M4yQ=" crossorigin="">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -18,9 +19,9 @@
 
         <div class="auth-panel">
           <button class="icon-button language-button language-button--auth" type="button" aria-label="Change language">ने <span>EN</span></button>
-          <a class="brand brand--auth" href="/login" aria-label="AamaCare home">
-            <span class="brand-mark">a</span>
-            <span>Aama<span>Care</span></span>
+          <a class="brand brand--auth" href="/login" aria-label="MatriSathi home">
+            <span class="brand-mark">m</span>
+            <span>Matri<span>Sathi</span></span>
           </a>
 
           <div class="auth-copy">
@@ -56,16 +57,16 @@
             <button class="button button--soft button--full" type="button" id="demo-login">Preview the dashboard</button>
           </form>
 
-          <p class="auth-footer">New to AamaCare? <a class="text-link" href="#">Create an account</a></p>
+          <p class="auth-footer">New to MatriSathi? <a class="text-link" href="#">Create an account</a></p>
           <p class="privacy-note"><span aria-hidden="true">⌁</span> Your health information stays private and secure.</p>
         </div>
       </section>
 
-      <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="AamaCare dashboard">
+      <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="MatriSathi dashboard">
         <aside class="sidebar" id="sidebar">
-          <a class="brand brand--sidebar" href="/home" aria-label="AamaCare dashboard">
-            <span class="brand-mark">a</span>
-            <span>Aama<span>Care</span></span>
+          <a class="brand brand--sidebar" href="/home" aria-label="MatriSathi dashboard">
+            <span class="brand-mark">m</span>
+            <span>Matri<span>Sathi</span></span>
           </a>
           <div class="sidebar-section-label">Your care space</div>
           <nav class="side-nav" aria-label="Main navigation">
@@ -80,8 +81,8 @@
             <div class="support-card">
               <div class="support-icon">?</div>
               <strong>Need a little help?</strong>
-              <p>Ask Aama AI in Nepali or English.</p>
-              <button class="support-link ai-launcher" type="button">Ask Aama AI <span>↗</span></button>
+              <p>Ask MatriSathi AI in Nepali or English.</p>
+              <button class="support-link ai-launcher" type="button">Ask MatriSathi AI <span>↗</span></button>
             </div>
             <button class="nav-item nav-item--quiet" type="button" data-view="settings" data-route="/home/settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
             <button class="nav-item nav-item--quiet" type="button" id="logout-button"><span class="nav-icon">↪</span><span>Sign out</span></button>
@@ -136,7 +137,7 @@
             <section class="quick-actions" aria-label="Quick actions">
               <div class="section-title-row"><div><p class="card-kicker">Here when you need it</p><h2>Quick actions</h2></div></div>
               <div class="action-grid">
-                <button class="quick-action quick-action--pink ai-launcher" type="button"><span class="quick-icon">✦</span><span><strong>Ask Aama AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--pink ai-launcher" type="button"><span class="quick-icon">✦</span><span><strong>Ask MatriSathi AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
                 <button class="quick-action quick-action--lavender" type="button" data-route="/home/health-records"><span class="quick-icon">＋</span><span><strong>Add health record</strong><small>Keep your care history close</small></span><span class="action-arrow">↗</span></button>
                 <button class="quick-action quick-action--peach" type="button" data-route="/home/health-services"><span class="quick-icon">⌖</span><span><strong>Find nearby care</strong><small>Health posts &amp; hospitals</small></span><span class="action-arrow">↗</span></button>
                 <button class="quick-action quick-action--mint" type="button" data-route="/home/family-hub"><span class="quick-icon">♧</span><span><strong>Open family hub</strong><small>Keep your circle connected</small></span><span class="action-arrow">↗</span></button>
@@ -150,17 +151,17 @@
                   <div class="checklist">
                     <label class="task-row is-complete"><input type="checkbox" checked data-task-id="water"><span class="task-check"></span><span class="task-copy"><strong>Drink 8 glasses of water</strong><small>Stay hydrated throughout the day</small></span><span class="task-time">8:00 AM</span></label>
                     <label class="task-row is-complete"><input type="checkbox" checked data-task-id="supplement"><span class="task-check"></span><span class="task-copy"><strong>Take your prescribed supplement</strong><small>As advised by your health worker</small></span><span class="task-time">9:00 AM</span></label>
-                    <label class="task-row"><input type="checkbox" data-task-id="video"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
+                    <label class="task-row"><input type="checkbox" data-task-id="video"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small data-week-task-trimester>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
                     <label class="task-row"><input type="checkbox" data-task-id="weather"><span class="task-check"></span><span class="task-copy"><strong>Share the weather watch with family</strong><small>Keep your support circle informed</small></span><span class="task-time">Today</span></label>
                   </div>
                   <button class="text-action" type="button" data-action="show-reminders">See all reminders <span>→</span></button>
                 </article>
 
                 <article class="panel guide-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Made for week 24</p><h2>Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened">See all <span>→</span></button></div>
+                  <div class="panel-heading"><div><p class="card-kicker" data-week-guide>Made for week 24</p><h2>Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened">See all <span>→</span></button></div>
                   <div class="guide-grid">
                     <button class="guide-card guide-card--food" type="button" data-toast="Local food guide opened"><span class="guide-visual">◒</span><span class="guide-tag">Nutrition</span><strong>Simple local foods for you and baby</strong><span class="guide-link">Read guide →</span></button>
-                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened"><span class="guide-visual">◌</span><span class="guide-tag">Video · 04 min</span><strong>Gentle movement for a growing belly</strong><span class="guide-link">Watch now →</span></button>
+                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened"><span class="guide-visual">◌</span><span class="guide-tag" data-week-trimester>Movement and comfort in trimester two</span><strong>Gentle movement for a growing belly</strong><span class="guide-link">Watch now →</span></button>
                   </div>
                 </article>
               </div>
@@ -168,6 +169,7 @@
               <aside class="side-column">
                 <article class="panel family-panel">
                   <div class="panel-heading"><div><p class="card-kicker">Your support circle</p><h2>Family hub</h2></div><button class="more-button" type="button" aria-label="More family hub options">•••</button></div>
+                  <div class="family-panel__photo"><img src="/assets/mom4.jpg" alt="A mother and child sharing a joyful moment"></div>
                   <div class="family-members"><div class="member-avatar member-avatar--one">RK</div><div class="member-avatar member-avatar--two">AM</div><div class="member-avatar member-avatar--three">SK</div><button class="add-member" type="button" data-toast="Invite a family member">＋</button></div>
                   <p class="family-copy"><strong>Ram and Asha</strong> are following your care plan.</p>
                   <button class="button button--soft button--full" type="button" data-toast="Family hub opened">Open family hub <span>→</span></button>
@@ -180,7 +182,7 @@
                 </article>
               </aside>
             </section>
-            <footer class="dashboard-footer"><span>AamaCare is here to support, not replace, your health worker.</span><span><a href="#">Privacy</a><a href="#">Help center</a></span></footer>
+            <footer class="dashboard-footer"><span>MatriSathi is here to support, not replace, your health worker.</span><span><a href="#">Privacy</a><a href="#">Help center</a></span></footer>
           </div>
           <section class="secondary-view is-hidden" id="secondary-view" aria-live="polite"></section>
         </main>
@@ -190,23 +192,33 @@
           <div class="assistant-panel__header">
             <div>
               <p class="card-kicker">Your trusted companion</p>
-              <h2 id="assistant-title">Ask Aama AI</h2>
+              <h2 id="assistant-title">Ask MatriSathi AI</h2>
             </div>
-            <button class="assistant-close" id="assistant-close" type="button" aria-label="Close Aama AI">×</button>
+            <button class="assistant-close" id="assistant-close" type="button" aria-label="Close MatriSathi AI">×</button>
           </div>
           <p class="assistant-intro">Ask a pregnancy-care question in English or Nepali. You can type or use your voice.</p>
           <div class="assistant-messages" id="assistant-messages" aria-live="polite">
-            <div class="assistant-message assistant-message--bot">Namaste, I’m Aama AI. How can I support you today?</div>
+            <div class="assistant-message assistant-message--bot">Namaste, I’m MatriSathi AI. How can I support you today?</div>
           </div>
+          <label class="assistant-read-aloud">
+            <span class="assistant-read-aloud__copy">
+              <strong>Read answers aloud</strong>
+              <small>Speak the latest AI reply automatically</small>
+            </span>
+            <span class="assistant-switch">
+              <input type="checkbox" id="assistant-read-aloud" aria-label="Read answers aloud">
+              <span class="assistant-switch__track" aria-hidden="true"></span>
+            </span>
+          </label>
           <div class="assistant-compose">
-            <textarea id="assistant-input" rows="2" placeholder="Type your question..." aria-label="Message for Aama AI"></textarea>
+            <textarea id="assistant-input" rows="2" placeholder="Type your question..." aria-label="Message for MatriSathi AI"></textarea>
             <div class="assistant-compose__actions">
               <button class="button button--lavender" id="assistant-voice" type="button">🎙 Speak</button>
               <button class="button button--primary" id="assistant-send" type="button">Send <span aria-hidden="true">→</span></button>
             </div>
             <p class="assistant-status" id="assistant-status" role="status" aria-live="polite">Press Speak, then ask your question.</p>
           </div>
-          <p class="assistant-disclaimer">Aama AI supports—not replaces—your health worker. For urgent symptoms, contact local emergency care.</p>
+          <p class="assistant-disclaimer">MatriSathi AI supports—not replaces—your health worker. For urgent symptoms, contact local emergency care.</p>
         </section>
       </div>
       <div class="interaction-modal is-hidden" id="interaction-modal" aria-hidden="true">
@@ -220,6 +232,7 @@
     <script src="config.js"></script>
     <script src="i18n.js"></script>
     <script src="views.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="app.js"></script>
     <script src="pregnancy-card.js"></script>
   </body>

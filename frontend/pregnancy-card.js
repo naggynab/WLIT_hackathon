@@ -104,13 +104,14 @@
       ? `${num(week)} हप्ता`
       : `${week} ${week === 1 ? 'week' : 'weeks'}`;
     $('[data-trimester]').textContent = `· ${trimester}`;
-    $('[data-baby-size]').textContent = babySizes[week]?.[ne ? 'ne' : 'en'] || '';
+    const babySize = babySizes[week]?.[ne ? 'ne' : 'en'] || babySizes[week]?.en || '—';
+    $('[data-baby-size]').textContent = babySize;
 
     const journeyState = {
       week,
       dueDate,
       daysRemaining: toDay(dueDate) - today(),
-      babySize: babySizes[week]?.[ne ? 'ne' : 'en'] || '',
+      babySize,
     };
     window.AamaPregnancyJourneyState = journeyState;
     document.dispatchEvent(new CustomEvent('aama-pregnancy-week-change', { detail: journeyState }));
@@ -121,6 +122,19 @@
     $('[data-week-end]').textContent = weekText(40);
     $('[data-week-start]').style.visibility = week <= 6 ? 'hidden' : 'visible';
     $('[data-week-end]').style.visibility = week >= 35 ? 'hidden' : 'visible';
+
+    document.dispatchEvent(new CustomEvent('aama-week-change', {
+      detail: {
+        week,
+        dueDate,
+        trimesterIndex: t,
+        trimester,
+        babySize: babySizes[week]?.[ne ? 'ne' : 'en'] || babySizes[week]?.en || '—',
+        progress: Math.round(((week - 1) / 39) * 100),
+        weeksUntilDue: Math.max(0, 40 - week),
+        language: ne ? 'ne' : 'en'
+      }
+    }));
   }
 
   const reset = () => render(getActualWeek());
@@ -158,6 +172,16 @@
     })
   );
   slider.addEventListener('blur', reset);
+
+  window.AamaPregnancy = {
+    getSnapshot: () => ({
+      week: getActualWeek(),
+      dueDate,
+      trimesterIndex: getActualWeek() <= 13 ? 0 : getActualWeek() <= 27 ? 1 : 2,
+      language: /[\u0900-\u097F]/.test(kicker.textContent) ? 'ne' : 'en'
+    }),
+    getBabySize: (week, language = 'en') => babySizes[week]?.[language] || babySizes[week]?.en || '—'
+  };
 
   // update when the language changes
   new MutationObserver(() => render(Number(slider.value)))

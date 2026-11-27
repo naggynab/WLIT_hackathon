@@ -41,7 +41,7 @@ app.get(['/events', '/events/'], (_req, res) => {
 });
 
 const assistantInstructions = `
-You are Aama AI, a warm pregnancy companion for users in Nepal.
+You are MatriSathi AI, a warm pregnancy companion for users in Nepal.
 Reply in the same language as the user, using simple English or Nepali.
 Give general pregnancy education and practical next steps, not a diagnosis.
 Never tell a user to stop prescribed medicine or delay urgent care.
@@ -69,7 +69,7 @@ function fallbackReply(message) {
   if (lower.includes('food') || lower.includes('eat') || lower.includes('nutrition')) {
     return 'Choose varied meals with local vegetables, fruit, grains, protein, and enough fluids. Follow your prescribed supplements and ask your health worker about foods or supplements specific to you.';
   }
-  return 'I’m ready to help with general pregnancy information. The live AI service is temporarily unavailable, so please try again later or contact your health worker for personal medical advice.';
+  return 'I’m MatriSathi AI, ready to help with general pregnancy information. The live AI service is temporarily unavailable, so please try again later or contact your health worker for personal medical advice.';
 }
 
 async function createReply(message) {
@@ -145,8 +145,8 @@ app.post('/api/chat', async (req, res) => {
     res.json({ reply, audio, mimeType: 'audio/mpeg' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Aama AI could not respond right now. Please try again.' });
+  res.status(500).json({ error: 'MatriSathi AI could not respond right now. Please try again.' });
   }
 });
 
-app.listen(port, () => console.log(`AamaCare is running at http://localhost:${port}`));
+app.listen(port, () => console.log(`MatriSathi is running at http://localhost:${port}`));
