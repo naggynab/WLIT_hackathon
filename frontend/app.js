@@ -62,6 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function updateSharedChecklistSummary() {
+    const tasks = Array.from(document.querySelectorAll('.shared-panel .shared-item'));
+    const completed = tasks.filter((task) => task.querySelector('.shared-check')?.classList.contains('is-done')).length;
+    const pill = document.querySelector('.shared-panel .completion-pill');
+    if (pill) pill.textContent = translate(`${completed} of ${tasks.length} done`);
+  }
+
   function restoreChecklist() {
     getCustomChecklistItems().forEach((item) => createChecklistRow(item));
     try {
@@ -196,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView.classList.remove('is-hidden');
       if (view === 'settings') restoreSettings();
       if (view === 'learn') window.AamaLearn?.init(secondaryView);
+      if (view === 'family') updateSharedChecklistSummary();
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
     window.AamaI18n?.translatePage();
@@ -353,8 +361,12 @@ document.addEventListener('DOMContentLoaded', () => {
       openInteraction('Family hub', 'Family permissions', '<p>Review who can see tasks, appointments, and selected care updates.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Review access</button>');
     } else if (action === 'toggle-shared') {
       const check = target.querySelector('.shared-check');
-      check?.classList.toggle('is-done');
-      if (check) check.textContent = check.classList.contains('is-done') ? '✓' : '';
+      if (check) {
+        const isDone = check.classList.toggle('is-done');
+        check.textContent = isDone ? '✓' : '';
+        target.setAttribute('aria-pressed', String(isDone));
+      }
+      updateSharedChecklistSummary();
       showToast(check?.classList.contains('is-done') ? 'Family task marked complete.' : 'Family task added back.');
     } else if (action === 'shared-checklist') {
       openInteraction('Shared support', 'Everyone knows the next step', '<p>Your family checklist keeps transport, emergency preparation, and shared support visible to the people you trust.</p><div class="modal-callout">You can pause family notifications or change sharing permissions at any time.</div>', '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
@@ -659,6 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   menuButton?.addEventListener('click', () => sidebar?.classList.toggle('is-open'));
   window.addEventListener('popstate', () => navigate(window.location.pathname, true));
+  window.addEventListener('aama-language-change', updateSharedChecklistSummary);
   navigate(window.location.pathname, true);
   restoreChecklist();
 });
