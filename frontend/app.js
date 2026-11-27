@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('#login-form');
   const demoLogin = document.querySelector('#demo-login');
   const logoutButton = document.querySelector('#logout-button');
+  const profileButton = document.querySelector('.profile-button');
   const togglePin = document.querySelector('#toggle-pin');
   const pinInput = document.querySelector('#pin');
   const toast = document.querySelector('#toast');
@@ -29,8 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const translate = (value) => window.AamaI18n?.t(value) || value;
   const checklistStorageKey = 'aamacare-checklist';
   const customChecklistStorageKey = 'aamacare-custom-checklist';
+  const profileStorageKey = 'aamacare-profile';
   let toastTimer;
   let activeRecognition = null;
+  let interactionReturnFocus = null;
 
   const routeMap = {
     '/home': { view: 'overview', label: 'My care dashboard' },
@@ -48,6 +51,62 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.classList.add('is-visible');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2600);
+  }
+
+  function getProfile() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(profileStorageKey) || '{}');
+      return {
+        name: typeof saved.name === 'string' ? saved.name : 'Sita K.',
+        phone: typeof saved.phone === 'string' ? saved.phone : '',
+        location: typeof saved.location === 'string' ? saved.location : 'Lalitpur',
+      };
+    } catch (error) {
+      return { name: 'Sita K.', phone: '', location: 'Lalitpur' };
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[character]);
+  }
+
+  function profileInitials(name) {
+    return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'SK';
+  }
+
+  function updateProfileDisplay(profile) {
+    const name = profile.name.trim() || 'Sita K.';
+    const avatar = profileInitials(name);
+    const nameNode = profileButton?.querySelector('.profile-copy strong');
+    const avatarNode = profileButton?.querySelector('.avatar');
+    if (nameNode) nameNode.textContent = name;
+    if (avatarNode) avatarNode.textContent = avatar;
+  }
+  updateProfileDisplay(getProfile());
+
+  function openProfileDialog() {
+    const profile = getProfile();
+    const name = escapeHtml(profile.name);
+    const initials = escapeHtml(profileInitials(profile.name));
+    const location = escapeHtml(profile.location);
+    const phone = escapeHtml(profile.phone || 'Add a mobile number');
+    openInteraction(
+      'Your account',
+      'Your profile',
+      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon" aria-hidden="true">✎</span><span><strong>Edit profile</strong><small>Update your personal details</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon" aria-hidden="true">⚙</span><span><strong>Settings</strong><small>Language and care preferences</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon" aria-hidden="true">?</span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon" aria-hidden="true">↪</span><span><strong>Sign out</strong><small>End this session safely</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button></div>`,
+    );
+  }
+
+  function openProfileEditor() {
+    const profile = getProfile();
+    openInteraction(
+      'Your account',
+      'Edit profile',
+      `<form class="interaction-form" id="profile-form"><label for="profile-name">Full name</label><input id="profile-name" name="name" value="${escapeHtml(profile.name)}" autocomplete="name" required maxlength="80"><label for="profile-phone">Mobile number <span class="form-label-hint">optional</span></label><input id="profile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(profile.phone)}" placeholder="Add a mobile number" maxlength="30"><label for="profile-location">Care location</label><input id="profile-location" name="location" value="${escapeHtml(profile.location)}" autocomplete="address-level2" maxlength="80"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="open-profile">Cancel</button><button class="button button--primary" type="submit">Save profile</button></div></form>`,
+    );
+    document.querySelector('#profile-name')?.focus();
   }
 
   function getChecklistTasks() {
@@ -311,20 +370,37 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeInteraction() {
     interactionModal?.classList.add('is-hidden');
     interactionModal?.setAttribute('aria-hidden', 'true');
+    profileButton?.setAttribute('aria-expanded', 'false');
     if (interactionContent) interactionContent.innerHTML = '';
+    if (interactionReturnFocus?.isConnected) interactionReturnFocus.focus();
+    interactionReturnFocus = null;
   }
 
   function openInteraction(eyebrow, title, body, actions = '') {
     if (!interactionModal || !interactionContent) return;
+    interactionReturnFocus = document.activeElement;
     interactionContent.innerHTML = `<p class="card-kicker">${eyebrow}</p><h2 id="interaction-title">${title}</h2>${body}${actions ? `<div class="interaction-actions">${actions}</div>` : ''}`;
     window.AamaI18n?.translatePage();
     interactionModal.classList.remove('is-hidden');
     interactionModal.setAttribute('aria-hidden', 'false');
+    profileButton?.setAttribute('aria-expanded', String(document.activeElement === profileButton));
     interactionClose?.focus();
   }
 
   function handleAction(action, target) {
-    if (action === 'today-plan') {
+    if (action === 'open-profile') {
+      openProfileDialog();
+    } else if (action === 'edit-profile') {
+      openProfileEditor();
+    } else if (action === 'account-settings') {
+      closeInteraction();
+      navigate('/home/settings');
+    } else if (action === 'account-help') {
+      closeInteraction();
+      openAssistant();
+    } else if (action === 'open-logout') {
+      openInteraction('Sign out', 'Leave AamaCare for now?', '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>');
+    } else if (action === 'today-plan') {
       openInteraction("Today's plan", 'Your care plan for today', '<div class="detail-list"><div class="detail-row"><span>Morning</span><strong>Hydrate and take your prescribed supplement</strong></div><div class="detail-row"><span>Afternoon</span><strong>Watch your weekly movement video</strong></div><div class="detail-row"><span>Evening</span><strong>Keep emergency contacts close during heavy rain</strong></div></div>', '<button class="button button--primary" type="button" data-action="close-modal">Got it</button>');
     } else if (action === 'appointment-detail') {
       openInteraction('Next up', 'Routine antenatal visit', '<div class="detail-list"><div class="detail-row"><span>Date</span><strong>Thursday, 3 December 2026</strong></div><div class="detail-row"><span>Time</span><strong>10:30 AM</strong></div><div class="detail-row"><span>Location</span><strong>Patan Hospital · Outpatient wing</strong></div></div><div class="modal-callout">Bring your previous records and write down any questions you want to ask your health worker.</div>', '<button class="button button--soft" type="button" data-action="appointment-reminder">Remind me</button><button class="button button--primary" type="button" data-action="close-modal">Close</button>');
@@ -474,14 +550,8 @@ document.addEventListener('DOMContentLoaded', () => {
     navigate('/home');
     showToast('Preview mode started. No account was created.');
   });
-  logoutButton?.addEventListener('click', () => {
-    openInteraction(
-      'Sign out',
-      'Leave AamaCare for now?',
-      '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>',
-      '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>'
-    );
-  });
+  logoutButton?.addEventListener('click', () => handleAction('open-logout', logoutButton));
+  profileButton?.addEventListener('click', openProfileDialog);
   togglePin?.addEventListener('click', () => {
     if (!pinInput) return;
     const isPassword = pinInput.type === 'password';
@@ -548,11 +618,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.target.closest('.ai-launcher')) openAssistant();
   });
   interactionClose?.addEventListener('click', closeInteraction);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && interactionModal && !interactionModal.classList.contains('is-hidden')) closeInteraction();
+  });
   interactionModal?.addEventListener('click', (event) => {
     if (event.target === interactionModal) closeInteraction();
   });
   document.addEventListener('submit', (event) => {
-    if (event.target.id === 'checklist-form') {
+    if (event.target.id === 'profile-form') {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const profile = {
+        name: String(formData.get('name') || '').trim(),
+        phone: String(formData.get('phone') || '').trim(),
+        location: String(formData.get('location') || '').trim(),
+      };
+      if (!profile.name) return;
+      try {
+        window.localStorage.setItem(profileStorageKey, JSON.stringify(profile));
+      } catch (error) {
+        console.warn('Profile could not be saved locally.', error);
+        showToast('Profile could not be saved on this device.');
+        return;
+      }
+      updateProfileDisplay(profile);
+      closeInteraction();
+      showToast('Your profile has been updated.');
+    } else if (event.target.id === 'checklist-form') {
       event.preventDefault();
       const formData = new FormData(event.target);
       const title = String(formData.get('title') || '').trim();
