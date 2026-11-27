@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '32kb' }));
 app.use(express.static(frontendRoot));
-app.get(/^\/(?:login|home(?:\/.*)?)$/, (_req, res) => {
+app.get(/^\/(?:login|home(?:\/.*)?|health-post(?:\/.*)?)$/, (_req, res) => {
   res.sendFile(path.join(frontendRoot, 'index.html'));
 });
 

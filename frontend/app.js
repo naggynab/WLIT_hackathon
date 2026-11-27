@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const pinInput = document.querySelector('#pin');
   const toast = document.querySelector('#toast');
   const sidebar = document.querySelector('#sidebar');
+  const sideNav = document.querySelector('.side-nav');
+  const originalSideNav = sideNav?.innerHTML || '';
+  const sidebarSectionLabel = document.querySelector('.sidebar-section-label');
+  const supportCard = document.querySelector('.support-card');
+  const healthPostPreview = document.querySelector('#health-post-preview');
   const menuButton = document.querySelector('#menu-button');
   const forgotLink = document.querySelector('#forgot-link');
   const alertClose = document.querySelector('.alert-close');
@@ -43,6 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
     '/home/health-services': { view: 'services', label: 'Health services' },
     '/home/learn-prepare': { view: 'learn', label: 'Learn & prepare' },
     '/home/settings': { view: 'settings', label: 'Settings' },
+    '/health-post': { view: 'hp-dashboard', label: 'Health Post Dashboard' },
+    '/health-post/mothers': { view: 'hp-mothers', label: 'All Registered Mothers' },
+    '/health-post/due-soon': { view: 'hp-due-soon', label: 'Due Soon Mothers' },
+    '/health-post/appointments': { view: 'hp-appointments', label: 'Appointments' },
+    '/health-post/follow-ups': { view: 'hp-followups', label: 'Follow-ups' },
+    '/health-post/high-risk': { view: 'hp-high-risk', label: 'High-Risk Mothers' },
+    '/health-post/reports': { view: 'hp-reports', label: 'Reports' },
   };
 
   function showToast(message) {
@@ -245,6 +257,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderDashboardView(view, label) {
+    const isHealthPost = view.startsWith('hp-');
+    const profileName = profileButton?.querySelector('.profile-copy strong');
+    const profileSubtitle = profileButton?.querySelector('.profile-copy small');
+    const profileAvatar = profileButton?.querySelector('.avatar');
+    if (isHealthPost) {
+      if (profileName) profileName.textContent = 'Health Worker';
+      if (profileSubtitle) profileSubtitle.textContent = 'Health Post Personnel';
+      if (profileAvatar) profileAvatar.textContent = 'HW';
+    } else {
+      updateProfileDisplay(getProfile());
+      if (profileSubtitle) profileSubtitle.textContent = 'My profile';
+    }
+    if (isHealthPost && sideNav) {
+      const items = [
+        ['hp-dashboard', '/health-post', '⌂', 'Dashboard'],
+        ['hp-mothers', '/health-post/mothers', '♧', 'All Registered Mothers'],
+        ['hp-due-soon', '/health-post/due-soon', '◷', 'Due Soon Mothers'],
+        ['hp-appointments', '/health-post/appointments', '▦', 'Appointments'],
+        ['hp-followups', '/health-post/follow-ups', '↻', 'Follow-ups'],
+        ['hp-high-risk', '/health-post/high-risk', '!', 'High-Risk Mothers'],
+        ['hp-reports', '/health-post/reports', '▤', 'Reports'],
+      ];
+      sideNav.innerHTML = items.map(([key, route, icon, text]) => `<a class="nav-item${view === key ? ' is-active' : ''}" data-view="${key}" data-route="${route}" href="${route}"${view === key ? ' aria-current="page"' : ''}><span class="nav-icon" aria-hidden="true">${icon}</span><span>${text}</span></a>`).join('');
+      if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Health post';
+      supportCard?.classList.add('is-hidden');
+    } else if (sideNav) {
+      sideNav.innerHTML = originalSideNav;
+      if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Your care space';
+      supportCard?.classList.remove('is-hidden');
+    }
     document.querySelectorAll('.nav-item[data-route]').forEach((nav) => {
       nav.classList.remove('is-active');
       nav.removeAttribute('aria-current');
@@ -264,6 +306,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (view === 'overview') {
       dashboardContent?.classList.remove('is-hidden');
       secondaryView?.classList.add('is-hidden');
+    } else if (isHealthPost && secondaryView) {
+      dashboardContent?.classList.add('is-hidden');
+      try {
+        const healthPostView = view === 'hp-dashboard'
+          ? window.AamaHealthPost.dashboard()
+          : window.AamaHealthPost.section(view.replace(/^hp-/, ''));
+        secondaryView.innerHTML = healthPostView;
+      } catch (error) {
+        console.error('Health Post preview could not be rendered.', error);
+        secondaryView.innerHTML = '<div class="hp-error" role="alert"><strong>Preview could not load</strong><p>There was a problem displaying the sample dashboard.</p><button class="button button--primary" type="button" data-route="/health-post">Try again</button></div>';
+      }
+      secondaryView.classList.remove('is-hidden');
     } else if (views[view] && secondaryView) {
       dashboardContent?.classList.add('is-hidden');
       secondaryView.innerHTML = views[view];
@@ -273,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (view === 'family') updateSharedChecklistSummary();
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
+    document.title = isHealthPost ? `AamaCare · ${label}` : 'AamaCare · My care dashboard';
     window.AamaI18n?.translatePage();
     if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -557,6 +612,10 @@ document.addEventListener('DOMContentLoaded', () => {
   demoLogin?.addEventListener('click', () => {
     navigate('/home');
     showToast('Preview mode started. No account was created.');
+  });
+  healthPostPreview?.addEventListener('click', () => {
+    navigate('/health-post');
+    showToast('Health Post preview opened with sample records.');
   });
   logoutButton?.addEventListener('click', () => handleAction('open-logout', logoutButton));
   profileButton?.addEventListener('click', openProfileDialog);
