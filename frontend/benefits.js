@@ -3,13 +3,29 @@
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   })[character]);
-  const numberFormat = () => new Intl.NumberFormat(window.AamaI18n?.getLanguage?.() === 'ne' ? 'ne-NP' : 'en-US');
-  const npr = (amount) => translate('NPR {amount}', { amount: numberFormat().format(amount) });
+  const isNepali = () => window.AamaI18n?.getLanguage?.() === 'ne';
+  const numberFormat = () => new Intl.NumberFormat(isNepali() ? 'ne-NP' : 'en-US');
+  const localizeDigits = (value) => isNepali()
+    ? String(value).replace(/\d/g, (digit) => '०१२३४५६७८९'[Number(digit)])
+    : String(value);
+  const formatNumber = (value) => localizeDigits(numberFormat().format(value));
+  const npr = (amount) => translate('NPR {amount}', { amount: formatNumber(amount) });
 
-  function formatDate(value, withWeekday = false) {
+  function formatDate(value, bsValue = '', withWeekday = false) {
     if (!value) return '';
+    if (window.AamaI18n?.getLanguage?.() === 'ne') {
+      const match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(bsValue);
+      if (!match) return translate('Nepali date unavailable');
+      const [, year, month, day] = match;
+      const monthNames = ['', 'Baisakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'];
+      return translate('BS {year} {month} {day}', {
+        year: formatNumber(Number(year)),
+        month: translate(monthNames[Number(month)]),
+        day: formatNumber(Number(day)),
+      });
+    }
     const date = new Date(`${value}T12:00:00Z`);
-    return new Intl.DateTimeFormat(window.AamaI18n?.getLanguage?.() === 'ne' ? 'ne-NP' : 'en-GB', {
+    return new Intl.DateTimeFormat('en-GB', {
       ...(withWeekday ? { weekday: 'short' } : {}),
       day: 'numeric', month: 'long', ...(withWeekday ? {} : { year: 'numeric' }), timeZone: 'UTC',
     }).format(date);
@@ -26,8 +42,8 @@
       const done = data.checkups.filter((item) => item.status === 'done').length;
       const percent = Math.round(done / total * 100);
       const summary = translate('Checkups {done} of {total} · {support} support when you complete all {total}', {
-        done: numberFormat().format(done),
-        total: numberFormat().format(total),
+        done: formatNumber(done),
+        total: formatNumber(total),
         support: npr(config.checkupSupport.amountNpr),
       });
       root.innerHTML = `<span class="benefits-teaser__meter" role="progressbar" aria-label="${escapeHtml(translate('Antenatal checkup progress'))}" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${percent}%"></span></span><span class="benefits-teaser__copy">${escapeHtml(summary)}</span><a class="benefits-teaser__link" href="/home/learn-prepare/benefits" data-route="/home/learn-prepare/benefits">${escapeHtml(translate('See your benefits'))}<span aria-hidden="true"> →</span></a>`;
@@ -60,14 +76,14 @@
       const item = data.checkups.find((checkup) => checkup.month === month);
       const status = item?.status || 'locked';
       const label = `${month}th-month checkup`;
-      const date = item?.date ? `<small>${escapeHtml(formatDate(item.date, Boolean(item.time)))}${item.time ? ` · ${escapeHtml(item.time)}` : ''}</small>` : '';
+      const date = item?.date ? `<small>${escapeHtml(formatDate(item.date, item.dateBs, Boolean(item.time)))}${item.time ? ` · ${escapeHtml(localizeDigits(item.time))}` : ''}</small>` : '';
       return `<li class="benefit-step benefit-step--${escapeHtml(status)}"><span class="benefit-step__mark" aria-hidden="true">${status === 'done' ? '✓' : status === 'upcoming' ? '·' : '○'}</span><span class="benefit-step__copy"><strong>${escapeHtml(translate(label))}</strong>${date}</span><span class="benefit-step__status">${escapeHtml(translate(statusLabels[status] || 'Locked'))}</span></li>`;
     }).join('');
     const careSteps = [
       ['Deliver at a health facility', data.delivery.status],
       ['Postnatal checkup', data.postnatal.status],
     ].map(([label, status]) => `<li class="benefit-step benefit-step--not-started"><span class="benefit-step__mark" aria-hidden="true">○</span><span class="benefit-step__copy"><strong>${escapeHtml(translate(label))}</strong></span><span class="benefit-step__status">${escapeHtml(translate(status === 'done' ? 'Done' : 'Not started'))}</span></li>`).join('');
-    return `<section class="panel benefits-panel" aria-labelledby="benefits-progress-title"><div class="panel-heading"><div><p class="card-kicker">${escapeHtml(translate('Your progress'))}</p><h2 id="benefits-progress-title">${escapeHtml(translate('Your care milestones'))}</h2></div><span class="completion-pill">${escapeHtml(translate('{done} of {total} checkups done', { done: numberFormat().format(done), total: numberFormat().format(total) }))}</span></div><div class="benefits-progress-meter" role="progressbar" aria-label="${escapeHtml(translate('Antenatal checkup progress'))}" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${percent}%"></span></div><ol class="benefit-steps">${checkups}${careSteps}</ol><p class="benefits-support-note">${escapeHtml(translate(config.checkupSupport.paymentNote))} <strong>${escapeHtml(npr(config.checkupSupport.amountNpr))}</strong></p></section>`;
+    return `<section class="panel benefits-panel" aria-labelledby="benefits-progress-title"><div class="panel-heading"><div><p class="card-kicker">${escapeHtml(translate('Your progress'))}</p><h2 id="benefits-progress-title">${escapeHtml(translate('Your care milestones'))}</h2></div><span class="completion-pill">${escapeHtml(translate('{done} of {total} checkups done', { done: formatNumber(done), total: formatNumber(total) }))}</span></div><div class="benefits-progress-meter" role="progressbar" aria-label="${escapeHtml(translate('Antenatal checkup progress'))}" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${percent}%"></span></div><ol class="benefit-steps">${checkups}${careSteps}</ol><p class="benefits-support-note">${escapeHtml(translate(config.checkupSupport.paymentNote))} <strong>${escapeHtml(npr(config.checkupSupport.amountNpr))}</strong></p></section>`;
   }
 
   function renderReceivables(config) {
@@ -90,7 +106,7 @@
   }
 
   function renderDisclaimer(config) {
-    return `<p class="benefits-disclaimer">${escapeHtml(translate('Amounts and rules come from the Government of Nepal’s Aama programme and can change. Please confirm with your health facility.'))} <span>${escapeHtml(translate('Last reviewed'))}: ${escapeHtml(formatDate(config.lastReviewed))}.</span></p>`;
+    return `<p class="benefits-disclaimer">${escapeHtml(translate('Amounts and rules come from the Government of Nepal’s Aama programme and can change. Please confirm with your health facility.'))} <span>${escapeHtml(translate('Last reviewed'))}: ${escapeHtml(formatDate(config.lastReviewed, config.lastReviewedBs))}.</span></p>`;
   }
 
   function render(root) {
@@ -108,7 +124,7 @@
         return;
       }
       const mother = data.mother;
-      page.innerHTML = `<div class="benefits-page"><header class="page-heading benefits-heading"><div><p class="eyebrow">${escapeHtml(translate('Learn & prepare'))}</p><h1>${escapeHtml(translate('Support for you and your baby'))}</h1><p>${escapeHtml(translate('Free care and cash support from the Aama programme. Every checkup you complete helps keep you and your baby safe.'))}</p><small class="benefits-mother-context">${escapeHtml(translate('{name} · Week {week} · Due {date}', { name: mother.name, week: numberFormat().format(mother.pregnancyWeek), date: formatDate(mother.dueDate) }))}</small></div><a class="button button--primary" href="/home/health-services" data-route="/home/health-services">${escapeHtml(translate('Find an eligible facility'))}<span aria-hidden="true">→</span></a></header>${renderProgress(config, data)}${renderReceivables(config)}${renderTravel(config, data)}${renderClaim(config)}${renderDisclaimer(config)}</div>`;
+      page.innerHTML = `<div class="benefits-page"><header class="page-heading benefits-heading"><div><p class="eyebrow">${escapeHtml(translate('Learn & prepare'))}</p><h1>${escapeHtml(translate('Support for you and your baby'))}</h1><p>${escapeHtml(translate('Free care and cash support from the Aama programme. Every checkup you complete helps keep you and your baby safe.'))}</p><small class="benefits-mother-context">${escapeHtml(translate('{name} · Week {week} · Due {date}', { name: mother.name, week: formatNumber(mother.pregnancyWeek), date: formatDate(mother.dueDate, mother.dueDateBs) }))}</small></div><a class="button button--primary" href="/home/health-services" data-route="/home/health-services">${escapeHtml(translate('Find an eligible facility'))}<span aria-hidden="true">→</span></a></header>${renderProgress(config, data)}${renderReceivables(config)}${renderTravel(config, data)}${renderClaim(config)}${renderDisclaimer(config)}</div>`;
     } catch (error) {
       console.error('Benefits page could not be rendered.', error);
       page.innerHTML = renderError();

@@ -8,6 +8,7 @@
 // documented after the FY 2018/19 budget increase. Confirm local implementation.
 window.AamaBenefitsConfig = {
   lastReviewed: '2026-11-27',
+  lastReviewedBs: '2083-08-11',
   checkupSupport: {
     amountNpr: 800,
     visitMonths: [4, 6, 8, 9],
