@@ -3,6 +3,10 @@ import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {connectDB} from './db.mjs';
+import authRoutes from './routes/auth.routes.mjs';
+import healthRecordRoutes from './routes/healthRecords.routes.mjs';
+import { requireAuth } from './middleware/requireAuth.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 dotenv.config({ path: path.join(projectRoot, '.env') });
@@ -24,16 +28,19 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', allowedOrigins.includes('*') ? '*' : requestOrigin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
 
 app.use(express.json({ limit: '32kb' }));
 app.use(express.static(frontendRoot));
-app.get(/^\/(?:login|home(?:\/.*)?)$/, (_req, res) => {
+app.get(/^\/(?:login|sign|home(?:\/.*)?)$/, (_req, res) => {
   res.sendFile(path.join(frontendRoot, 'index.html'));
 });
+
+app.use('/api/auth', authRoutes);
+app.use('/api/health-records', requireAuth, healthRecordRoutes);
 
 const assistantInstructions = `
 You are Aama AI, a warm pregnancy companion for users in Nepal.
@@ -132,5 +139,11 @@ app.post('/api/chat', async (req, res) => {
     res.status(500).json({ error: 'Aama AI could not respond right now. Please try again.' });
   }
 });
+
+try{
+  await connectDB();
+}catch(error){
+  console.error("Failed to connect to MongoDB:", error);
+}
 
 app.listen(port, () => console.log(`AamaCare is running at http://localhost:${port}`));
