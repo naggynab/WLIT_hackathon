@@ -88,6 +88,12 @@
   let location = null;
   let saved = {};
   const boundRoots = new WeakSet();
+  const t = (copy, values) => window.AamaI18n?.t(copy, values) || copy;
+  const number = value => new Intl.NumberFormat(window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en').format(value);
+  // Fresh text nodes keep the page translator's original English keys current.
+  const setText = (node, copy) => node?.replaceChildren(document.createTextNode(copy));
+  const refreshLanguage = () => window.AamaI18n?.translatePage();
+  const locationMessages = new WeakMap();
   const escape = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function init(root) {
     try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch { saved = {}; }
@@ -98,6 +104,12 @@
     render(root);
     if (boundRoots.has(root)) return;
     boundRoots.add(root);
+    document.addEventListener('aama-language-change', () => {
+      if (!root.isConnected) return;
+      render(root);
+      const status = locationMessages.get(root);
+      if (status) locationStatus(root, status.message, status.values);
+    });
     root.addEventListener('change', event => {
       if (event.target.id === 'learn-diet') { saved.diet = event.target.value; save(); render(root); }
       if (event.target.matches('[data-birth-stage]')) { saved.stage = event.target.value; save(); renderPlan(root); }
@@ -108,8 +120,8 @@
     });
     root.addEventListener('click', event => {
       if (event.target.closest('[data-download-plan]')) {
-        const text = Object.entries(plans).map(([key, [tip, tasks]]) => `${key.toUpperCase()} PREGNANCY\n${tip}\n${tasks.map(([id,title,copy]) => `${saved.completed?.[id] ? '[x]' : '[ ]'} ${title}\n    ${copy}`).join('\n')}`).join('\n\n');
-        const url = URL.createObjectURL(new Blob(['AamaCare · My birth preparation checklist\n\n' + text], {type:'text/plain;charset=utf-8'}));
+        const text = Object.entries(plans).map(([key, [tip, tasks]]) => `${t({early: 'Early pregnancy', middle: 'Middle pregnancy', late: 'Late pregnancy'}[key])}\n${t(tip)}\n${tasks.map(([id,title,copy]) => `${saved.completed?.[id] ? '[x]' : '[ ]'} ${t(title)}\n    ${t(copy)}`).join('\n')}`).join('\n\n');
+        const url = URL.createObjectURL(new Blob([t('AamaCare · My birth preparation checklist') + '\n\n' + text], {type:'text/plain;charset=utf-8'}));
         const link = document.createElement('a'); link.href = url; link.download = 'aamacare-birth-checklist.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     });
@@ -130,7 +142,7 @@
   function render(root) {
     const foodContext = root.querySelector('#learn-food-context');
     const foods = root.querySelector('#learn-foods');
-    if (foodContext) foodContext.textContent = location ? `${location.demo ? 'Demo · ' : ''}Meal ideas near ${location.name}. Sample regional meals; seasonal availability may vary.` : 'Use your location to see regional meal ideas.';
+    if (foodContext) setText(foodContext, location ? `${location.demo ? t('Demo · ') : ''}${t('Meal ideas near {area}. Sample regional meals; seasonal availability may vary.', {area: t(location.name)})}` : t('Use your location to see regional meal ideas.'));
     if (foods) {
       const region = location?.region;
       const preference = ['non-veg', 'veg', 'vegan'].includes(saved.diet) ? saved.diet : 'non-veg';
@@ -150,28 +162,32 @@
     root.querySelectorAll('[data-support-question]').forEach(input => { input.checked = Boolean(saved.questions?.[input.dataset.supportQuestion]); });
     updateQuestions(root);
     renderPlan(root);
+    refreshLanguage();
   }
   function updateQuestions(root) {
     const count = root.querySelector('[data-support-count]');
     const total = root.querySelectorAll('[data-support-question]:checked').length;
-    if (count) count.textContent = `${total} question${total === 1 ? '' : 's'} saved for your next conversation · Saved on this device`;
+    if (count) setText(count, t('{count} questions saved for your next conversation · Saved on this device', {count: number(total)}));
   }
   function renderPlan(root) {
     const stage=root.querySelector('[data-birth-stage]'); const key=stage?.value || 'early';
     const [tip,tasks]=plans[key];
-    const tipNode=root.querySelector('[data-birth-tip]'); if(tipNode) tipNode.textContent=tip;
+    const tipNode=root.querySelector('[data-birth-tip]'); if(tipNode) setText(tipNode, tip);
     const list=root.querySelector('[data-birth-tasks]');
     if(list) list.innerHTML=tasks.map(([id,title,copy])=>`<label class="learn-prep-task"><input type="checkbox" data-plan-task="${id}" ${saved.completed?.[id]?'checked':''}><span><strong>${title}</strong><small>${copy}</small></span></label>`).join('');
     updateProgress(root);
+    refreshLanguage();
   }
   function updateProgress(root) {
     const key = root.querySelector('[data-birth-stage]')?.value || 'early';
     const tasks = plans[key][1]; const done = tasks.filter(([id]) => saved.completed?.[id]).length;
-    const count = root.querySelector('[data-birth-count]'); if (count) count.textContent = `${done} of ${tasks.length} ready${done === tasks.length ? ' · All set for this stage!' : ' · One step at a time'}`;
+    const count = root.querySelector('[data-birth-count]'); if (count) setText(count, `${t('{done} of {total} ready', {done: number(done), total: number(tasks.length)})} · ${t(done === tasks.length ? 'All set for this stage!' : 'One step at a time')}`);
     const progress = root.querySelector('#birth-progress'); if (progress) { progress.max = tasks.length; progress.value = done; }
   }
-  function locationStatus(root, message) {
-    root.querySelectorAll('#learn-location-status, [data-food-location-status]').forEach(status => { status.textContent = message; });
+  function locationStatus(root, message, values) {
+    locationMessages.set(root, {message, values});
+    const translatedValues = values ? Object.fromEntries(Object.entries(values).map(([key, value]) => [key, t(value)])) : undefined;
+    root.querySelectorAll('#learn-location-status, [data-food-location-status]').forEach(status => { setText(status, t(message, translatedValues)); });
   }
   function locate(root) {
     const status = { set textContent(message) { locationStatus(root, message); } };
@@ -187,7 +203,7 @@
       const near=areas.map(a=>({...a,d:Math.hypot((lat-a.lat)*111,(lon-a.lon)*100)})).sort((a,b)=>a.d-b.d)[0];
       if(lat<26||lat>31||lon<80||lon>89){status.textContent='Your location appears to be outside Nepal. Regional food suggestions are tailored for Nepal.';return;}
       location={name:near.d<120?near.name:'Nepal',region:near.d<120?near.region:(lat>28.7?'mountains':lat>28?'hills':'terai')};
-      saved.location=location;save();status.textContent=`Food ideas updated for ${location.name}. Precise coordinates are not stored.`;render(root);
+      saved.location=location;save();locationStatus(root, 'Food ideas updated for {area}. Precise coordinates are not stored.', {area: location.name});render(root);
     },error=>{finish();status.textContent=error.code===1?'Location permission was not granted. Allow location access and try again.':'Could not find your location. Please try again.';},{timeout:12000,maximumAge:300000});
   }
   window.AamaLearn={init,open,back,locate};
