@@ -12,6 +12,7 @@ const port = Number(process.env.PORT || 3000);
 const geminiApiKey = process.env.GEMINI_API_KEY?.trim();
 const gemini = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 const frontendRoot = path.join(projectRoot, 'frontend');
+const campusHubRoot = path.join(projectRoot, 'campus-event-hub');
 
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || '*')
   .split(',')
@@ -31,8 +32,12 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '32kb' }));
 app.use(express.static(frontendRoot));
+app.use('/events', express.static(campusHubRoot));
 app.get(/^\/(?:login|home(?:\/.*)?)$/, (_req, res) => {
   res.sendFile(path.join(frontendRoot, 'index.html'));
+});
+app.get(['/events', '/events/'], (_req, res) => {
+  res.sendFile(path.join(campusHubRoot, 'index.html'));
 });
 
 const assistantInstructions = `
@@ -44,6 +49,10 @@ If the user describes severe pain, heavy bleeding, trouble breathing, fainting,
 seizures, or another emergency, clearly tell them to contact local emergency
 services or a qualified health worker immediately.
 Keep normal answers concise and reassuring.
+  Format replies for easy reading: use short paragraphs, Markdown headings when
+  helpful, numbered lists for steps, bullet lists for multiple items, and bold
+  labels for important terms. Leave a blank line between sections. Do not use
+  HTML or put the whole answer into one long paragraph.
 `;
 
 function fallbackReply(message) {
@@ -86,6 +95,11 @@ async function createReply(message) {
 async function createSpeech(text) {
   if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_VOICE_ID) return null;
 
+  const modelId = process.env.ELEVENLABS_MODEL?.trim() || 'eleven_v4';
+  // Nepali uses Devanagari script. Explicitly passing the language prevents
+  // ElevenLabs from guessing English for short or mixed Nepali replies.
+  const languageCode = /[\u0900-\u097F]/u.test(text) ? 'ne' : 'en';
+
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(process.env.ELEVENLABS_VOICE_ID)}?output_format=mp3_44100_128`,
     {
@@ -96,7 +110,8 @@ async function createSpeech(text) {
       },
       body: JSON.stringify({
         text,
-        model_id: process.env.ELEVENLABS_MODEL || 'eleven_flash_v2_5'
+        model_id: modelId,
+        language_code: languageCode
       })
     }
   );
@@ -109,7 +124,8 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     chatbotConfigured: Boolean(gemini),
-    voiceConfigured: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID)
+    voiceConfigured: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID),
+    voiceModel: process.env.ELEVENLABS_MODEL?.trim() || 'eleven_v4'
   });
 });
 
