@@ -13,32 +13,12 @@
     <div class="app-shell">
       <section class="auth-screen" id="login-screen" aria-labelledby="login-title">
         <div class="auth-art" aria-hidden="true">
-          <div class="art-orbit art-orbit--one"></div>
-          <div class="art-orbit art-orbit--two"></div>
-          <div class="art-sun"></div>
-          <div class="art-leaf art-leaf--one">✦</div>
-          <div class="art-leaf art-leaf--two">✧</div>
-          <div class="art-card art-card--top">
-            <span class="art-card__icon">♡</span>
-            <span><strong>Care, every week</strong><small>तपाईंको साथमा</small></span>
-          </div>
-          <div class="art-card art-card--bottom">
-            <span class="art-card__icon art-card__icon--lavender">◌</span>
-            <span><strong>Family connected</strong><small>परिवारसँग जोडिएको</small></span>
-          </div>
-          <div class="art-figure">
-            <div class="figure-halo"></div>
-            <div class="figure-hair"></div>
-            <div class="figure-face"></div>
-            <div class="figure-body"></div>
-            <div class="figure-arm"></div>
-            <div class="figure-bump"></div>
-            <div class="figure-dress"></div>
-          </div>
+          <img class="auth-illustration" src="assets/login-hands-transparent.png" alt="">
         </div>
 
         <div class="auth-panel">
-          <a class="brand brand--auth" href="#" aria-label="AamaCare home">
+          <button class="icon-button language-button language-button--auth" type="button" aria-label="Change language">ने <span>EN</span></button>
+          <a class="brand brand--auth" href="/login" aria-label="AamaCare home">
             <span class="brand-mark">a</span>
             <span>Aama<span>Care</span></span>
           </a>
@@ -83,27 +63,27 @@
 
       <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="AamaCare dashboard">
         <aside class="sidebar" id="sidebar">
-          <a class="brand brand--sidebar" href="#" aria-label="AamaCare dashboard">
+          <a class="brand brand--sidebar" href="/home" aria-label="AamaCare dashboard">
             <span class="brand-mark">a</span>
             <span>Aama<span>Care</span></span>
           </a>
           <div class="sidebar-section-label">Your care space</div>
           <nav class="side-nav" aria-label="Main navigation">
-            <button class="nav-item is-active" type="button"><span class="nav-icon">⌂</span><span>Overview</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">◒</span><span>Pregnancy journey</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">▤</span><span>Health records</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">♧</span><span>Family hub</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">⌖</span><span>Health services</span></button>
-            <button class="nav-item" type="button"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
+            <button class="nav-item is-active" type="button" data-view="overview" data-route="/home"><span class="nav-icon">⌂</span><span>Overview</span></button>
+            <button class="nav-item" type="button" data-view="journey" data-route="/home/pregnancy-journey"><span class="nav-icon">◒</span><span>Pregnancy journey</span></button>
+            <button class="nav-item" type="button" data-view="records" data-route="/home/health-records"><span class="nav-icon">▤</span><span>Health records</span></button>
+            <button class="nav-item" type="button" data-view="family" data-route="/home/family-hub"><span class="nav-icon">♧</span><span>Family hub</span></button>
+            <button class="nav-item" type="button" data-view="services" data-route="/home/health-services"><span class="nav-icon">⌖</span><span>Health services</span></button>
+            <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
           </nav>
           <div class="sidebar-bottom">
             <div class="support-card">
               <div class="support-icon">?</div>
               <strong>Need a little help?</strong>
               <p>Ask Aama AI in Nepali or English.</p>
-              <button class="support-link" type="button" data-toast="Aama AI is ready to help">Ask Aama AI <span>↗</span></button>
+              <button class="support-link ai-launcher" type="button">Ask Aama AI <span>↗</span></button>
             </div>
-            <button class="nav-item nav-item--quiet" type="button"><span class="nav-icon">⚙</span><span>Settings</span></button>
+            <button class="nav-item nav-item--quiet" type="button" data-view="settings" data-route="/home/settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
             <button class="nav-item nav-item--quiet" type="button" id="logout-button"><span class="nav-icon">↪</span><span>Sign out</span></button>
           </div>
         </aside>
@@ -126,13 +106,13 @@
                 <h1>Good morning, Sita <span aria-hidden="true">✦</span></h1>
                 <p class="welcome-subtitle">You are doing a wonderful job taking care of you and your baby.</p>
               </div>
-              <button class="button button--primary button--compact" type="button" data-toast="Your care plan is up to date">View today's plan <span aria-hidden="true">→</span></button>
+              <button class="button button--primary button--compact" type="button" data-action="today-plan">View today's plan <span aria-hidden="true">→</span></button>
             </div>
 
             <section class="alert-banner" aria-label="Weather alert">
               <div class="alert-badge">!</div>
               <div class="alert-copy"><strong>Weather watch for Lalitpur</strong><span>Heavy rain is expected tonight. Keep your emergency contacts close.</span></div>
-              <button class="alert-action" type="button" data-toast="Emergency preparation checklist opened">Prepare with family <span aria-hidden="true">→</span></button>
+              <button class="alert-action" type="button" data-route="/home/family-hub">Prepare with family <span aria-hidden="true">→</span></button>
               <button class="alert-close" type="button" aria-label="Dismiss weather alert">×</button>
             </section>
 
@@ -141,36 +121,36 @@
                 <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2>24 weeks <span>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options">•••</button></div>
                 <div class="journey-progress"><div class="progress-line"><span></span></div><div class="progress-labels"><span>Week 1</span><strong>Week 24</strong><span>Week 40</span></div></div>
                 <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small>Estimated due date</small><strong>15 March 2027</strong></span></div><div><span class="meta-icon">♡</span><span><small>Baby's size</small><strong>About an eggplant</strong></span></div></div>
-                <button class="text-action" type="button" data-toast="Pregnancy journey opened">Explore this week's journey <span>→</span></button>
+                <button class="text-action" type="button" data-route="/home/pregnancy-journey">Explore this week's journey <span>→</span></button>
               </article>
               <article class="next-care-card panel">
                 <div class="panel-heading"><div><p class="card-kicker">Next up</p><h2>Health checkup</h2></div><span class="date-tile"><strong>03</strong><small>DEC</small></span></div>
                 <div class="appointment-info"><span class="appointment-icon">✚</span><div><strong>Routine antenatal visit</strong><span>Thu, 3 December · 10:30 AM</span><small>Patan Hospital · Outpatient wing</small></div></div>
-                <div class="appointment-actions"><button class="button button--outline" type="button" data-toast="Appointment details opened">View details</button><button class="button button--lavender" type="button" data-toast="Reminder sent to your phone">Remind me</button></div>
+                <div class="appointment-actions"><button class="button button--outline" type="button" data-action="appointment-detail">View details</button><button class="button button--lavender" type="button" data-action="appointment-reminder">Remind me</button></div>
               </article>
             </section>
 
             <section class="quick-actions" aria-label="Quick actions">
               <div class="section-title-row"><div><p class="card-kicker">Here when you need it</p><h2>Quick actions</h2></div></div>
               <div class="action-grid">
-                <button class="quick-action quick-action--pink" type="button" data-toast="Aama AI is ready for your questions"><span class="quick-icon">✦</span><span><strong>Ask Aama AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--lavender" type="button" data-toast="New health record form opened"><span class="quick-icon">＋</span><span><strong>Add health record</strong><small>Keep your care history close</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--peach" type="button" data-toast="Showing nearby health services"><span class="quick-icon">⌖</span><span><strong>Find nearby care</strong><small>Health posts &amp; hospitals</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--mint" type="button" data-toast="Family hub opened"><span class="quick-icon">♧</span><span><strong>Open family hub</strong><small>Keep your circle connected</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--pink ai-launcher" type="button"><span class="quick-icon">✦</span><span><strong>Ask Aama AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--lavender" type="button" data-route="/home/health-records"><span class="quick-icon">＋</span><span><strong>Add health record</strong><small>Keep your care history close</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--peach" type="button" data-route="/home/health-services"><span class="quick-icon">⌖</span><span><strong>Find nearby care</strong><small>Health posts &amp; hospitals</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--mint" type="button" data-route="/home/family-hub"><span class="quick-icon">♧</span><span><strong>Open family hub</strong><small>Keep your circle connected</small></span><span class="action-arrow">↗</span></button>
               </div>
             </section>
 
             <section class="content-grid">
               <div class="main-column">
                 <article class="panel checklist-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Small steps, big care</p><h2>Today's checklist</h2></div><span class="completion-pill">2 of 4 done</span></div>
+                  <div class="panel-heading"><div><p class="card-kicker">Small steps, big care</p><h2>Today's checklist</h2></div><div class="checklist-heading-actions"><span class="completion-pill" role="status" aria-live="polite">2 of 4 done</span><button class="button button--soft button--compact checklist-add-button" type="button" data-action="add-checklist">＋ Add item</button></div></div>
                   <div class="checklist">
-                    <label class="task-row is-complete"><input type="checkbox" checked><span class="task-check"></span><span class="task-copy"><strong>Drink 8 glasses of water</strong><small>Stay hydrated throughout the day</small></span><span class="task-time">8:00 AM</span></label>
-                    <label class="task-row is-complete"><input type="checkbox" checked><span class="task-check"></span><span class="task-copy"><strong>Take your prescribed supplement</strong><small>As advised by your health worker</small></span><span class="task-time">9:00 AM</span></label>
-                    <label class="task-row"><input type="checkbox"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
-                    <label class="task-row"><input type="checkbox"><span class="task-check"></span><span class="task-copy"><strong>Share the weather watch with family</strong><small>Keep your support circle informed</small></span><span class="task-time">Today</span></label>
+                    <label class="task-row is-complete"><input type="checkbox" checked data-task-id="water"><span class="task-check"></span><span class="task-copy"><strong>Drink 8 glasses of water</strong><small>Stay hydrated throughout the day</small></span><span class="task-time">8:00 AM</span></label>
+                    <label class="task-row is-complete"><input type="checkbox" checked data-task-id="supplement"><span class="task-check"></span><span class="task-copy"><strong>Take your prescribed supplement</strong><small>As advised by your health worker</small></span><span class="task-time">9:00 AM</span></label>
+                    <label class="task-row"><input type="checkbox" data-task-id="video"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
+                    <label class="task-row"><input type="checkbox" data-task-id="weather"><span class="task-check"></span><span class="task-copy"><strong>Share the weather watch with family</strong><small>Keep your support circle informed</small></span><span class="task-time">Today</span></label>
                   </div>
-                  <button class="text-action" type="button" data-toast="All reminders opened">See all reminders <span>→</span></button>
+                  <button class="text-action" type="button" data-action="show-reminders">See all reminders <span>→</span></button>
                 </article>
 
                 <article class="panel guide-panel">
@@ -199,10 +179,44 @@
             </section>
             <footer class="dashboard-footer"><span>AamaCare is here to support, not replace, your health worker.</span><span><a href="#">Privacy</a><a href="#">Help center</a></span></footer>
           </div>
+          <section class="secondary-view is-hidden" id="secondary-view" aria-live="polite"></section>
         </main>
       </section>
+      <div class="assistant-overlay is-hidden" id="assistant-overlay" aria-hidden="true">
+        <section class="assistant-panel" role="dialog" aria-modal="true" aria-labelledby="assistant-title">
+          <div class="assistant-panel__header">
+            <div>
+              <p class="card-kicker">Your trusted companion</p>
+              <h2 id="assistant-title">Ask Aama AI</h2>
+            </div>
+            <button class="assistant-close" id="assistant-close" type="button" aria-label="Close Aama AI">×</button>
+          </div>
+          <p class="assistant-intro">Ask a pregnancy-care question in English or Nepali. You can type or use your voice.</p>
+          <div class="assistant-messages" id="assistant-messages" aria-live="polite">
+            <div class="assistant-message assistant-message--bot">Namaste, I’m Aama AI. How can I support you today?</div>
+          </div>
+          <div class="assistant-compose">
+            <textarea id="assistant-input" rows="2" placeholder="Type your question..." aria-label="Message for Aama AI"></textarea>
+            <div class="assistant-compose__actions">
+              <button class="button button--lavender" id="assistant-voice" type="button">🎙 Speak</button>
+              <button class="button button--primary" id="assistant-send" type="button">Send <span aria-hidden="true">→</span></button>
+            </div>
+            <p class="assistant-status" id="assistant-status" role="status" aria-live="polite">Press Speak, then ask your question.</p>
+          </div>
+          <p class="assistant-disclaimer">Aama AI supports—not replaces—your health worker. For urgent symptoms, contact local emergency care.</p>
+        </section>
+      </div>
+      <div class="interaction-modal is-hidden" id="interaction-modal" aria-hidden="true">
+        <section class="interaction-dialog" role="dialog" aria-modal="true" aria-labelledby="interaction-title">
+          <button class="interaction-close" id="interaction-close" type="button" aria-label="Close dialog">×</button>
+          <div id="interaction-content"></div>
+        </section>
+      </div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
+    <script src="config.js"></script>
+    <script src="i18n.js"></script>
+    <script src="views.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
