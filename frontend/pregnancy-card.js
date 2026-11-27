@@ -10,9 +10,49 @@
   const STORAGE_KEY = 'aamacare-due-date';
   const DAY = 86400000;
 
-  // Add other weeks from a verified source
+  // Approximate fruit/vegetable comparisons for a friendly weekly visual.
+  // They are illustrative rather than clinical measurements.
   const babySizes = {
-    24: { en: 'About an eggplant', ne: 'भण्टाजत्रो' },
+    1:  { en: 'Too early for a size comparison', ne: 'आकार तुलना गर्न अझै चाँडो छ' },
+    2:  { en: 'Too early for a size comparison', ne: 'आकार तुलना गर्न अझै चाँडो छ' },
+    3:  { en: 'About a poppy seed',              ne: 'खसखसको दानाजत्रो' },
+    4:  { en: 'About a poppy seed',              ne: 'खसखसको दानाजत्रो' },
+    5:  { en: 'About a sesame seed',             ne: 'तिलको दानाजत्रो' },
+    6:  { en: 'About a lentil',                  ne: 'मसुरोको दानाजत्रो' },
+    7:  { en: 'About a blueberry',               ne: 'निलबदरीको दानाजत्रो' },
+    8:  { en: 'About a raspberry',               ne: 'रास्पबेरीको दानाजत्रो' },
+    9:  { en: 'About a cherry',                  ne: 'चेरीको दानाजत्रो' },
+    10: { en: 'About a strawberry',              ne: 'स्ट्रबेरीको दानाजत्रो' },
+    11: { en: 'About a fig',                     ne: 'अञ्जिरको दानाजत्रो' },
+    12: { en: 'About a plum',                    ne: 'आलुबखडाजत्रो' },
+    13: { en: 'About a lemon',                   ne: 'कागतीजत्रो' },
+    14: { en: 'About a kiwi fruit',              ne: 'किवीफलजत्रो' },
+    15: { en: 'About an apple',                  ne: 'स्याउजत्रो' },
+    16: { en: 'About an avocado',                ne: 'एभोकाडोजत्रो' },
+    17: { en: 'About a pomegranate',             ne: 'अनारजत्रो' },
+    18: { en: 'About a bell pepper',             ne: 'भेडेखुर्सानीजत्रो' },
+    19: { en: 'About a mango',                   ne: 'आँपजत्रो' },
+    20: { en: 'About a banana',                  ne: 'केराजत्रो' },
+    21: { en: 'About a carrot',                  ne: 'गाजरजत्रो' },
+    22: { en: 'About a papaya',                  ne: 'मेवाजत्रो' },
+    23: { en: 'About a grapefruit',              ne: 'भोगटेजत्रो' },
+    24: { en: 'About an eggplant',               ne: 'भण्टाजत्रो' },
+    25: { en: 'About a cauliflower',             ne: 'काउलीजत्रो' },
+    26: { en: 'About a lettuce',                 ne: 'सलादको पातजत्रो' },
+    27: { en: 'About a cabbage',                 ne: 'बन्दाकोभीजत्रो' },
+    28: { en: 'About a coconut',                 ne: 'नरिवलजत्रो' },
+    29: { en: 'About a butternut squash',        ne: 'फर्सीजत्रो' },
+    30: { en: 'About a cucumber',                ne: 'काँक्रोजत्रो' },
+    31: { en: 'About a coconut',                 ne: 'नरिवलजत्रो' },
+    32: { en: 'About a squash',                  ne: 'फर्सीजत्रो' },
+    33: { en: 'About a pineapple',               ne: 'भुइँकटहरजत्रो' },
+    34: { en: 'About a cantaloupe melon',        ne: 'खरबुजाजत्रो' },
+    35: { en: 'About a honeydew melon',          ne: 'पाकेको खरबुजाजत्रो' },
+    36: { en: 'About a romaine lettuce',          ne: 'सलादको ठूलो पातजत्रो' },
+    37: { en: 'About a bunch of leafy greens',   ne: 'सागको मुठाजत्रो' },
+    38: { en: 'About a leek',                    ne: 'लिकको डाँठजत्रो' },
+    39: { en: 'About a small watermelon',        ne: 'सानो तरबूजजत्रो' },
+    40: { en: 'About a pumpkin',                 ne: 'फर्सीजत्रो' },
   };
 
   // Dates are handled as whole days to avoid timezone errors
@@ -64,7 +104,7 @@
       ? `${num(week)} हप्ता`
       : `${week} ${week === 1 ? 'week' : 'weeks'}`;
     $('[data-trimester]').textContent = `· ${trimester}`;
-    $('[data-baby-size]').textContent = babySizes[week]?.[ne ? 'ne' : 'en'] || '—';
+    $('[data-baby-size]').textContent = babySizes[week]?.[ne ? 'ne' : 'en'] || '';
 
     $('[data-week-label]').textContent = weekText(week);
     $('[data-week-label]').style.left = position;
