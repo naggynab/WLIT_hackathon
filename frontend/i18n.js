@@ -119,6 +119,7 @@
     'Share journey': 'यात्रा बाँड्नुहोस्',
     'You are here': 'तपाईं यहाँ हुनुहुन्छ',
     'Week 24 · Your baby is growing beautifully.': 'हप्ता २४ · तपाईंको बच्चा सुन्दर रूपमा बढ्दैछ।',
+    'Your baby is growing beautifully.': 'तपाईंको बच्चा सुन्दर रूपमा बढ्दैछ।',
     'Your baby is about the size of an eggplant. This week, focus on gentle movement, hydration, and your next antenatal visit.': 'तपाईंको बच्चा भण्टाजत्रो भएको छ। यो हप्ता हल्का चालचलन, पानी र अर्को गर्भ जाँचमा ध्यान दिनुहोस्।',
     'journey complete': 'यात्रा पूरा',
     'until your due date': 'प्रसूति मितिसम्म',

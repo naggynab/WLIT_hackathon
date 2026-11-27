@@ -190,9 +190,78 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
     window.AamaI18n?.translatePage();
+    if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function applyJourneyCalendar(state) {
+    if (!state || !secondaryView) return;
+    const week = Math.min(40, Math.max(1, Number(state.week) || 1));
+    const ne = window.AamaI18n?.getLanguage() === 'ne';
+    const digits = (value) => ne ? String(value).replace(/\d/g, (digit) => '०१२३४५६७८९'[digit]) : String(value);
+    const weekLabel = ne ? `हप्ता ${digits(week)}` : `Week ${week}`;
+    const progress = Math.round((week / 40) * 100);
+    const days = Number(state.daysRemaining) || 0;
+    const until = days === 0
+      ? (ne ? 'आज प्रसूति मिति' : 'Due today')
+      : days > 0
+        ? (ne ? `${digits(days)} दिन बाँकी` : `${days} ${days === 1 ? 'day' : 'days'}`)
+        : (ne ? `${digits(Math.abs(days))} दिन ढिला` : `${Math.abs(days)} ${Math.abs(days) === 1 ? 'day' : 'days'} overdue`);
+
+    const setText = (selector, value) => {
+      const element = secondaryView.querySelector(selector);
+      if (element) element.textContent = value;
+    };
+    setText('[data-journey-week]', weekLabel);
+    const babySize = state.babySize || '';
+    const sizeDescription = ne
+      ? `बच्चाको आकार: ${babySize}। यस हप्ता हल्का चालचलन, पर्याप्त पानी र अर्को गर्भ जाँचमा ध्यान दिनुहोस्।`
+      : babySize.startsWith('About ')
+        ? `Your baby is about the size of ${babySize.slice(6)}. This week, focus on gentle movement, hydration, and your next antenatal visit.`
+        : 'A size comparison is not available this early. This week, focus on gentle movement, hydration, and your next antenatal visit.';
+    setText('[data-journey-description]', sizeDescription);
+    setText('[data-journey-progress]', `${digits(progress)}%`);
+    setText('[data-journey-side-progress]', `${digits(progress)}%`);
+    setText('[data-journey-until]', until);
+    setText('[data-journey-count]', ne ? `४० मध्ये ${digits(week)} हप्ता` : `Week ${week} of 40`);
+    const progressBar = secondaryView.querySelector('.mini-progress span');
+    if (progressBar) progressBar.style.width = `${progress}%`;
+
+    const trimester = week <= 13 ? 0 : week <= 27 ? 1 : 2;
+    secondaryView.querySelectorAll('[data-journey-trimester]').forEach((tab) => {
+      const active = Number(tab.dataset.journeyTrimester) === trimester;
+      tab.classList.toggle('is-active', active);
+      if (active) tab.setAttribute('aria-current', 'step');
+      else tab.removeAttribute('aria-current');
+    });
+
+    const grid = secondaryView.querySelector('[data-journey-milestones]');
+    if (!grid) return;
+    grid.replaceChildren();
+    const firstWeek = Math.min(Math.max(1, week - 2), 37);
+    for (let index = 0; index < 4; index += 1) {
+      const milestoneWeek = firstWeek + index;
+      const current = milestoneWeek === week;
+      const status = current ? (ne ? 'हाल' : 'Current') : milestoneWeek < week ? (ne ? 'पूरा' : 'Done') : (ne ? 'आउँदैछ' : 'Coming up');
+      const article = document.createElement('article');
+      article.className = `week-card${current ? ' is-current' : ''}`;
+      article.dataset.action = 'week-card';
+      article.dataset.week = String(milestoneWeek);
+      article.innerHTML = `<div class="week-card__top"><span class="week-number">${digits(milestoneWeek)}</span><span class="week-state">${status}</span></div><strong>${current ? (ne ? 'यो हप्ताको हेरचाह' : 'Care for this week') : (ne ? 'साप्ताहिक हेरचाह' : 'Weekly care milestone')}</strong><small>${current ? (ne ? 'आफ्नो अर्को जाँचको तयारी गर्नुहोस्।' : 'Focus on your wellbeing and prepare for your next checkup.') : (ne ? 'आफ्नो गर्भावस्था हेरचाहका लागि यो हप्ताको मार्गदर्शन हेर्नुहोस्।' : 'Explore care guidance for this week of your pregnancy.')}</small>`;
+      grid.appendChild(article);
+    }
+  }
+
+  document.addEventListener('aama-pregnancy-week-change', (event) => {
+    window.AamaPregnancyJourneyState = event.detail;
+    if (!secondaryView?.classList.contains('is-hidden')) applyJourneyCalendar(event.detail);
+  });
+
+  document.addEventListener('aama-language-change', () => {
+    if (window.AamaPregnancyJourneyState && !secondaryView?.classList.contains('is-hidden')) {
+      applyJourneyCalendar(window.AamaPregnancyJourneyState);
+    }
+  });
   function restoreSettings() {
     try {
       const savedSettings = JSON.parse(window.localStorage.getItem('aamacare-settings') || '{}');

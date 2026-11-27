@@ -106,6 +106,15 @@
     $('[data-trimester]').textContent = `· ${trimester}`;
     $('[data-baby-size]').textContent = babySizes[week]?.[ne ? 'ne' : 'en'] || '';
 
+    const journeyState = {
+      week,
+      dueDate,
+      daysRemaining: toDay(dueDate) - today(),
+      babySize: babySizes[week]?.[ne ? 'ne' : 'en'] || '',
+    };
+    window.AamaPregnancyJourneyState = journeyState;
+    document.dispatchEvent(new CustomEvent('aama-pregnancy-week-change', { detail: journeyState }));
+
     $('[data-week-label]').textContent = weekText(week);
     $('[data-week-label]').style.left = position;
     $('[data-week-start]').textContent = weekText(1);
