@@ -895,14 +895,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const rows = contacts.map(([name, type, phone]) => `
       <article class="helpline-row">
         <span class="helpline-row__icon" aria-hidden="true">+</span>
-        <div class="helpline-row__details"><strong>${name}</strong><span>${type}</span><small>Demo number</small></div>
+        <div class="helpline-row__details"><strong>${name}</strong><span>${type}</span></div>
         <a class="helpline-call" href="tel:${phone}" aria-label="Call ${name} at ${phone}"><span aria-hidden="true">☎</span>${phone}</a>
       </article>
     `).join('');
     openInteraction(
       translate('Emergency support'),
       translate('Nearby emergency helplines'),
-      `<div class="helpline-list">${rows}</div><p class="helpline-demo-note">${translate('These mock numbers are for preview only. Confirm each facility number before relying on it.')}</p>`,
+      `<div class="helpline-list">${rows}</div>`,
       `<button class="button button--primary" type="button" data-action="close-modal">${translate('Close')}</button>`
     );
   }

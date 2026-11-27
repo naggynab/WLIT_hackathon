@@ -469,7 +469,6 @@
     'Hospital · Emergency department': 'अस्पताल · आपतकालीन विभाग',
     'Health post · Lalitpur': 'स्वास्थ्य चौकी · ललितपुर',
     'Demo number': 'नमुना नम्बर',
-    'These mock numbers are for preview only. Confirm each facility number before relying on it.': 'यी नमुना नम्बरहरू पूर्वावलोकनका लागि मात्र हुन्। भर पर्नुअघि सम्बन्धित स्वास्थ्य संस्थासँग नम्बर पुष्टि गर्नुहोस्।',
     'Open profile menu': 'प्रोफाइल मेनु खोल्नुहोस्',
     'My profile': 'मेरो प्रोफाइल',
     'Your account': 'तपाईंको खाता',
