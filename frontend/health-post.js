@@ -63,6 +63,32 @@
     return `<article class="hp-stat hp-stat--${tone}"><span class="hp-stat-icon" aria-hidden="true">${icon}</span><div><p>${label}</p><strong>${value}</strong><small>${note}</small></div></article>`;
   }
 
+  function pregnancyStageChart() {
+    const groups = [
+      { label: '1st trimester', range: 'Weeks 1–13', fill: '#e7a2c7', count: mothers.filter((mother) => mother.week <= 13).length },
+      { label: '2nd trimester', range: 'Weeks 14–27', fill: '#c88dbb', count: mothers.filter((mother) => mother.week >= 14 && mother.week <= 27).length },
+      { label: '3rd trimester', range: 'Weeks 28–40', fill: '#8d6b88', count: mothers.filter((mother) => mother.week >= 28).length },
+    ];
+    const max = Math.max(...groups.map((group) => group.count), 1);
+    const baseline = 184;
+    return `<article class="hp-chart panel"><div class="panel-heading"><div><p class="card-kicker">Pregnancy progress</p><h2>Mothers by trimester</h2></div><span class="hp-chart-total">${mothers.length} mothers</span></div><svg class="hp-chart-svg" viewBox="0 0 540 240" role="img" aria-label="Mothers by trimester: ${groups.map((group) => `${group.label}, ${group.count}`).join('; ')}"><line x1="42" y1="${baseline}" x2="520" y2="${baseline}" class="hp-chart-axis"/>${groups.map((group, index) => {
+      const x = 90 + index * 160;
+      const height = Math.round((group.count / max) * 112);
+      const y = baseline - height;
+      return `<g><rect x="${x}" y="${y}" width="66" height="${height}" rx="10" fill="${group.fill}"/><text x="${x + 33}" y="${y - 12}" class="hp-chart-value" text-anchor="middle">${group.count}</text><text x="${x + 33}" y="207" class="hp-chart-label" text-anchor="middle">${group.label}</text><text x="${x + 33}" y="223" class="hp-chart-sub-label" text-anchor="middle">${group.range}</text></g>`;
+    }).join('')}</svg></article>`;
+  }
+
+  function appointmentStatusChart() {
+    const statuses = [
+      { key: 'upcoming', label: 'Upcoming', color: '#d99e2b' },
+      { key: 'overdue', label: 'Overdue', color: '#cf6464' },
+      { key: 'completed', label: 'Completed', color: '#56a274' },
+    ].map((status) => ({ ...status, count: appointments.filter((item) => getStatus(item) === status.key).length }));
+    const max = Math.max(...statuses.map((status) => status.count), 1);
+    return `<article class="hp-chart panel"><div class="panel-heading"><div><p class="card-kicker">Care schedule</p><h2>Appointment status</h2></div><span class="hp-chart-total">${appointments.length} appointments</span></div><div class="hp-status-chart" role="img" aria-label="Appointment status: ${statuses.map((status) => `${status.label}, ${status.count}`).join('; ')}">${statuses.map((status) => `<div class="hp-status-row"><div class="hp-status-label"><span><i style="--hp-chart-color:${status.color}"></i>${status.label}</span><strong>${status.count}</strong></div><div class="hp-status-track"><span style="--hp-chart-color:${status.color};width:${Math.max(status.count ? 5 : 0, (status.count / max) * 100)}%"></span></div></div>`).join('')}</div></article>`;
+  }
+
   function dashboard() {
     const due = getUpcoming();
     const today = getToday();
@@ -71,6 +97,7 @@
     return `<div class="hp-preview-banner"><span>PREVIEW MODE</span><p>Sample records for demonstration. This dashboard is not connected to real patient data.</p></div>
       <div class="page-heading hp-heading"><div><p class="eyebrow">Health Post Personnel</p><h1>Health Post Dashboard</h1><p>Good morning, Health Worker. Here is the care schedule for your health post.</p></div><span class="hp-date">${dateLabel(dayDate(0), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
       <section class="hp-stats" aria-label="Health post summary statistics">${statCard('Total Registered Mothers', mothers.length, 'in this health post', '♧', 'pink')}${statCard('Mothers Due Soon', due.length, 'appointments in the next 7 days', '◷', 'amber')}${statCard('Overdue Appointments', overdueCount, 'need follow-up', '!', 'red')}${statCard("Today's Appointments", today.length, 'scheduled for today', '✓', 'green')}</section>
+      <section class="hp-charts" aria-label="Pregnancy and appointment charts">${pregnancyStageChart()}${appointmentStatusChart()}</section>
       <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">Next 7 days</p><h2>Due Soon Mothers</h2></div><a class="text-action" href="/health-post/due-soon" data-route="/health-post/due-soon">View all <span>→</span></a></div>${motherRows(due.map((appointment) => ({ ...getMother(appointment.motherId), appointment })), true)}</section>
       <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">${dateLabel(dayDate(0), { weekday: 'long' })}</p><h2>Today's Appointments</h2></div><a class="text-action" href="/health-post/appointments" data-route="/health-post/appointments">View schedule <span>→</span></a></div><div class="hp-today-list">${todayAppointments.length ? todayAppointments.map((item) => {
         const mother = getMother(item.motherId);
