@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const secondaryView = document.querySelector('#secondary-view');
   const loginForm = document.querySelector('#login-form');
   const signupForm = document.querySelector('#signup-form');
+  const loginRole = document.querySelector('#login-role');
+  const signupRole = document.querySelector('#signup-role');
+  const signupUserFields = document.querySelector('.signup-user-fields');
+  const signupWorkerFields = document.querySelector('.signup-worker-fields');
   const phoneInput = document.querySelector('#phone');
   const signupPhoneInput = document.querySelector('#signup-phone');
   const signupDueDateInput = document.querySelector('#signup-due-date');
@@ -145,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data.token || !data.user) throw new Error('The server returned an incomplete sign-in response.');
 
       storeAuthSession(data.token, data.user);
-      if (endpoint === 'signup') {
+      if (endpoint === 'signup' && data.user.role !== 'health_worker') {
         try {
           window.localStorage.setItem(profileStorageKey, JSON.stringify({
             name: data.user.name,
@@ -175,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      navigate('/home');
+      navigate(data.user.role === 'health_worker' ? '/health-post' : '/home');
       showToast(successMessage);
     } catch (error) {
       const message = error instanceof TypeError
@@ -464,6 +468,20 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('aama-language-change', updateDashboardDate);
 
   function openProfileDialog() {
+    const account = readAuthUser();
+    if (account?.role === 'health_worker') {
+      const name = escapeHtml(account.name || 'Health Worker');
+      const initials = escapeHtml(profileInitials(account.name || 'Health Worker'));
+      const phone = escapeHtml(account.phone || 'Not added');
+      const facility = escapeHtml(account.facilityName || 'Not added');
+      openInteraction(
+        'Health worker account',
+        'My profile',
+        `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>Health worker</span><span>${phone}</span></div></div><div class="profile-health-details"><div><small>Role</small><strong>Health worker</strong></div><div><small>Health post or facility</small><strong>${facility}</strong></div><div><small>Mobile number</small><strong>${phone}</strong></div></div>`,
+        '<button class="button button--primary" type="button" data-action="close-modal">Close</button>',
+      );
+      return;
+    }
     const profile = getProfile();
     const name = escapeHtml(profile.name);
     const initials = escapeHtml(profileInitials(profile.name));
@@ -685,6 +703,17 @@ document.addEventListener('DOMContentLoaded', () => {
     loginScreen?.setAttribute('aria-labelledby', signingUp ? 'signup-title' : 'login-title');
   }
 
+  function updateSignupRoleFields() {
+    const isHealthWorker = signupRole?.value === 'health_worker';
+    [[signupUserFields, !isHealthWorker], [signupWorkerFields, isHealthWorker]].forEach(([container, enabled]) => {
+      if (!container) return;
+      container.hidden = !enabled;
+      container.querySelectorAll('input, select, textarea').forEach((field) => { field.disabled = !enabled; });
+    });
+  }
+  signupRole?.addEventListener('change', updateSignupRoleFields);
+  updateSignupRoleFields();
+
   function showLogin() {
     dashboardScreen?.classList.add('is-hidden');
     loginScreen?.classList.remove('is-hidden');
@@ -699,9 +728,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileSubtitle = profileButton?.querySelector('.profile-copy small');
     const profileAvatar = profileButton?.querySelector('.avatar');
     if (isHealthPost) {
-      if (profileName) profileName.textContent = 'Health Worker';
-      if (profileSubtitle) profileSubtitle.textContent = 'Health Post Personnel';
-      if (profileAvatar) profileAvatar.textContent = 'HW';
+      const account = readAuthUser();
+      const name = account?.name || 'Health Worker';
+      if (profileName) profileName.textContent = name;
+      if (profileSubtitle) profileSubtitle.textContent = account?.facilityName || 'Health worker';
+      if (profileAvatar) profileAvatar.textContent = profileInitials(name);
     } else {
       updateProfileDisplay(getProfile());
       if (profileSubtitle) profileSubtitle.textContent = 'My profile';
@@ -1185,6 +1216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     submitAuthForm('login', {
       phone: phoneInput?.value.trim(),
       password: pinInput?.value || '',
+      role: loginRole?.value || 'user',
     }, loginForm, 'Signed in successfully.');
   });
   showSignupLink?.addEventListener('click', (event) => {
@@ -1197,18 +1229,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   signupForm?.addEventListener('submit', (event) => {
     event.preventDefault();
-    submitAuthForm('signup', {
+    const role = signupRole?.value || 'user';
+    const payload = {
+      role,
       name: document.querySelector('#signup-name')?.value.trim(),
       phone: signupPhoneInput?.value.trim(),
-      dueDate: signupDueDateInput?.value,
-      age: Number(document.querySelector('#signup-age')?.value),
-      weightKg: Number(document.querySelector('#signup-weight')?.value),
-      height: Number(document.querySelector('#signup-height')?.value),
-      bloodType: document.querySelector('#signup-blood-type')?.value,
-      healthNotes: document.querySelector('#signup-health-notes')?.value.trim() || '',
       password: document.querySelector('#signup-password')?.value || '',
       preferredLanguage: window.AamaI18n?.getLanguage() || 'ne',
-    }, signupForm, 'Account created successfully.');
+    };
+    if (role === 'health_worker') {
+      payload.facilityName = document.querySelector('#signup-facility')?.value.trim() || '';
+    } else {
+      payload.dueDate = signupDueDateInput?.value;
+      payload.age = Number(document.querySelector('#signup-age')?.value);
+      payload.weightKg = Number(document.querySelector('#signup-weight')?.value);
+      payload.height = Number(document.querySelector('#signup-height')?.value);
+      payload.bloodType = document.querySelector('#signup-blood-type')?.value;
+      payload.healthNotes = document.querySelector('#signup-health-notes')?.value.trim() || '';
+    }
+    submitAuthForm('signup', payload, signupForm, 'Account created successfully.');
   });
   demoLogin?.addEventListener('click', () => {
     clearAuthSession();
