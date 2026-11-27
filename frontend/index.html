@@ -74,6 +74,14 @@
               <div class="input-wrap"><span class="input-prefix">+977</span><input id="signup-phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" required></div>
               <label for="signup-due-date">Estimated due date</label>
               <div class="input-wrap"><input id="signup-due-date" name="dueDate" type="date" autocomplete="off" required></div>
+              <div class="signup-health-grid">
+                <div><label for="signup-age">Age</label><div class="input-wrap"><input id="signup-age" name="age" type="number" min="10" max="60" step="1" inputmode="numeric" placeholder="Years" required></div></div>
+                <div><label for="signup-weight">Current weight</label><div class="input-wrap"><input id="signup-weight" name="weightKg" type="number" min="20" max="300" step="0.1" inputmode="decimal" placeholder="kg" required></div></div>
+                <div><label for="signup-height">Height</label><div class="input-wrap"><input id="signup-height" name="height" type="number" min="80" max="250" step="0.1" inputmode="decimal" placeholder="cm" required></div></div>
+                <div><label for="signup-blood-type">Blood group</label><div class="input-wrap"><select id="signup-blood-type" name="bloodType" required><option value="">Select</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option><option value="Unknown">I don't know</option></select></div></div>
+              </div>
+              <label for="signup-health-notes">Health conditions <span class="form-label-hint">optional</span></label>
+              <textarea class="signup-health-notes" id="signup-health-notes" name="healthNotes" rows="2" maxlength="500" placeholder="Anything your care team should know"></textarea>
               <label for="signup-password">Create password or PIN</label>
               <div class="input-wrap"><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
               <button class="button button--primary button--full" type="submit">Create account <span aria-hidden="true">→</span></button>
