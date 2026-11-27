@@ -764,6 +764,8 @@ document.addEventListener('DOMContentLoaded', () => {
   menuButton?.addEventListener('click', () => sidebar?.classList.toggle('is-open'));
   window.addEventListener('popstate', () => navigate(window.location.pathname, true));
   window.addEventListener('aama-language-change', updateSharedChecklistSummary);
-  navigate(window.location.pathname, true);
+  const navigation = window.performance?.getEntriesByType?.('navigation')?.[0];
+  const initialPath = navigation?.type === 'reload' ? '/login' : window.location.pathname;
+  navigate(initialPath, true);
   restoreChecklist();
 });
