@@ -2,6 +2,8 @@
   "rewrites": [
     { "source": "/login", "destination": "/index.html" },
     { "source": "/home", "destination": "/index.html" },
-    { "source": "/home/:path*", "destination": "/index.html" }
+    { "source": "/home/:path*", "destination": "/index.html" },
+    { "source": "/health-post", "destination": "/index.html" },
+    { "source": "/health-post/:path*", "destination": "/index.html" }
   ]
 }
