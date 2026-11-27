@@ -429,8 +429,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarNode = profileButton?.querySelector('.avatar');
     if (nameNode) nameNode.textContent = name;
     if (avatarNode) avatarNode.textContent = avatar;
+    const greetingNameNode = document.querySelector('#dashboard-user-name');
+    if (greetingNameNode) greetingNameNode.textContent = name.split(/\s+/)[0];
+    updateDashboardDate();
+  }
+
+  function updateDashboardDate() {
+    const dateNode = document.querySelector('#dashboard-current-date');
+    if (!dateNode) return;
+    const language = window.AamaI18n?.getLanguage() || 'en';
+    dateNode.textContent = new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    }).format(new Date());
   }
   updateProfileDisplay(getProfile());
+  document.addEventListener('aama-language-change', updateDashboardDate);
 
   function openProfileDialog() {
     const profile = getProfile();
