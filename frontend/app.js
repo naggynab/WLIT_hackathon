@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const originalSideNav = sideNav?.innerHTML || '';
   const sidebarSectionLabel = document.querySelector('.sidebar-section-label');
   const supportCard = document.querySelector('.support-card');
+  const maternalSettingsItem = document.querySelector('.sidebar-bottom .nav-item[data-view="settings"]');
+  const notificationButton = document.querySelector('.notification-button');
   const healthPostPreview = document.querySelector('#health-post-preview');
   const menuButton = document.querySelector('#menu-button');
   const forgotLink = document.querySelector('#forgot-link');
@@ -708,10 +710,14 @@ document.addEventListener('DOMContentLoaded', () => {
       sideNav.innerHTML = items.map(([key, route, icon, text]) => `<a class="nav-item${view === key ? ' is-active' : ''}" data-view="${key}" data-route="${route}" href="${route}"${view === key ? ' aria-current="page"' : ''}><span class="nav-icon" aria-hidden="true">${icon}</span><span>${text}</span></a>`).join('');
       if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Health post';
       supportCard?.classList.add('is-hidden');
+      maternalSettingsItem?.classList.add('is-hidden');
+      notificationButton?.classList.add('is-hidden');
     } else if (sideNav) {
       sideNav.innerHTML = originalSideNav;
       if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Your care space';
       supportCard?.classList.remove('is-hidden');
+      maternalSettingsItem?.classList.remove('is-hidden');
+      notificationButton?.classList.remove('is-hidden');
     }
     document.querySelectorAll('.nav-item[data-route]').forEach((nav) => {
       nav.classList.remove('is-active');
