@@ -1,15 +1,17 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
+import { GoogleGenAI } from '@google/genai';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-dotenv.config();
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+dotenv.config({ path: path.join(projectRoot, '.env') });
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'frontend');
+const geminiApiKey = process.env.GEMINI_API_KEY?.trim();
+const gemini = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
+const frontendRoot = path.join(projectRoot, 'frontend');
 
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || '*')
   .split(',')
@@ -49,17 +51,36 @@ function fallbackReply(message) {
   if (lower.includes('emergency') || lower.includes('bleeding') || lower.includes('severe pain')) {
     return 'This may need urgent attention. Please contact your health worker or local emergency care immediately. If you feel unsafe, ask a trusted family member to stay with you.';
   }
-  return 'I’m ready to help with general pregnancy information. Please configure OPENAI_API_KEY to enable live AI answers, and contact your health worker for personal medical advice.';
+  if (lower.includes('water') || lower.includes('hydrate')) {
+    return 'Staying hydrated is helpful during pregnancy. Sip water regularly and follow the advice of your health worker, especially if you have vomiting, swelling, or another medical condition.';
+  }
+  if (lower.includes('exercise') || lower.includes('movement')) {
+    return 'Gentle movement can be helpful for many people during pregnancy, but the right activity depends on your health. Discuss new exercise with your health worker and stop if you feel pain, dizziness, bleeding, or trouble breathing.';
+  }
+  if (lower.includes('food') || lower.includes('eat') || lower.includes('nutrition')) {
+    return 'Choose varied meals with local vegetables, fruit, grains, protein, and enough fluids. Follow your prescribed supplements and ask your health worker about foods or supplements specific to you.';
+  }
+  return 'I’m ready to help with general pregnancy information. The live AI service is temporarily unavailable, so please try again later or contact your health worker for personal medical advice.';
 }
 
 async function createReply(message) {
-  if (!openai) return fallbackReply(message);
-  const response = await openai.responses.create({
-    model: process.env.OPENAI_MODEL || 'gpt-5-mini',
-    instructions: assistantInstructions,
-    input: message
-  });
-  return response.output_text?.trim() || fallbackReply(message);
+  if (!gemini) return fallbackReply(message);
+  try {
+    const response = await gemini.models.generateContent({
+      model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
+      contents: message,
+      config: {
+        systemInstruction: assistantInstructions
+      }
+    });
+    return response.text?.trim() || fallbackReply(message);
+  } catch (error) {
+    if (error.status === 429 || error.code === 'RESOURCE_EXHAUSTED') {
+      console.warn('Gemini free-tier limit reached; using the local safety fallback.');
+      return fallbackReply(message);
+    }
+    throw error;
+  }
 }
 
 async function createSpeech(text) {
@@ -87,7 +108,7 @@ async function createSpeech(text) {
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
-    chatbotConfigured: Boolean(openai),
+    chatbotConfigured: Boolean(gemini),
     voiceConfigured: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID)
   });
 });
