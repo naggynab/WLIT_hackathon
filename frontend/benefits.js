@@ -19,7 +19,7 @@
       const [, year, month, day] = match;
       const monthNames = ['', 'Baisakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'];
       return translate('BS {year} {month} {day}', {
-        year: formatNumber(Number(year)),
+        year: localizeDigits(Number(year)),
         month: translate(monthNames[Number(month)]),
         day: formatNumber(Number(day)),
       });

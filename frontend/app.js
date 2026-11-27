@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const interactionClose = document.querySelector('#interaction-close');
   const views = window.AamaViews || {};
   const apiBaseUrl = String(window.AAMA_API_URL || '').replace(/\/$/, '');
-  const translate = (value) => window.AamaI18n?.t(value) || value;
+  const translate = (value, values) => window.AamaI18n?.t(value, values) || value;
   window.AamaBenefits?.renderTeaser();
   // Keep the existing storage keys so saved user data survives the rebrand.
   const checklistStorageKey = 'aamacare-checklist';
@@ -449,11 +449,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateProfileDisplay(profile) {
-    const name = profile.name.trim() || 'Sita K.';
+    const isHealthPost = window.location.pathname.startsWith('/health-post');
+    const account = readAuthUser();
+    const worker = account?.role === 'health_worker' ? account : null;
+    const name = isHealthPost ? worker?.name || 'Saraswati K.C.' : profile.name.trim() || 'Sita K.';
     const avatar = profileInitials(name);
     const nameNode = profileButton?.querySelector('.profile-copy strong');
+    const subtitleNode = profileButton?.querySelector('.profile-copy small');
     const avatarNode = profileButton?.querySelector('.avatar');
     if (nameNode) nameNode.textContent = name;
+    if (subtitleNode) subtitleNode.textContent = isHealthPost ? worker?.facilityName || (worker ? 'Health worker' : 'Health Assistant') : 'My profile';
     if (avatarNode) avatarNode.textContent = avatar;
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -478,6 +483,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openProfileDialog() {
     if (window.location.pathname.startsWith('/health-post')) {
+      const account = readAuthUser();
+      if (account?.role === 'health_worker') {
+        const name = escapeHtml(account.name || 'Health Worker');
+        const initials = escapeHtml(profileInitials(account.name || 'Health Worker'));
+        const phone = escapeHtml(account.phone || 'Not added');
+        const facility = escapeHtml(account.facilityName || 'Not added');
+        openInteraction(
+          'Health worker account',
+          'My profile',
+          `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>Health worker</span><span>${phone}</span></div></div><div class="profile-health-details"><div><small>Role</small><strong>Health worker</strong></div><div><small>Health post or facility</small><strong>${facility}</strong></div><div><small>Mobile number</small><strong>${phone}</strong></div></div>`,
+          '<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-action="open-logout">Sign out</button>',
+        );
+        return;
+      }
       openInteraction(
         'Health Post Personnel',
         'Assistant profile',
@@ -728,17 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderDashboardView(view, label) {
     const isHealthPost = view.startsWith('hp-');
-    const profileName = profileButton?.querySelector('.profile-copy strong');
-    const profileSubtitle = profileButton?.querySelector('.profile-copy small');
-    const profileAvatar = profileButton?.querySelector('.avatar');
-    if (isHealthPost) {
-      if (profileName) profileName.textContent = 'Saraswati K.C.';
-      if (profileSubtitle) profileSubtitle.textContent = 'Health Assistant';
-      if (profileAvatar) profileAvatar.textContent = 'SK';
-    } else {
-      updateProfileDisplay(getProfile());
-      if (profileSubtitle) profileSubtitle.textContent = 'My profile';
-    }
+    updateProfileDisplay(getProfile());
     if (isHealthPost && sideNav) {
       const items = [
         ['hp-dashboard', '/health-post', '⌂', 'Dashboard'],
