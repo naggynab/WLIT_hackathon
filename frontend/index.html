@@ -74,7 +74,13 @@
             <button class="nav-item" type="button" data-view="records" data-route="/home/health-records"><span class="nav-icon">▤</span><span>Health records</span></button>
             <button class="nav-item" type="button" data-view="family" data-route="/home/family-hub"><span class="nav-icon">♧</span><span>Family hub</span></button>
             <button class="nav-item" type="button" data-view="services" data-route="/home/health-services"><span class="nav-icon">⌖</span><span>Health services</span></button>
-            <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
+            <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare" aria-expanded="false" aria-controls="learn-subnav"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
+            <div class="learn-subnav is-hidden" id="learn-subnav" aria-label="Learn and prepare topics">
+              <button class="learn-subnav-item" type="button" data-learn-nav="food">Food &amp; nutrition</button>
+              <button class="learn-subnav-item" type="button" data-learn-nav="movement">Movement</button>
+              <button class="learn-subnav-item" type="button" data-learn-nav="birth">Birth preparation</button>
+              <button class="learn-subnav-item" type="button" data-learn-nav="support">Support information</button>
+            </div>
           </nav>
           <div class="sidebar-bottom">
             <div class="support-card">
@@ -220,6 +226,8 @@
     <script src="config.js"></script>
     <script src="i18n.js"></script>
     <script src="views.js"></script>
+    <script src="learn.js"></script>
+    <script src="learn.js"></script>
     <script src="app.js"></script>
     <script src="pregnancy-card.js"></script>
   </body>

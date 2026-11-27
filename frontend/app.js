@@ -178,6 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeNav = document.querySelector(`.nav-item[data-view="${view}"]`);
     activeNav?.classList.add('is-active');
     activeNav?.setAttribute('aria-current', 'page');
+    const learnNav = document.querySelector('.nav-item[data-view="learn"]');
+    const learnSubnav = document.querySelector('#learn-subnav');
+    learnSubnav?.classList.toggle('is-hidden', view !== 'learn');
+    learnNav?.setAttribute('aria-expanded', String(view === 'learn'));
+    document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+      item.classList.remove('is-active');
+      item.removeAttribute('aria-current');
+    });
     sidebar?.classList.remove('is-open');
     if (view === 'overview') {
       dashboardContent?.classList.remove('is-hidden');
@@ -187,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView.innerHTML = views[view];
       secondaryView.classList.remove('is-hidden');
       if (view === 'settings') restoreSettings();
+      if (view === 'learn') window.AamaLearn?.init(secondaryView);
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
     window.AamaI18n?.translatePage();
@@ -474,6 +483,42 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.querySelectorAll('.ai-launcher').forEach((button) => button.addEventListener('click', openAssistant));
   document.addEventListener('click', (event) => {
+    const learnNavItem = event.target.closest('[data-learn-nav]');
+    if (learnNavItem) {
+      const openBranch = () => {
+        window.AamaLearn?.open(secondaryView, learnNavItem.dataset.learnNav);
+        document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+          const selected = item === learnNavItem;
+          item.classList.toggle('is-active', selected);
+          if (selected) item.setAttribute('aria-current', 'page');
+          else item.removeAttribute('aria-current');
+        });
+      };
+      if (window.location.pathname !== '/home/learn-prepare') {
+        navigate('/home/learn-prepare');
+        openBranch();
+      } else openBranch();
+      return;
+    }
+    const learnTopic = event.target.closest('[data-learn-page]');
+    if (learnTopic) {
+      window.AamaLearn?.open(secondaryView, learnTopic.dataset.learnPage);
+      document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+        const selected = item.dataset.learnNav === learnTopic.dataset.learnPage;
+        item.classList.toggle('is-active', selected);
+        if (selected) item.setAttribute('aria-current', 'page');
+        else item.removeAttribute('aria-current');
+      });
+      return;
+    }
+    if (event.target.closest('[data-learn-back]')) {
+      window.AamaLearn?.back(secondaryView);
+      document.querySelectorAll('.learn-subnav-item').forEach((item) => {
+        item.classList.remove('is-active');
+        item.removeAttribute('aria-current');
+      });
+      return;
+    }
     const routeButton = event.target.closest('[data-route]');
     if (routeButton) {
       event.preventDefault();
@@ -482,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const actionButton = event.target.closest('[data-action]');
     if (actionButton) {
+      if (actionButton.dataset.action === 'learn-use-location') { window.AamaLearn?.locate(secondaryView); return; }
       handleAction(actionButton.dataset.action, actionButton);
       return;
     }
