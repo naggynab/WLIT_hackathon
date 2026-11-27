@@ -446,6 +446,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('aama-language-change', updateDashboardDate);
 
   function openProfileDialog() {
+    if (window.location.pathname.startsWith('/health-post')) {
+      openInteraction(
+        'Health Post Personnel',
+        'Assistant profile',
+        '<div class="profile-dialog-summary"><span class="avatar">SK</span><div><strong>Saraswati K.C.</strong><span>Health Assistant</span><span>Lagankhel Health Post · Lalitpur</span></div></div><div class="hp-assistant-profile"><div><small>Staff contact</small><strong>9800000401</strong></div><div><small>Account type</small><strong>Health Post Personnel · Preview</strong></div></div><p class="hp-profile-note">This is a fictional assistant profile for the dashboard preview.</p>',
+        '<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-action="open-logout">Sign out</button>',
+      );
+      return;
+    }
     const profile = getProfile();
     const name = escapeHtml(profile.name);
     const initials = escapeHtml(profileInitials(profile.name));
@@ -679,9 +688,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileSubtitle = profileButton?.querySelector('.profile-copy small');
     const profileAvatar = profileButton?.querySelector('.avatar');
     if (isHealthPost) {
-      if (profileName) profileName.textContent = 'Health Worker';
-      if (profileSubtitle) profileSubtitle.textContent = 'Health Post Personnel';
-      if (profileAvatar) profileAvatar.textContent = 'HW';
+      if (profileName) profileName.textContent = 'Saraswati K.C.';
+      if (profileSubtitle) profileSubtitle.textContent = 'Health Assistant';
+      if (profileAvatar) profileAvatar.textContent = 'SK';
     } else {
       updateProfileDisplay(getProfile());
       if (profileSubtitle) profileSubtitle.textContent = 'My profile';
@@ -689,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isHealthPost && sideNav) {
       const items = [
         ['hp-dashboard', '/health-post', '⌂', 'Dashboard'],
-        ['hp-mothers', '/health-post/mothers', '♧', 'All Registered Mothers'],
+        ['hp-mothers', '/health-post/mothers', '♡', 'All Registered Mothers'],
         ['hp-due-soon', '/health-post/due-soon', '◷', 'Due Soon Mothers'],
         ['hp-appointments', '/health-post/appointments', '▦', 'Appointments'],
         ['hp-followups', '/health-post/follow-ups', '↻', 'Follow-ups'],
@@ -904,7 +913,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleAction(action, target) {
-    if (action === 'open-profile') {
+    if (action === 'toggle-patient-contact') {
+      const isRevealed = target.getAttribute('aria-pressed') === 'true';
+      const value = target.querySelector('[data-contact-value]');
+      const actionLabel = target.querySelector('[data-contact-action]');
+      target.setAttribute('aria-pressed', String(!isRevealed));
+      target.setAttribute('aria-label', `${isRevealed ? 'Show' : 'Hide'} contact number for ${target.dataset.contactName || 'mother'}`);
+      if (value) value.textContent = isRevealed ? target.dataset.masked : target.dataset.phone;
+      if (actionLabel) actionLabel.textContent = isRevealed ? 'Show' : 'Hide';
+    } else if (action === 'open-profile') {
       openProfileDialog();
     } else if (action === 'edit-profile') {
       openProfileEditor();

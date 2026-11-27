@@ -1,13 +1,13 @@
 (() => {
   const mothers = [
-    { id: 'm1', name: 'Maya Tamang', phone: '98•••0142', week: 28, risk: 'Routine', followUp: 'Blood pressure review' },
-    { id: 'm2', name: 'Anita Shrestha', phone: '98•••6721', week: 34, risk: 'High risk', followUp: 'Check-in after referral' },
-    { id: 'm3', name: 'Laxmi Gurung', phone: '98•••3390', week: 19, risk: 'Routine', followUp: 'Iron supplement check' },
-    { id: 'm4', name: 'Sushma Rai', phone: '98•••8054', week: 31, risk: 'High risk', followUp: 'Confirm hospital plan' },
-    { id: 'm5', name: 'Nirmala Karki', phone: '98•••2276', week: 12, risk: 'Routine', followUp: 'First ANC visit' },
-    { id: 'm6', name: 'Sabina BK', phone: '98•••4918', week: 24, risk: 'Routine', followUp: 'Nutrition counseling' },
-    { id: 'm7', name: 'Rita Thapa', phone: '98•••1633', week: 36, risk: 'High risk', followUp: 'Urgent blood pressure review' },
-    { id: 'm8', name: 'Gita Ale', phone: '98•••5547', week: 8, risk: 'Routine', followUp: 'Confirm next visit' },
+    { id: 'm1', name: 'Maya Tamang', phone: '9800000142', week: 28, risk: 'Routine', followUp: 'Blood pressure review' },
+    { id: 'm2', name: 'Anita Shrestha', phone: '9800006721', week: 34, risk: 'High risk', followUp: 'Check-in after referral' },
+    { id: 'm3', name: 'Laxmi Gurung', phone: '9800003390', week: 19, risk: 'Routine', followUp: 'Iron supplement check' },
+    { id: 'm4', name: 'Sushma Rai', phone: '9800008054', week: 31, risk: 'High risk', followUp: 'Confirm hospital plan' },
+    { id: 'm5', name: 'Nirmala Karki', phone: '9800002276', week: 12, risk: 'Routine', followUp: 'First ANC visit' },
+    { id: 'm6', name: 'Sabina BK', phone: '9800004918', week: 24, risk: 'Routine', followUp: 'Nutrition counseling' },
+    { id: 'm7', name: 'Rita Thapa', phone: '9800001633', week: 36, risk: 'High risk', followUp: 'Urgent blood pressure review' },
+    { id: 'm8', name: 'Gita Ale', phone: '9800005547', week: 8, risk: 'Routine', followUp: 'Confirm next visit' },
   ];
 
   // Appointment dates are relative to today so the preview stays useful whenever it is opened.
@@ -32,6 +32,8 @@
   const dateLabel = (date, options = { day: 'numeric', month: 'short' }) => date.toLocaleDateString(undefined, options);
   const todayKey = () => dayDate(0).toDateString();
   const getMother = (id) => mothers.find((mother) => mother.id === id);
+  const maskedPhone = (phone) => `${phone.slice(0, 3)}••••${phone.slice(-3)}`;
+  const contactControl = (mother) => `<button class="hp-contact-button" type="button" data-action="toggle-patient-contact" data-phone="${escapeHtml(mother.phone)}" data-masked="${maskedPhone(mother.phone)}" data-contact-name="${escapeHtml(mother.name)}" aria-pressed="false" aria-label="Show contact number for ${escapeHtml(mother.name)}"><span data-contact-value>${maskedPhone(mother.phone)}</span><small data-contact-action>Show</small></button>`;
   const getStatus = (appointment) => appointment.status === 'completed' ? 'completed' : appointment.dayOffset < 0 ? 'overdue' : 'upcoming';
   const getUpcoming = () => appointments.filter((item) => getStatus(item) === 'upcoming' && item.dayOffset <= 7);
   const getToday = () => appointments.filter((item) => dayDate(item.dayOffset).toDateString() === todayKey());
@@ -45,7 +47,7 @@
     if (!items.length) return `<div class="hp-empty"><span aria-hidden="true">✓</span><strong>All clear</strong><p>${emptyMessage}</p></div>`;
     return `<div class="hp-table-wrap"><table class="hp-table"><thead><tr><th>Mother</th><th>Date &amp; time</th><th>Appointment type</th><th>Status</th></tr></thead><tbody>${items.map((item) => {
       const mother = getMother(item.motherId);
-      return `<tr><td><strong>${escapeHtml(mother.name)}</strong><small>${escapeHtml(mother.phone)}</small></td><td>${dateLabel(dayDate(item.dayOffset))}<small>${escapeHtml(item.time)}</small></td><td>${escapeHtml(item.type)}</td><td>${statusPill(getStatus(item))}</td></tr>`;
+      return `<tr><td><strong>${escapeHtml(mother.name)}</strong>${contactControl(mother)}</td><td>${dateLabel(dayDate(item.dayOffset))}<small>${escapeHtml(item.time)}</small></td><td>${escapeHtml(item.type)}</td><td>${statusPill(getStatus(item))}</td></tr>`;
     }).join('')}</tbody></table></div>`;
   }
 
@@ -53,7 +55,7 @@
     if (!items.length) return `<div class="hp-empty"><span aria-hidden="true">✓</span><strong>No mothers to show</strong><p>There are no records in this preview section.</p></div>`;
     return `<div class="hp-table-wrap"><table class="hp-table"><thead><tr><th>Mother</th><th>Contact</th><th>Pregnancy week</th>${withAppointment ? '<th>Next appointment</th><th>Days left</th>' : '<th>Follow-up</th><th>Risk level</th>'}</tr></thead><tbody>${items.map((mother) => {
       const next = appointments.filter((item) => item.motherId === mother.id && getStatus(item) === 'upcoming').sort((a, b) => a.dayOffset - b.dayOffset)[0];
-      return `<tr><td><strong>${escapeHtml(mother.name)}</strong></td><td>${escapeHtml(mother.phone)}</td><td>Week ${mother.week}</td>${withAppointment
+      return `<tr><td><strong>${escapeHtml(mother.name)}</strong></td><td>${contactControl(mother)}</td><td>Week ${mother.week}</td>${withAppointment
         ? `<td>${next ? dateLabel(dayDate(next.dayOffset), { weekday: 'short', day: 'numeric', month: 'short' }) : 'Not scheduled'}</td><td>${next ? `<span class="hp-days${next.dayOffset === 0 ? ' hp-days--today' : ''}">${next.dayOffset === 0 ? 'Today' : `${next.dayOffset} days`}</span>` : '—'}</td>`
         : `<td>${escapeHtml(mother.followUp)}</td><td>${mother.risk === 'High risk' ? '<span class="hp-status hp-status--overdue"><i aria-hidden="true"></i>High risk</span>' : '<span class="hp-status hp-status--completed"><i aria-hidden="true"></i>Routine</span>'}</td>`}</tr>`;
     }).join('')}</tbody></table></div>`;
@@ -96,7 +98,7 @@
     const todayAppointments = today.map((item) => ({ ...item, dayOffset: 0 }));
     return `<div class="hp-preview-banner"><span>PREVIEW MODE</span><p>Sample records for demonstration. This dashboard is not connected to real patient data.</p></div>
       <div class="page-heading hp-heading"><div><p class="eyebrow">Health Post Personnel</p><h1>Health Post Dashboard</h1><p>Good morning, Health Worker. Here is the care schedule for your health post.</p></div><span class="hp-date">${dateLabel(dayDate(0), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
-      <section class="hp-stats" aria-label="Health post summary statistics">${statCard('Total Registered Mothers', mothers.length, 'in this health post', '♧', 'pink')}${statCard('Mothers Due Soon', due.length, 'appointments in the next 7 days', '◷', 'amber')}${statCard('Overdue Appointments', overdueCount, 'need follow-up', '!', 'red')}${statCard("Today's Appointments", today.length, 'scheduled for today', '✓', 'green')}</section>
+      <section class="hp-stats" aria-label="Health post summary statistics">${statCard('Total Registered Mothers', mothers.length, 'in this health post', '♡', 'pink')}${statCard('Mothers Due Soon', due.length, 'appointments in the next 7 days', '◷', 'amber')}${statCard('Overdue Appointments', overdueCount, 'need follow-up', '!', 'red')}${statCard("Today's Appointments", today.length, 'scheduled for today', '✓', 'green')}</section>
       <section class="hp-charts" aria-label="Pregnancy and appointment charts">${pregnancyStageChart()}${appointmentStatusChart()}</section>
       <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">Next 7 days</p><h2>Due Soon Mothers</h2></div><a class="text-action" href="/health-post/due-soon" data-route="/health-post/due-soon">View all <span>→</span></a></div>${motherRows(due.map((appointment) => ({ ...getMother(appointment.motherId), appointment })), true)}</section>
       <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">${dateLabel(dayDate(0), { weekday: 'long' })}</p><h2>Today's Appointments</h2></div><a class="text-action" href="/health-post/appointments" data-route="/health-post/appointments">View schedule <span>→</span></a></div><div class="hp-today-list">${todayAppointments.length ? todayAppointments.map((item) => {
