@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "dev": "node --watch server.mjs"
+    "dev": "nodemon --watch server.mjs --watch ../frontend --ext js,mjs,cjs,json,html,css,png server.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.52.0",
     "dotenv": "^16.4.7",
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
