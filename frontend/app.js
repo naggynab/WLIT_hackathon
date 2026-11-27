@@ -4,6 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const dashboardContent = document.querySelector('.dashboard-content');
   const secondaryView = document.querySelector('#secondary-view');
   const loginForm = document.querySelector('#login-form');
+  const signupForm = document.querySelector('#signup-form');
+  const phoneInput = document.querySelector('#phone');
+  const signupPhoneInput = document.querySelector('#signup-phone');
+  const signupDueDateInput = document.querySelector('#signup-due-date');
+  const rememberInput = document.querySelector('#remember');
+  const signupView = document.querySelector('#signup-view');
+  const loginCopy = document.querySelector('.auth-panel > .auth-copy');
+  const loginFooter = document.querySelector('.auth-panel > .auth-footer');
+  const showSignupLink = document.querySelector('#show-signup');
+  const showLoginLink = document.querySelector('#show-login');
   const demoLogin = document.querySelector('#demo-login');
   const logoutButton = document.querySelector('#logout-button');
   const profileButton = document.querySelector('.profile-button');
@@ -25,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const assistantInput = document.querySelector('#assistant-input');
   const assistantSend = document.querySelector('#assistant-send');
   const assistantVoice = document.querySelector('#assistant-voice');
+  const assistantReadAloud = document.querySelector('#assistant-read-aloud');
   const assistantStatus = document.querySelector('#assistant-status');
   const assistantMessages = document.querySelector('#assistant-messages');
   const interactionModal = document.querySelector('#interaction-modal');
@@ -33,12 +44,291 @@ document.addEventListener('DOMContentLoaded', () => {
   const views = window.AamaViews || {};
   const apiBaseUrl = String(window.AAMA_API_URL || '').replace(/\/$/, '');
   const translate = (value) => window.AamaI18n?.t(value) || value;
+  // Keep the existing storage keys so saved user data survives the rebrand.
   const checklistStorageKey = 'aamacare-checklist';
   const customChecklistStorageKey = 'aamacare-custom-checklist';
+  const familyPermissionsStorageKey = 'matrisathi-family-permissions';
+  const authTokenKey = 'aamacare-auth-token';
+  const authUserKey = 'aamacare-auth-user';
+  const defaultFamilyPermissions = {
+    'Tasks and appointments': true,
+    'Pregnancy journey': true,
+    'Health records': false,
+    'Emergency alerts': true,
+  };
   const profileStorageKey = 'aamacare-profile';
   let toastTimer;
   let activeRecognition = null;
+  let latestAssistantReply = null;
+  let currentAssistantAudio = null;
   let interactionReturnFocus = null;
+
+  if (signupDueDateInput) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateValue = (date) => {
+      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return localDate.toISOString().slice(0, 10);
+    };
+    const earliestDueDate = new Date(today);
+    earliestDueDate.setDate(earliestDueDate.getDate() - 14);
+    const latestDueDate = new Date(today);
+    latestDueDate.setDate(latestDueDate.getDate() + 280);
+    signupDueDateInput.min = dateValue(earliestDueDate);
+    signupDueDateInput.max = dateValue(latestDueDate);
+  }
+
+  function readAuthUser() {
+    for (const getStorage of [() => window.localStorage, () => window.sessionStorage]) {
+      try {
+        const user = JSON.parse(getStorage().getItem(authUserKey) || 'null');
+        if (user?.name) return user;
+      } catch (error) {
+        console.warn('Could not read the saved sign-in session.', error);
+      }
+    }
+    return null;
+  }
+
+  function storeAuthSession(token, user) {
+    clearAuthSession();
+    const storageGetter = rememberInput?.checked ? () => window.localStorage : () => window.sessionStorage;
+    try {
+      const storage = storageGetter();
+      storage.setItem(authTokenKey, token);
+      storage.setItem(authUserKey, JSON.stringify(user));
+    } catch (error) {
+      if (!rememberInput?.checked) {
+        console.error('Could not save the sign-in session.', error);
+        throw new Error('Your account was verified, but this browser could not save the sign-in session.');
+      }
+      console.warn('Persistent sign-in is unavailable; using a temporary session instead.', error);
+      try {
+        window.sessionStorage.setItem(authTokenKey, token);
+        window.sessionStorage.setItem(authUserKey, JSON.stringify(user));
+      } catch (storageError) {
+        console.error('Could not save the sign-in session.', storageError);
+        throw new Error('Your account was verified, but this browser could not save the sign-in session.');
+      }
+    }
+  }
+
+  function clearAuthSession() {
+    for (const getStorage of [() => window.localStorage, () => window.sessionStorage]) {
+      try {
+        getStorage().removeItem(authTokenKey);
+        getStorage().removeItem(authUserKey);
+      } catch (error) {
+        console.warn('Could not clear the saved sign-in session.', error);
+      }
+    }
+  }
+
+  async function submitAuthForm(endpoint, payload, form, successMessage) {
+    const button = form?.querySelector('button[type="submit"]');
+    if (!button) return;
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? await response.json() : {};
+      if (!response.ok) {
+        throw new Error(data.error || `Authentication failed (HTTP ${response.status}). Please try again.`);
+      }
+      if (!data.token || !data.user) throw new Error('The server returned an incomplete sign-in response.');
+
+      storeAuthSession(data.token, data.user);
+      const dueDate = payload.dueDate || data.user.dueDate?.slice?.(0, 10);
+      if (dueDate) {
+        try {
+          window.localStorage.setItem('aamacare-due-date', dueDate);
+        } catch (error) {
+          console.warn('The estimated due date could not be saved on this device.', error);
+        }
+        const dueDateInput = document.querySelector('.due-date-input');
+        if (dueDateInput) {
+          dueDateInput.value = dueDate;
+          dueDateInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+
+      navigate('/home');
+      showToast(successMessage);
+    } catch (error) {
+      const message = error instanceof TypeError
+        ? translate('Could not connect to the server. Try again.')
+        : error.message || translate('Could not connect to the server. Try again.');
+      showToast(message);
+    } finally {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      button.innerHTML = originalContent;
+    }
+  }
+
+  function getWeekSnapshot() {
+    const source = window.AamaPregnancy?.getSnapshot?.() || {};
+    const week = Math.min(40, Math.max(1, Number(source.week) || 1));
+    const language = window.AamaI18n?.getLanguage?.() || source.language || 'en';
+    const trimesterIndex = week <= 13 ? 0 : week <= 27 ? 1 : 2;
+    const trimesterNames = language === 'ne'
+      ? ['पहिलो त्रैमासिक', 'दोस्रो त्रैमासिक', 'तेस्रो त्रैमासिक']
+      : ['1st trimester', '2nd trimester', '3rd trimester'];
+    const babySize = window.AamaPregnancy?.getBabySize?.(week, language) || '—';
+    const progress = Math.round(((week - 1) / 39) * 100);
+    const weeksUntilDue = Math.max(0, 40 - week);
+    return {
+      week,
+      language,
+      trimester: trimesterNames[trimesterIndex],
+      babySize,
+      progress,
+      weeksUntilDue,
+      dueDate: source.dueDate || ''
+    };
+  }
+
+  function weekLabel(week, language) {
+    if (language === 'ne') return `हप्ता ${String(week).replace(/\d/g, (digit) => '०१२३४५६७८९'[digit])}`;
+    return `Week ${week}`;
+  }
+
+  function syncWeekReferences(snapshot = getWeekSnapshot()) {
+    const { week, language, trimester, babySize, progress, weeksUntilDue } = snapshot;
+    const label = weekLabel(week, language);
+    const number = language === 'ne' ? String(week).replace(/\d/g, (digit) => '०१२३४५६७८९'[digit]) : String(week);
+    const progressText = `${progress}%`;
+    const trimesterText = language === 'ne'
+      ? `पोषण · ${trimester}`
+      : `Nutrition · ${trimester}`;
+    const movementText = language === 'ne'
+      ? `भिडियो · ०४ मिनेट · ${trimester}`
+      : `Video · 04 min · ${trimester}`;
+    const taskMovementText = language === 'ne'
+      ? `${trimester} मा चालचलन र आराम`
+      : `Movement and comfort in ${trimester}`;
+    const babyText = language === 'ne'
+      ? `${babySize} जत्रो`
+      : babySize.toLowerCase().startsWith('about ') ? babySize.toLowerCase() : `about ${babySize.toLowerCase()}`;
+
+    document.querySelectorAll('[data-current-week-heading]').forEach((element) => { element.textContent = label; });
+    document.querySelectorAll('[data-current-baby-size]').forEach((element) => { element.textContent = babyText; });
+    document.querySelectorAll('[data-journey-progress]').forEach((element) => { element.textContent = progressText; });
+    document.querySelectorAll('[data-weeks-until-due]').forEach((element) => {
+      element.textContent = language === 'ne' ? `${number} हप्ता बाँकी` : `${weeksUntilDue} weeks`;
+    });
+    document.querySelectorAll('[data-journey-week-of]').forEach((element) => {
+      element.textContent = language === 'ne' ? `४० मध्ये हप्ता ${number}` : `${label} of 40`;
+    });
+    document.querySelectorAll('[data-week-guide]').forEach((element) => {
+      element.textContent = language === 'ne' ? `हप्ता ${number} का लागि तयार` : `Made for week ${week}`;
+    });
+    document.querySelectorAll('[data-week-trimester]').forEach((element) => { element.textContent = movementText; });
+    document.querySelectorAll('[data-week-task-trimester]').forEach((element) => { element.textContent = taskMovementText; });
+    document.querySelectorAll('[data-learning-week]').forEach((element) => {
+      element.textContent = language === 'ne' ? `हप्ता ${number} का लागि सिफारिस` : `Recommended for week ${week}`;
+    });
+    document.querySelectorAll('[data-video-week]').forEach((element) => {
+      element.textContent = language === 'ne' ? `स्वास्थ्य मन्त्रालय · हप्ता ${number}` : `Ministry of Health · Week ${week}`;
+    });
+    document.querySelectorAll('[data-video-trimester]').forEach((element) => { element.textContent = trimesterText; });
+
+    const progressBar = secondaryView?.querySelector('.mini-progress span');
+    if (progressBar) progressBar.style.width = progressText;
+
+    const weekGrid = secondaryView?.querySelector('[data-week-grid]');
+    if (weekGrid) {
+      secondaryView.querySelectorAll('.trimester-tab').forEach((tab, index) => {
+        tab.classList.toggle('is-active', index === (week <= 13 ? 0 : week <= 27 ? 1 : 2));
+      });
+      const start = Math.max(1, Math.min(37, week - 1));
+      weekGrid.innerHTML = Array.from({ length: 4 }, (_, index) => start + index).map((itemWeek) => {
+        const state = itemWeek < week ? (language === 'ne' ? 'सम्पन्न' : 'Done')
+          : itemWeek === week ? (language === 'ne' ? 'हाल' : 'Current')
+            : (language === 'ne' ? 'आउँदैछ' : 'Coming up');
+        const title = itemWeek === week
+          ? (language === 'ne' ? 'तपाईंको अहिलेको हेरचाह' : 'Care for this week')
+          : itemWeek < week
+            ? (language === 'ne' ? 'तपाईंको प्रगति' : 'Finding your rhythm')
+            : (language === 'ne' ? 'अर्को चरणको तयारी' : 'A little more movement');
+        const description = itemWeek === week
+          ? (language === 'ne' ? 'पानी पिउनुहोस् र आफ्नो अर्को जाँचका लागि तयार हुनुहोस्।' : 'Keep hydrated and prepare for your next checkup.')
+          : (language === 'ne' ? 'यस हप्ताका परिवर्तन र हेरचाहका कुरा हेर्नुहोस्।' : 'Explore the changes and care reminders for this week.');
+        return `<article class="week-card${itemWeek === week ? ' is-current' : ''}" data-action="week-card" data-week="${itemWeek}"><div class="week-card__top"><span class="week-number">${itemWeek}</span><span class="week-state">${state}</span></div><strong>${title}</strong><small>${description}</small></article>`;
+      }).join('');
+    }
+  }
+
+  document.addEventListener('aama-week-change', (event) => syncWeekReferences(event.detail));
+  document.addEventListener('aama-language-change', () => syncWeekReferences());
+
+  function getAssistantSpeechText(text) {
+    return String(text || '')
+      .replace(/^#{1,3}\s+/gm, '')
+      .replace(/(\*\*|__)(.*?)\1/g, '$2')
+      .replace(/^\s*[-*•]\s+/gm, '')
+      .replace(/^\s*\d+[.)]\s+/gm, '')
+      .replace(/[ \t]+(?=[*-]\s+(?:\*\*|__))/g, ' ')
+      .replace(/\n{2,}/g, '. ')
+      .replace(/\n/g, ' ')
+      .trim();
+  }
+
+  function stopAssistantAudio() {
+    window.speechSynthesis?.cancel();
+    if (currentAssistantAudio) {
+      currentAssistantAudio.pause();
+      currentAssistantAudio.currentTime = 0;
+      currentAssistantAudio = null;
+    }
+  }
+
+  function speakWithBrowser(text) {
+    if (!('speechSynthesis' in window)) {
+      if (assistantStatus) assistantStatus.textContent = translate('Audio playback is not available in this browser.');
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(getAssistantSpeechText(text));
+    utterance.lang = window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en-US';
+    utterance.rate = 0.94;
+    utterance.onstart = () => {
+      if (assistantStatus) assistantStatus.textContent = translate('Reading latest answer aloud.');
+    };
+    utterance.onend = () => {
+      if (assistantReadAloud?.checked && assistantStatus) assistantStatus.textContent = translate('Read-aloud is on.');
+    };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  async function speakAssistantReply(reply) {
+    if (!assistantReadAloud?.checked || !reply?.text) return;
+    stopAssistantAudio();
+    if (!reply.audio) {
+      speakWithBrowser(reply.text);
+      return;
+    }
+    currentAssistantAudio = new Audio(`data:${reply.mimeType || 'audio/mpeg'};base64,${reply.audio}`);
+    currentAssistantAudio.onended = () => {
+      currentAssistantAudio = null;
+      if (assistantReadAloud?.checked && assistantStatus) assistantStatus.textContent = translate('Read-aloud is on.');
+    };
+    try {
+      if (assistantStatus) assistantStatus.textContent = translate('Reading latest answer aloud.');
+      await currentAssistantAudio.play();
+    } catch (error) {
+      currentAssistantAudio = null;
+      speakWithBrowser(reply.text);
+      console.warn('Audio response could not play; used browser speech instead.', error);
+    }
+  }
 
   const routeMap = {
     '/home': { view: 'overview', label: 'My care dashboard' },
@@ -65,12 +355,52 @@ document.addEventListener('DOMContentLoaded', () => {
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2600);
   }
 
+  function setupScrollReveal() {
+    if (!dashboardContent) return;
+
+    const targets = dashboardContent.querySelectorAll(
+      '.welcome-row, .alert-banner, .overview-grid > .panel, .quick-actions, .content-grid > .main-column > .panel, .content-grid > .side-column > .panel, .dashboard-footer',
+    );
+    targets.forEach((element, index) => {
+      element.classList.add('scroll-reveal');
+      element.style.setProperty('--reveal-delay', `${Math.min(index * 55, 220)}ms`);
+    });
+
+    if (!('IntersectionObserver' in window)) {
+      targets.forEach((element) => element.classList.add('is-revealed'));
+      return;
+    }
+
+    if (!window.aamaScrollRevealObserver) {
+      window.aamaScrollRevealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-revealed');
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    }
+
+    targets.forEach((element) => window.aamaScrollRevealObserver.observe(element));
+  }
+
+  function focusCareMap(card, openPopup = false) {
+    const serviceId = card?.dataset.service;
+    if (!serviceId) return;
+    window.MatriSathiGoogleMaps?.select(serviceId, openPopup);
+  }
+
+  function initCareMap() {
+    window.MatriSathiGoogleMaps?.init(secondaryView);
+  }
+
   function getProfile() {
     try {
       const saved = JSON.parse(window.localStorage.getItem(profileStorageKey) || '{}');
+      const user = readAuthUser();
       return {
-        name: typeof saved.name === 'string' ? saved.name : 'Sita K.',
-        phone: typeof saved.phone === 'string' ? saved.phone : '',
+        name: typeof saved.name === 'string' ? saved.name : user?.name || 'Sita K.',
+        phone: typeof saved.phone === 'string' ? saved.phone : user?.phone || '',
         location: typeof saved.location === 'string' ? saved.location : 'Lalitpur',
         age: typeof saved.age === 'string' ? saved.age : '',
         bloodType: typeof saved.bloodType === 'string' ? saved.bloodType : '',
@@ -192,6 +522,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getFamilyPermissions(member) {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(familyPermissionsStorageKey) || '{}');
+      return { ...defaultFamilyPermissions, ...(saved[member] || {}) };
+    } catch (error) {
+      console.warn('Family permissions could not be restored.', error);
+      return { ...defaultFamilyPermissions };
+    }
+  }
+
+  function saveFamilyPermissions(member, permissions) {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(familyPermissionsStorageKey) || '{}');
+      saved[member] = permissions;
+      window.localStorage.setItem(familyPermissionsStorageKey, JSON.stringify(saved));
+    } catch (error) {
+      console.warn('Family permissions could not be saved locally.', error);
+    }
+  }
+
+  const familyChecklistStorageKey = 'matrisathi-family-checklist';
+  const defaultFamilyChecklist = [
+    { id: 'transport', title: 'Confirm transport for checkup', owner: 'Ram', time: 'Done', completed: true },
+    { id: 'contacts', title: 'Keep emergency contacts updated', owner: 'Asha', time: 'Done', completed: true },
+    { id: 'rain-prep', title: 'Share heavy-rain preparation tips', owner: 'Everyone', time: 'Today', completed: false },
+    { id: 'care-bag', title: 'Prepare a small care bag', owner: 'Sita', time: 'This week', completed: false },
+  ];
+
+  function getFamilyChecklistItems() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(familyChecklistStorageKey) || 'null');
+      return Array.isArray(saved) && saved.length ? saved : defaultFamilyChecklist.map((task) => ({ ...task }));
+    } catch (error) {
+      console.warn('Family checklist could not be restored.', error);
+      return defaultFamilyChecklist.map((task) => ({ ...task }));
+    }
+  }
+
+  function saveFamilyChecklistItems(items) {
+    try {
+      window.localStorage.setItem(familyChecklistStorageKey, JSON.stringify(items));
+    } catch (error) {
+      console.warn('Family checklist could not be saved.', error);
+    }
+  }
+
+  function renderFamilyChecklist() {
+    const list = secondaryView?.querySelector('[data-family-checklist]');
+    if (!list) return;
+    const tasks = getFamilyChecklistItems();
+    const completed = tasks.filter((task) => task.completed).length;
+    const progress = secondaryView.querySelector('[data-family-progress]');
+    if (progress) progress.textContent = `${completed} of ${tasks.length} done`;
+    list.innerHTML = tasks.map((task) => `
+      <button class="shared-item${task.completed ? ' is-complete' : ''}" type="button" data-action="toggle-shared" data-family-task-id="${escapeHtml(task.id)}">
+        <span class="shared-check${task.completed ? ' is-done' : ''}">${task.completed ? '✓' : ''}</span>
+        <strong>${escapeHtml(task.title)}</strong>
+        <small>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.completed ? 'Done' : task.time || 'This week')}</small>
+      </button>
+    `).join('');
+  }
+
   function createChecklistRow(item) {
     const row = document.createElement('label');
     row.className = 'task-row';
@@ -243,15 +635,27 @@ document.addEventListener('DOMContentLoaded', () => {
   function showDashboard() {
     loginScreen?.classList.add('is-hidden');
     dashboardScreen?.classList.remove('is-hidden');
-    document.title = translate('AamaCare · My care dashboard');
+    updateProfileDisplay(getProfile());
+    document.title = translate('MatriSathi · My care dashboard');
     window.AamaI18n?.translatePage();
+    syncWeekReferences();
+    setupScrollReveal();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setAuthMode(mode) {
+    const signingUp = mode === 'signup';
+    loginCopy?.classList.toggle('is-hidden', signingUp);
+    loginForm?.classList.toggle('is-hidden', signingUp);
+    loginFooter?.classList.toggle('is-hidden', signingUp);
+    signupView?.classList.toggle('is-hidden', !signingUp);
+    loginScreen?.setAttribute('aria-labelledby', signingUp ? 'signup-title' : 'login-title');
   }
 
   function showLogin() {
     dashboardScreen?.classList.add('is-hidden');
     loginScreen?.classList.remove('is-hidden');
-    document.title = translate('AamaCare · Pregnancy companion');
+    document.title = translate('MatriSathi · Pregnancy companion');
     window.AamaI18n?.translatePage();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -324,12 +728,17 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView.classList.remove('is-hidden');
       if (view === 'settings') restoreSettings();
       if (view === 'learn') window.AamaLearn?.init(secondaryView);
-      if (view === 'family') updateSharedChecklistSummary();
+      if (view === 'family') {
+        renderFamilyChecklist();
+        updateSharedChecklistSummary();
+      }
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
-    document.title = isHealthPost ? `AamaCare · ${label}` : 'AamaCare · My care dashboard';
+    document.title = isHealthPost ? `MatriSathi · ${label}` : 'MatriSathi · My care dashboard';
     window.AamaI18n?.translatePage();
     if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
+    syncWeekReferences();
+    if (view === 'services') initCareMap();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -450,6 +859,37 @@ document.addEventListener('DOMContentLoaded', () => {
     interactionClose?.focus();
   }
 
+  function openPermissionEditor(member) {
+    const memberName = member || 'Circle member';
+    const permissions = getFamilyPermissions(memberName);
+    const rows = [
+      ['Tasks and appointments', 'See shared tasks and upcoming visits.'],
+      ['Pregnancy journey', 'View your weekly care updates and progress.'],
+      ['Health records', 'View records you choose to share with your circle.'],
+      ['Emergency alerts', 'Receive important safety and emergency updates.'],
+    ];
+
+    const permissionRows = rows.map(([label, description]) => {
+      const inputId = `permission-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      return `
+        <label class="permission-row" for="${inputId}">
+          <span class="permission-copy"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span>
+          <span class="permission-switch">
+            <input id="${inputId}" name="${escapeHtml(label)}" type="checkbox"${permissions[label] ? ' checked' : ''}>
+            <span class="permission-switch__track" aria-hidden="true"></span>
+          </span>
+        </label>
+      `;
+    });
+
+    openInteraction(
+      'Family hub',
+      `Edit permissions for ${escapeHtml(memberName)}`,
+      `<p>Choose what this person can see and which updates they should receive.</p><form class="permission-form" id="permission-form" data-member="${escapeHtml(memberName)}"><div class="permission-group"><div class="permission-group__heading"><span>Shared access</span><small>Visible in their Family Hub</small></div>${permissionRows.slice(0, 3).join('')}</div><div class="permission-group"><div class="permission-group__heading"><span>Alerts</span><small>Keep them informed when it matters</small></div>${permissionRows.slice(3).join('')}</div><p class="permission-note"><span aria-hidden="true">⌁</span> You can change these permissions at any time.</p><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Save permissions</button></div></form>`
+    );
+    document.querySelector('#permission-form input')?.focus();
+  }
+
   function handleAction(action, target) {
     if (action === 'open-profile') {
       openProfileDialog();
@@ -462,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
       closeInteraction();
       openAssistant();
     } else if (action === 'open-logout') {
-      openInteraction('Sign out', 'Leave AamaCare for now?', '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>');
+      openInteraction('Sign out', 'Leave MatriSathi for now?', '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>');
     } else if (action === 'today-plan') {
       openInteraction("Today's plan", 'Your care plan for today', '<div class="detail-list"><div class="detail-row"><span>Morning</span><strong>Hydrate and take your prescribed supplement</strong></div><div class="detail-row"><span>Afternoon</span><strong>Watch your weekly movement video</strong></div><div class="detail-row"><span>Evening</span><strong>Keep emergency contacts close during heavy rain</strong></div></div>', '<button class="button button--primary" type="button" data-action="close-modal">Got it</button>');
     } else if (action === 'appointment-detail') {
@@ -495,38 +935,49 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (action === 'invite-member') {
       openInteraction('Family hub', 'Invite someone you trust', '<form class="interaction-form" id="invite-form"><label for="invite-name">Name</label><input id="invite-name" placeholder="e.g. Ram K." required><label for="invite-relation">Relationship</label><select id="invite-relation"><option>Partner</option><option>Family member</option><option>Neighbour</option><option>Health worker</option></select><label for="invite-phone">Mobile number</label><input id="invite-phone" type="tel" placeholder="98XXXXXXXX" required><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Send invite</button></div></form>');
     } else if (action === 'member-detail') {
-      openInteraction('Family hub', target.dataset.member || 'Circle member', '<p>This person can receive the permissions you choose.</p><div class="detail-list"><div class="detail-row"><span>Shared access</span><strong>Tasks and appointments</strong></div><div class="detail-row"><span>Emergency alerts</span><strong>Enabled</strong></div></div>', '<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-toast="Permission editor opened">Edit permissions</button>');
+      const member = target.dataset.member || 'Circle member';
+      const permissions = getFamilyPermissions(member);
+      openInteraction('Family hub', member, '<p>This person can receive the permissions you choose.</p><div class="detail-list"><div class="detail-row"><span>Shared access</span><strong>Tasks and appointments</strong></div><div class="detail-row"><span>Emergency alerts</span><strong>' + (permissions['Emergency alerts'] ? 'Enabled' : 'Disabled') + '</strong></div></div>', `<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-action="edit-permissions" data-member="${escapeHtml(member)}">Edit permissions</button>`);
+    } else if (action === 'edit-permissions') {
+      openPermissionEditor(target.dataset.member || 'Circle member');
     } else if (action === 'family-options') {
       openInteraction('Family hub', 'Family permissions', '<p>Review who can see tasks, appointments, and selected care updates.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Review access</button>');
     } else if (action === 'toggle-shared') {
-      const check = target.querySelector('.shared-check');
-      if (check) {
-        const isDone = check.classList.toggle('is-done');
-        check.textContent = isDone ? '✓' : '';
-        target.setAttribute('aria-pressed', String(isDone));
-      }
-      updateSharedChecklistSummary();
-      showToast(check?.classList.contains('is-done') ? 'Family task marked complete.' : 'Family task added back.');
+      const taskId = target.dataset.familyTaskId;
+      if (!taskId) return;
+      const tasks = getFamilyChecklistItems().map((task) => task.id === taskId ? { ...task, completed: !task.completed } : task);
+      saveFamilyChecklistItems(tasks);
+      renderFamilyChecklist();
+      const task = tasks.find((item) => item.id === taskId);
+      target.setAttribute('aria-pressed', String(Boolean(task?.completed)));
+      showToast(task?.completed ? 'Family task marked complete.' : 'Family task added back.');
+    } else if (action === 'add-family-task') {
+      openInteraction('Shared support', 'Add a family task', '<form class="interaction-form" id="family-task-form"><label for="family-task-title">Task</label><input id="family-task-title" name="title" maxlength="90" placeholder="e.g. Pack hospital documents" required><label for="family-task-owner">Who is responsible?</label><select id="family-task-owner" name="owner"><option>Everyone</option><option>Sita</option><option>Ram</option><option>Asha</option></select><label for="family-task-time">When?</label><input id="family-task-time" name="time" maxlength="30" placeholder="e.g. Today or This week"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add task</button></div></form>');
     } else if (action === 'shared-checklist') {
-      openInteraction('Shared support', 'Everyone knows the next step', '<p>Your family checklist keeps transport, emergency preparation, and shared support visible to the people you trust.</p><div class="modal-callout">You can pause family notifications or change sharing permissions at any time.</div>', '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
+      const tasks = getFamilyChecklistItems();
+      const rows = tasks.map((task) => `<div class="detail-row"><span>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.time || 'This week')}</span><strong>${task.completed ? '✓ ' : ''}${escapeHtml(task.title)}</strong></div>`).join('');
+      openInteraction('Shared support', 'Everyone knows the next step', `<div class="detail-list">${rows}</div><div class="modal-callout">Your family checklist is saved on this device. Add or update tasks from the Family Hub.</div>`, '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
     } else if (action === 'show-reminders') {
       openReminders();
     } else if (action === 'add-checklist') {
       openInteraction('Small steps, big care', 'Add a checklist item', '<form class="interaction-form" id="checklist-form"><label for="checklist-title">What do you want to remember?</label><input id="checklist-title" name="title" placeholder="e.g. Take a short walk" required maxlength="80"><label for="checklist-details">Details <span class="form-label-hint">optional</span></label><input id="checklist-details" name="details" placeholder="e.g. Move gently for 10 minutes" maxlength="120"><label for="checklist-time">When?</label><input id="checklist-time" name="time" placeholder="e.g. Today or 4:00 PM" maxlength="30"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add to checklist</button></div></form>');
     } else if (action === 'use-location') {
-      openInteraction('Nearby care', 'Use your current location?', '<p>Location helps AamaCare sort health posts and hospitals by distance. You can also keep using the Lalitpur location already selected.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Keep Lalitpur</button><button class="button button--primary" type="button" data-action="location-confirm">Use location</button>');
+      openInteraction('Nearby care', 'Use your current location?', '<p>Location helps MatriSathi sort health posts and hospitals by distance. You can also keep using the Lalitpur location already selected.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Keep Lalitpur</button><button class="button button--primary" type="button" data-action="location-confirm">Use location</button>');
     } else if (action === 'location-confirm') {
       closeInteraction();
       showToast('Location access will be connected to the service directory.');
     } else if (action === 'service-filter') {
-      openInteraction('Health services', 'Filter nearby care', '<div class="interaction-form"><label><input type="checkbox" checked> Maternity care</label><label><input type="checkbox"> Emergency care</label><label><input type="checkbox"> Pharmacy</label><label><input type="checkbox"> Open now</label></div>', '<button class="button button--primary" type="button" data-action="close-modal">Apply filters</button>');
+      openInteraction('Health services', 'Filter nearby care', '<div class="interaction-form interaction-form--filters"><label class="filter-option"><input type="checkbox" checked><span>Maternity care</span></label><label class="filter-option"><input type="checkbox"><span>Emergency care</span></label><label class="filter-option"><input type="checkbox"><span>Pharmacy</span></label><label class="filter-option"><input type="checkbox"><span>Open now</span></label></div>', '<button class="button button--primary" type="button" data-action="close-modal">Apply filters</button>');
     } else if (action === 'select-service') {
       secondaryView?.querySelectorAll('.service-card').forEach((card) => card.classList.remove('is-selected'));
       target.classList.add('is-selected');
+      focusCareMap(target, true);
+      focusCareMap(target, true);
       const service = target.dataset.service || 'Health service';
       openInteraction('Nearby care', service, '<div class="detail-list"><div class="detail-row"><span>Distance</span><strong>2.4 km from you</strong></div><div class="detail-row"><span>Services</span><strong>Maternity care · Emergency</strong></div><div class="detail-row"><span>Phone</span><strong>01-5522295</strong></div></div>', '<button class="button button--outline" type="button" data-toast="Calling the health service">Call</button><button class="button button--primary" type="button" data-toast="Directions opened">Get directions</button>');
     } else if (action === 'topic-filter') {
-      openInteraction('Learn & prepare', target.dataset.topic || 'Learning topic', '<p>We will show week 24 content, Nepali audio, and trusted videos for this topic.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Show content</button>');
+      const currentWeek = getWeekSnapshot().week;
+      openInteraction('Learn & prepare', target.dataset.topic || 'Learning topic', `<p>We will show week ${currentWeek} content, Nepali audio, and trusted videos for this topic.</p>`, '<button class="button button--primary" type="button" data-action="close-modal">Show content</button>');
     } else if (action === 'play-learning') {
       openInteraction('Learn & prepare', target.dataset.title || 'Recommended learning', '<div class="video-player-placeholder"><span>▶</span><p>Preview player</p></div><p>This video placeholder is ready for the Ministry of Health media URL.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Close player</button>');
     } else if (action === 'close-modal') {
@@ -535,6 +986,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveSettings();
     } else if (action === 'confirm-logout') {
       closeInteraction();
+      clearAuthSession();
       navigate('/login');
       showToast('You have been signed out safely.');
     }
@@ -542,12 +994,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function navigate(path, replace = false) {
     const requestedPath = path === '/' ? '/login' : path;
-    const destination = requestedPath === '/login' || routeMap[requestedPath] ? requestedPath : '/login';
+    const destination = requestedPath === '/login' || requestedPath === '/sign' || routeMap[requestedPath] ? requestedPath : '/login';
     if (window.location.pathname !== destination) {
       const method = replace ? 'replaceState' : 'pushState';
       window.history[method]({}, '', destination);
     }
-    if (destination === '/login') {
+    if (destination === '/login' || destination === '/sign') {
+      setAuthMode(destination === '/sign' ? 'signup' : 'login');
       showLogin();
       return;
     }
@@ -576,6 +1029,98 @@ document.addEventListener('DOMContentLoaded', () => {
     return message;
   }
 
+  function appendAssistantInlineContent(parent, value) {
+    const text = String(value || '');
+    const boldPattern = /(\*\*|__)(.+?)\1/g;
+    let cursor = 0;
+    let match;
+
+    while ((match = boldPattern.exec(text))) {
+      if (match.index > cursor) parent.appendChild(document.createTextNode(text.slice(cursor, match.index)));
+      const strong = document.createElement('strong');
+      strong.textContent = match[2];
+      parent.appendChild(strong);
+      cursor = match.index + match[0].length;
+    }
+
+    if (cursor < text.length) parent.appendChild(document.createTextNode(text.slice(cursor)));
+  }
+
+  function renderAssistantReply(message, reply) {
+    if (!message) return;
+    message.replaceChildren();
+
+    const normalizedReply = String(reply || '')
+      .replace(/\r\n?/g, '\n')
+      // Some model responses place Markdown bullets on one line. Split only
+      // clear list markers before bold labels, leaving italic text untouched.
+      .replace(/[ \t]+(?=[*-]\s+(?:\*\*|__))/g, '\n')
+      .replace(/[ \t]+(?=\d+[.)]\s+)/g, '\n');
+    const lines = normalizedReply.split('\n');
+    let paragraphLines = [];
+    let activeList = null;
+
+    const flushParagraph = () => {
+      if (!paragraphLines.length) return;
+      const paragraph = document.createElement('p');
+      appendAssistantInlineContent(paragraph, paragraphLines.join(' '));
+      message.appendChild(paragraph);
+      paragraphLines = [];
+    };
+
+    const flushList = () => {
+      if (!activeList) return;
+      const list = document.createElement(activeList.type);
+      activeList.items.forEach((item) => {
+        const listItem = document.createElement('li');
+        appendAssistantInlineContent(listItem, item);
+        list.appendChild(listItem);
+      });
+      message.appendChild(list);
+      activeList = null;
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushParagraph();
+        flushList();
+        return;
+      }
+
+      const headingMatch = trimmed.match(/^#{1,3}\s+(.+)$/);
+      const orderedMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
+      const unorderedMatch = trimmed.match(/^[-*•]\s+(.+)$/);
+
+      if (headingMatch) {
+        flushParagraph();
+        flushList();
+        const heading = document.createElement('h4');
+        appendAssistantInlineContent(heading, headingMatch[1]);
+        message.appendChild(heading);
+        return;
+      }
+
+      if (orderedMatch || unorderedMatch) {
+        flushParagraph();
+        const type = orderedMatch ? 'ol' : 'ul';
+        const item = (orderedMatch || unorderedMatch)[1];
+        if (!activeList || activeList.type !== type) {
+          flushList();
+          activeList = { type, items: [] };
+        }
+        activeList.items.push(item);
+        return;
+      }
+
+      if (activeList) flushList();
+      paragraphLines.push(trimmed);
+    });
+
+    flushParagraph();
+    flushList();
+  }
+
   async function askAssistant(message) {
     const cleanMessage = message.trim();
     if (!cleanMessage || !assistantSend) return;
@@ -590,13 +1135,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`${apiBaseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: cleanMessage }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Request failed');
-      if (thinkingMessage) thinkingMessage.textContent = data.reply;
-      if (data.audio) {
-        const audio = new Audio(`data:${data.mimeType};base64,${data.audio}`);
-        await audio.play();
-      }
+      renderAssistantReply(thinkingMessage, data.reply);
+      latestAssistantReply = { text: data.reply, audio: data.audio, mimeType: data.mimeType };
+      await speakAssistantReply(latestAssistantReply);
     } catch (error) {
-      if (thinkingMessage) thinkingMessage.textContent = translate('I could not connect right now. Please try again.');
+      renderAssistantReply(thinkingMessage, translate('I could not connect right now. Please try again.'));
       console.error(error);
     } finally {
       assistantSend.disabled = false;
@@ -606,10 +1149,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loginForm?.addEventListener('submit', (event) => {
     event.preventDefault();
-    navigate('/home');
-    showToast('Welcome back, Sita. Your care dashboard is ready.');
+    submitAuthForm('login', {
+      phone: phoneInput?.value.trim(),
+      password: pinInput?.value || '',
+    }, loginForm, 'Signed in successfully.');
+  });
+  showSignupLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    navigate('/sign');
+  });
+  showLoginLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    navigate('/login');
+  });
+  signupForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    submitAuthForm('signup', {
+      name: document.querySelector('#signup-name')?.value.trim(),
+      phone: signupPhoneInput?.value.trim(),
+      dueDate: signupDueDateInput?.value,
+      password: document.querySelector('#signup-password')?.value || '',
+      preferredLanguage: window.AamaI18n?.getLanguage() || 'ne',
+    }, signupForm, 'Account created successfully.');
   });
   demoLogin?.addEventListener('click', () => {
+    clearAuthSession();
     navigate('/home');
     showToast('Preview mode started. No account was created.');
   });
@@ -617,7 +1181,14 @@ document.addEventListener('DOMContentLoaded', () => {
     navigate('/health-post');
     showToast('Health Post preview opened with sample records.');
   });
-  logoutButton?.addEventListener('click', () => handleAction('open-logout', logoutButton));
+  logoutButton?.addEventListener('click', () => {
+    openInteraction(
+      'Sign out',
+      'Leave MatriSathi for now?',
+      '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>',
+      '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>'
+    );
+  });
   profileButton?.addEventListener('click', openProfileDialog);
   togglePin?.addEventListener('click', () => {
     if (!pinInput) return;
@@ -630,6 +1201,16 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     showToast('PIN recovery will be connected to SMS in the next build.');
   });
+  assistantReadAloud?.addEventListener('change', () => {
+    const enabled = assistantReadAloud.checked;
+    try { window.localStorage.setItem('aamacare-read-aloud', enabled ? 'on' : 'off'); } catch { /* preference is session-only */ }
+    if (assistantStatus) assistantStatus.textContent = translate(enabled ? 'Read-aloud is on.' : 'Read-aloud is off.');
+    if (enabled) speakAssistantReply(latestAssistantReply);
+    else stopAssistantAudio();
+  });
+  try {
+    if (window.localStorage.getItem('aamacare-read-aloud') === 'on' && assistantReadAloud) assistantReadAloud.checked = true;
+  } catch { /* preference is session-only */ }
   document.querySelectorAll('.ai-launcher').forEach((button) => button.addEventListener('click', openAssistant));
   document.addEventListener('click', (event) => {
     const learnNavItem = event.target.closest('[data-learn-nav]');
@@ -692,6 +1273,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.target === interactionModal) closeInteraction();
   });
   document.addEventListener('submit', (event) => {
+    if (event.target.id === 'permission-form') {
+      event.preventDefault();
+      const form = event.target;
+      const permissions = {};
+      form.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+        permissions[input.name] = input.checked;
+      });
+      saveFamilyPermissions(form.dataset.member || 'Circle member', permissions);
+      closeInteraction();
+      showToast('Permissions saved for your family member.');
+      return;
+    }
     if (event.target.id === 'profile-form') {
       event.preventDefault();
       const formData = new FormData(event.target);
@@ -715,7 +1308,8 @@ document.addEventListener('DOMContentLoaded', () => {
       updateProfileDisplay(profile);
       closeInteraction();
       showToast('Your profile has been updated.');
-    } else if (event.target.id === 'checklist-form') {
+    }
+    if (event.target.id === 'checklist-form') {
       event.preventDefault();
       const formData = new FormData(event.target);
       const title = String(formData.get('title') || '').trim();
@@ -743,6 +1337,24 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
       closeInteraction();
       showToast('Family invitation prepared.');
+    }
+    if (event.target.id === 'family-task-form') {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const title = String(formData.get('title') || '').trim();
+      if (!title) return;
+      const tasks = getFamilyChecklistItems();
+      tasks.push({
+        id: `family-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        title,
+        owner: String(formData.get('owner') || 'Everyone'),
+        time: String(formData.get('time') || '').trim() || 'This week',
+        completed: false,
+      });
+      saveFamilyChecklistItems(tasks);
+      closeInteraction();
+      renderFamilyChecklist();
+      showToast('Family task added.');
     }
   });
   document.addEventListener('change', (event) => {

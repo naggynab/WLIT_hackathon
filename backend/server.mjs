@@ -3,6 +3,10 @@ import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {connectDB} from './db.mjs';
+import authRoutes from './routes/auth.routes.mjs';
+import healthRecordRoutes from './routes/healthRecords.routes.mjs';
+import { requireAuth } from './middleware/requireAuth.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 dotenv.config({ path: path.join(projectRoot, '.env') });
@@ -10,8 +14,10 @@ dotenv.config({ path: path.join(projectRoot, '.env') });
 const app = express();
 const port = Number(process.env.PORT || 3000);
 const geminiApiKey = process.env.GEMINI_API_KEY?.trim();
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || '';
 const gemini = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 const frontendRoot = path.join(projectRoot, 'frontend');
+const campusHubRoot = path.join(projectRoot, 'campus-event-hub');
 
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || '*')
   .split(',')
@@ -24,19 +30,26 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', allowedOrigins.includes('*') ? '*' : requestOrigin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
 
 app.use(express.json({ limit: '32kb' }));
 app.use(express.static(frontendRoot));
-app.get(/^\/(?:login|home(?:\/.*)?|health-post(?:\/.*)?)$/, (_req, res) => {
+app.use('/events', express.static(campusHubRoot));
+app.get(/^\/(?:login|sign|home(?:\/.*)?|health-post(?:\/.*)?)$/, (_req, res) => {
   res.sendFile(path.join(frontendRoot, 'index.html'));
 });
+app.get(['/events', '/events/'], (_req, res) => {
+  res.sendFile(path.join(campusHubRoot, 'index.html'));
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api/health-records', requireAuth, healthRecordRoutes);
 
 const assistantInstructions = `
-You are Aama AI, a warm pregnancy companion for users in Nepal.
+You are MatriSathi AI, a warm pregnancy companion for users in Nepal.
 Reply in the same language as the user, using simple English or Nepali.
 Give general pregnancy education and practical next steps, not a diagnosis.
 Never tell a user to stop prescribed medicine or delay urgent care.
@@ -44,6 +57,10 @@ If the user describes severe pain, heavy bleeding, trouble breathing, fainting,
 seizures, or another emergency, clearly tell them to contact local emergency
 services or a qualified health worker immediately.
 Keep normal answers concise and reassuring.
+  Format replies for easy reading: use short paragraphs, Markdown headings when
+  helpful, numbered lists for steps, bullet lists for multiple items, and bold
+  labels for important terms. Leave a blank line between sections. Do not use
+  HTML or put the whole answer into one long paragraph.
 `;
 
 function fallbackReply(message) {
@@ -60,7 +77,7 @@ function fallbackReply(message) {
   if (lower.includes('food') || lower.includes('eat') || lower.includes('nutrition')) {
     return 'Choose varied meals with local vegetables, fruit, grains, protein, and enough fluids. Follow your prescribed supplements and ask your health worker about foods or supplements specific to you.';
   }
-  return 'I’m ready to help with general pregnancy information. The live AI service is temporarily unavailable, so please try again later or contact your health worker for personal medical advice.';
+  return 'I’m MatriSathi AI, ready to help with general pregnancy information. The live AI service is temporarily unavailable, so please try again later or contact your health worker for personal medical advice.';
 }
 
 async function createReply(message) {
@@ -86,6 +103,11 @@ async function createReply(message) {
 async function createSpeech(text) {
   if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_VOICE_ID) return null;
 
+  const modelId = process.env.ELEVENLABS_MODEL?.trim() || 'eleven_v4';
+  // Nepali uses Devanagari script. Explicitly passing the language prevents
+  // ElevenLabs from guessing English for short or mixed Nepali replies.
+  const languageCode = /[\u0900-\u097F]/u.test(text) ? 'ne' : 'en';
+
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(process.env.ELEVENLABS_VOICE_ID)}?output_format=mp3_44100_128`,
     {
@@ -96,7 +118,8 @@ async function createSpeech(text) {
       },
       body: JSON.stringify({
         text,
-        model_id: process.env.ELEVENLABS_MODEL || 'eleven_flash_v2_5'
+        model_id: modelId,
+        language_code: languageCode
       })
     }
   );
@@ -109,8 +132,16 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     chatbotConfigured: Boolean(gemini),
-    voiceConfigured: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID)
+    voiceConfigured: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID),
+    voiceModel: process.env.ELEVENLABS_MODEL?.trim() || 'eleven_v4'
   });
+});
+
+// Google Maps browser keys are public by design, but must be restricted by
+// HTTP referrer in Google Cloud Console. This endpoint keeps local and hosted
+// configuration in one place without hard-coding the key in the HTML.
+app.get('/api/maps/config', (_req, res) => {
+  res.json({ apiKey: googleMapsApiKey });
 });
 
 app.post('/api/chat', async (req, res) => {
@@ -129,8 +160,9 @@ app.post('/api/chat', async (req, res) => {
     res.json({ reply, audio, mimeType: 'audio/mpeg' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Aama AI could not respond right now. Please try again.' });
+  res.status(500).json({ error: 'MatriSathi AI could not respond right now. Please try again.' });
   }
 });
 
-app.listen(port, () => console.log(`AamaCare is running at http://localhost:${port}`));
+await connectDB();
+app.listen(port, () => console.log(`MatriSathi is running at http://localhost:${port}`));
