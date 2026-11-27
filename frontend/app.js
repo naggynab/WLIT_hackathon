@@ -887,6 +887,26 @@ document.addEventListener('DOMContentLoaded', () => {
     interactionClose?.focus();
   }
 
+  function openEmergencyHelplines() {
+    const contacts = [
+      ['Patan Hospital', 'Hospital · Emergency department', '01-5522295'],
+      ['Lagankhel Health Post', 'Health post · Lalitpur', '01-5537711'],
+    ];
+    const rows = contacts.map(([name, type, phone]) => `
+      <article class="helpline-row">
+        <span class="helpline-row__icon" aria-hidden="true">+</span>
+        <div class="helpline-row__details"><strong>${name}</strong><span>${type}</span><small>Demo number</small></div>
+        <a class="helpline-call" href="tel:${phone}" aria-label="Call ${name} at ${phone}"><span aria-hidden="true">☎</span>${phone}</a>
+      </article>
+    `).join('');
+    openInteraction(
+      translate('Emergency support'),
+      translate('Nearby emergency helplines'),
+      `<div class="helpline-list">${rows}</div><p class="helpline-demo-note">${translate('These mock numbers are for preview only. Confirm each facility number before relying on it.')}</p>`,
+      `<button class="button button--primary" type="button" data-action="close-modal">${translate('Close')}</button>`
+    );
+  }
+
   function openPermissionEditor(member) {
     const memberName = member || 'Circle member';
     const permissions = getFamilyPermissions(memberName);
@@ -1226,6 +1246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
   profileButton?.addEventListener('click', openProfileDialog);
+  notificationButton?.addEventListener('click', openEmergencyHelplines);
   togglePin?.addEventListener('click', () => {
     if (!pinInput) return;
     const isPassword = pinInput.type === 'password';

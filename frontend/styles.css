@@ -192,8 +192,19 @@ a { color: inherit; text-decoration: none; }
 .icon-button { position: relative; display: inline-flex; align-items: center; justify-content: center; height: 34px; min-width: 34px; border: 1px solid var(--color-border); border-radius: 9px; color: var(--color-text-secondary); background: #fff; font-size: .75rem; }
 .language-button { gap: 3px; padding: 0 9px; color: var(--color-primary); font-size: .7rem; font-weight: 900; }
 .language-button span { color: #ad9dab; font-size: .6rem; }
-.notification-button { color: var(--color-text-secondary); font-size: 1.1rem; }
-.notification-button i { position: absolute; width: 5px; height: 5px; top: 7px; right: 7px; border: 1px solid #fff; border-radius: 50%; background: var(--color-primary); }
+.notification-button { width: 42px; height: 42px; color: #a13a4e; border-color: #f0dce1; background: #fff8f8; }
+.notification-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.notification-button:hover { border-color: #e9b7c0; background: #fff0f1; }
+.helpline-list { display: grid; gap: 10px; margin: 18px 0 12px; }
+.helpline-row { display: flex; align-items: center; gap: 11px; padding: 13px; border: 1px solid #f1dfe5; border-radius: 13px; background: #fffafa; }
+.helpline-row__icon { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 10px; color: #fff; background: #c65363; font-size: 1.25rem; font-weight: 700; }
+.helpline-row__details { display: grid; min-width: 0; gap: 3px; }
+.helpline-row__details strong { color: var(--color-text-primary); font-size: .76rem; }
+.helpline-row__details span, .helpline-row__details small { color: var(--color-text-muted); font-size: .62rem; }
+.helpline-row__details small { color: #b05a68; font-weight: 800; }
+.helpline-call { display: inline-flex; min-height: 40px; align-items: center; gap: 6px; margin-left: auto; padding: 0 10px; border-radius: 9px; color: #a53649; background: #ffedef; font-size: .7rem; font-weight: 900; text-decoration: none; white-space: nowrap; }
+.helpline-call:hover { background: #ffe1e5; }
+.helpline-demo-note { margin: 12px 0 0 !important; padding: 10px 12px; border-left: 3px solid #d28b43; border-radius: 0 8px 8px 0; color: #785b3b !important; background: #fff8ed; font-size: .67rem !important; }
 .profile-button { display: flex; align-items: center; gap: 9px; padding: 0; color: var(--color-text-primary); background: transparent; text-align: left; }
 .avatar, .member-avatar { display: grid; place-items: center; border-radius: 50%; font-size: .6rem; font-weight: 900; }
 .avatar { width: 32px; height: 32px; color: #fff; background: linear-gradient(140deg, var(--color-secondary), var(--color-accent)); }
