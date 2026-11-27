@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const views = window.AamaViews || {};
   const apiBaseUrl = String(window.AAMA_API_URL || '').replace(/\/$/, '');
   const translate = (value) => window.AamaI18n?.t(value) || value;
+  window.AamaBenefits?.renderTeaser();
   // Keep the existing storage keys so saved user data survives the rebrand.
   const checklistStorageKey = 'aamacare-checklist';
   const customChecklistStorageKey = 'aamacare-custom-checklist';
@@ -339,6 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/home/family-hub': { view: 'family', label: 'Family hub' },
     '/home/health-services': { view: 'services', label: 'Health services' },
     '/home/learn-prepare': { view: 'learn', label: 'Learn & prepare' },
+    '/home/learn-prepare/benefits': { view: 'benefits', label: 'Benefits & support' },
     '/home/settings': { view: 'settings', label: 'Settings' },
     '/health-post': { view: 'hp-dashboard', label: 'Health Post Dashboard' },
     '/health-post/mothers': { view: 'hp-mothers', label: 'All Registered Mothers' },
@@ -723,17 +725,23 @@ document.addEventListener('DOMContentLoaded', () => {
       nav.classList.remove('is-active');
       nav.removeAttribute('aria-current');
     });
-    const activeNav = document.querySelector(`.nav-item[data-view="${view}"]`);
+    const activeNav = document.querySelector(`.nav-item[data-view="${view === 'benefits' ? 'learn' : view}"]`);
     activeNav?.classList.add('is-active');
     activeNav?.setAttribute('aria-current', 'page');
     const learnNav = document.querySelector('.nav-item[data-view="learn"]');
     const learnSubnav = document.querySelector('#learn-subnav');
-    learnSubnav?.classList.toggle('is-hidden', view !== 'learn');
-    learnNav?.setAttribute('aria-expanded', String(view === 'learn'));
+    const learnExpanded = view === 'learn' || view === 'benefits';
+    learnSubnav?.classList.toggle('is-hidden', !learnExpanded);
+    learnNav?.setAttribute('aria-expanded', String(learnExpanded));
     document.querySelectorAll('.learn-subnav-item').forEach((item) => {
       item.classList.remove('is-active');
       item.removeAttribute('aria-current');
     });
+    if (view === 'benefits') {
+      const benefitsNav = learnSubnav?.querySelector('[data-route="/home/learn-prepare/benefits"]');
+      benefitsNav?.classList.add('is-active');
+      benefitsNav?.setAttribute('aria-current', 'page');
+    }
     sidebar?.classList.remove('is-open');
     if (view === 'overview') {
       dashboardContent?.classList.remove('is-hidden');
@@ -756,12 +764,16 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView.classList.remove('is-hidden');
       if (view === 'settings') restoreSettings();
       if (view === 'learn') window.AamaLearn?.init(secondaryView);
+      if (view === 'benefits') window.AamaBenefits?.render(secondaryView);
       if (view === 'family') {
         renderFamilyChecklist();
         updateSharedChecklistSummary();
       }
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
+    document.querySelector('.breadcrumb')?.classList.toggle('breadcrumb--benefits', view === 'benefits');
+    document.querySelector('.breadcrumb-learn')?.classList.toggle('is-hidden', view !== 'benefits');
+    document.querySelector('.breadcrumb-learn-separator')?.classList.toggle('is-hidden', view !== 'benefits');
     document.title = isHealthPost ? `MatriSathi · ${label}` : 'MatriSathi · My care dashboard';
     window.AamaI18n?.translatePage();
     if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
@@ -1038,6 +1050,10 @@ document.addEventListener('DOMContentLoaded', () => {
       openInteraction('Learn & prepare', target.dataset.title || 'Recommended learning', '<div class="video-player-placeholder"><span>▶</span><p>Preview player</p></div><p>This video placeholder is ready for the Ministry of Health media URL.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Close player</button>');
     } else if (action === 'close-modal') {
       closeInteraction();
+    } else if (action === 'benefits-retry') {
+      window.AamaBenefits?.render(secondaryView);
+    } else if (action === 'benefits-ask-ai') {
+      openAssistant();
     } else if (action === 'save-settings') {
       saveSettings();
     } else if (action === 'confirm-logout') {

@@ -57,4 +57,7 @@ window.AamaViews = {
       <p class="faq-footer-note">If you want, we can also turn this into a printable or shareable PDF or Word file, or expand a topic such as nutrition or danger signs.</p>
     </section>
   `,
+  benefits: `
+    <div class="benefits-page" data-benefits-root><div class="benefits-state" role="status"><span class="benefits-state__spinner" aria-hidden="true"></span><strong>Loading your support details…</strong></div></div>
+  `,
 };
