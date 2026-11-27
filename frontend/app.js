@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const saved = JSON.parse(window.localStorage.getItem(profileStorageKey) || '{}');
       const user = readAuthUser();
       return {
-        name: typeof saved.name === 'string' ? saved.name : user?.name || 'Sita K.',
+        name: typeof saved.name === 'string' ? saved.name : user?.name || '',
         phone: typeof saved.phone === 'string' ? saved.phone : user?.phone || '',
         location: typeof saved.location === 'string' ? saved.location : 'Lalitpur',
         age: typeof saved.age === 'string' ? saved.age : '',
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         prePregnancyWeight: typeof saved.prePregnancyWeight === 'string' ? saved.prePregnancyWeight : '',
       };
     } catch (error) {
-      return { name: 'Sita K.', phone: '', location: 'Lalitpur', age: '', bloodType: '', height: '', prePregnancyWeight: '' };
+      return { name: readAuthUser()?.name || '', phone: '', location: 'Lalitpur', age: '', bloodType: '', height: '', prePregnancyWeight: '' };
     }
   }
 
@@ -429,6 +429,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarNode = profileButton?.querySelector('.avatar');
     if (nameNode) nameNode.textContent = name;
     if (avatarNode) avatarNode.textContent = avatar;
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const welcomeGreeting = document.querySelector('[data-welcome-greeting]');
+    if (welcomeGreeting) {
+      const firstName = String(profile.name || '').trim().split(/\s+/)[0];
+      welcomeGreeting.textContent = firstName ? `${translate(greeting)}, ${firstName}` : translate(greeting);
+    }
   }
   updateProfileDisplay(getProfile());
 
@@ -576,10 +583,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const progress = secondaryView.querySelector('[data-family-progress]');
     if (progress) progress.textContent = `${completed} of ${tasks.length} done`;
     list.innerHTML = tasks.map((task) => `
-      <button class="shared-item${task.completed ? ' is-complete' : ''}" type="button" data-action="toggle-shared" data-family-task-id="${escapeHtml(task.id)}">
+      <button class="shared-item${task.completed ? ' is-complete' : ''}" type="button" aria-pressed="${String(Boolean(task.completed))}" data-action="toggle-shared" data-family-task-id="${escapeHtml(task.id)}">
         <span class="shared-check${task.completed ? ' is-done' : ''}">${task.completed ? '✓' : ''}</span>
         <strong>${escapeHtml(task.title)}</strong>
-        <small>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.completed ? 'Done' : task.time || 'This week')}</small>
+        <small>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.completed ? 'Done' : task.time === 'Done' ? 'Today' : task.time || 'This week')}</small>
       </button>
     `).join('');
   }
@@ -806,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.addEventListener('aama-language-change', () => {
+    updateProfileDisplay(getProfile());
     if (window.AamaPregnancyJourneyState && !secondaryView?.classList.contains('is-hidden')) {
       applyJourneyCalendar(window.AamaPregnancyJourneyState);
     }

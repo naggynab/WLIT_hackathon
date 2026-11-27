@@ -19,14 +19,13 @@
 
         <div class="auth-panel">
           <button class="icon-button language-button language-button--auth" type="button" aria-label="Change language">ने <span>EN</span></button>
-          <a class="brand brand--auth" href="/login" aria-label="MatriSathi home">
-            <span class="brand-mark">m</span>
-            <span>Matri<span>Sathi</span></span>
-          </a>
-
           <div class="auth-copy">
+            <a class="brand brand--auth" href="/login" aria-label="MatriSathi home">
+              <span class="brand-mark">m</span>
+              <span>Matri<span>Sathi</span></span>
+            </a>
             <p class="eyebrow">Your pregnancy companion</p>
-            <h1 id="login-title">Welcome back<span class="title-dot">.</span></h1>
+            <h1 id="login-title">Welcome back</h1>
             <p>Personalized care, reminders, and trusted support for every step of your pregnancy.</p>
           </div>
 
@@ -38,11 +37,11 @@
             </div>
 
             <div class="form-label-row">
-              <label for="pin">Password or PIN</label>
-              <a href="#" class="text-link" id="forgot-link">Forgot PIN?</a>
+              <label for="pin">Password</label>
+              <a href="#" class="text-link" id="forgot-link">Forgot Password?</a>
             </div>
             <div class="input-wrap input-wrap--password">
-              <input id="pin" name="pin" type="password" placeholder="Enter your password or PIN" autocomplete="current-password" required>
+              <input id="pin" name="pin" type="password" placeholder="Enter your password" autocomplete="current-password" required>
               <button class="input-action" type="button" id="toggle-pin" aria-label="Show password">◉</button>
             </div>
 
@@ -62,7 +61,7 @@
           <div class="auth-signup is-hidden" id="signup-view" aria-labelledby="signup-title">
             <div class="auth-copy">
               <p class="eyebrow">Start your care journey</p>
-              <h1 id="signup-title">Create your account<span class="title-dot">.</span></h1>
+              <h1 id="signup-title">Create your account</h1>
               <p>Set up your profile to follow your pregnancy week by week.</p>
             </div>
             <form class="auth-form" id="signup-form">
@@ -130,7 +129,7 @@
             <div class="welcome-row">
               <div>
                 <p class="eyebrow">Wednesday, 26 November 2026</p>
-                <h1>Good morning, Sita <span aria-hidden="true">✦</span></h1>
+                <h1><span data-welcome-greeting>Good morning</span> <span aria-hidden="true">✦</span></h1>
                 <p class="welcome-subtitle">You are doing a wonderful job taking care of you and your baby.</p>
               </div>
               <button class="button button--primary button--compact" type="button" data-action="today-plan">View today's plan <span aria-hidden="true">→</span></button>
@@ -198,7 +197,7 @@
                   <div class="family-panel__photo"><img src="/assets/mom4.jpg" alt="A mother and child sharing a joyful moment"></div>
                   <div class="family-members"><div class="member-avatar member-avatar--one">RK</div><div class="member-avatar member-avatar--two">AM</div><div class="member-avatar member-avatar--three">SK</div><button class="add-member" type="button" data-toast="Invite a family member">＋</button></div>
                   <p class="family-copy"><strong>Ram and Asha</strong> are following your care plan.</p>
-                  <button class="button button--soft button--full" type="button" data-toast="Family hub opened">Open family hub <span>→</span></button>
+                  <button class="button button--soft button--full" type="button" data-route="/home/family-hub">Open family hub <span>→</span></button>
                 </article>
                 <article class="panel care-panel">
                   <div class="care-panel-icon">⌖</div><p class="card-kicker">Nearby care</p><h2>Patan Hospital</h2><p>2.4 km away · Open today until 5:00 PM</p><button class="text-action" type="button" data-toast="Directions opened">Get directions <span>↗</span></button>

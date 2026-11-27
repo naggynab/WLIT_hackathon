@@ -57,6 +57,48 @@
     }
   }
 
+  async function findWikimediaPhoto(place) {
+    if (place.photoUrl) return;
+    const stopWords = new Set(['hospital', 'clinic', 'pharmacy', 'medical', 'health', 'centre', 'center', 'the', 'and']);
+    const tokens = getDisplayName(place).toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length > 3 && !stopWords.has(token));
+    if (!tokens.length) return;
+    try {
+      const params = new URLSearchParams({
+        action: 'query',
+        generator: 'search',
+        gsrnamespace: '6',
+        gsrsearch: `${getDisplayName(place)} Lalitpur Nepal`,
+        gsrlimit: '3',
+        prop: 'imageinfo',
+        iiprop: 'url|extmetadata',
+        iiurlwidth: '640',
+        format: 'json',
+        origin: '*',
+      });
+      const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      const pages = Object.values(data.query?.pages || {});
+      const match = pages.find((page) => {
+        const title = String(page.title || '').toLowerCase();
+        return tokens.length > 0 && tokens.some((token) => title.includes(token));
+      });
+      const image = match?.imageinfo?.[0];
+      if (!image?.thumburl && !image?.url) return;
+      const metadata = image.extmetadata || {};
+      const attribution = String(metadata.Artist?.value || metadata.Credit?.value || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 90);
+      const license = String(metadata.LicenseShortName?.value || '').replace(/<[^>]*>/g, '').trim();
+      place.photoUrl = image.thumburl || image.url;
+      place.photoAttribution = ['Wikimedia Commons', attribution, license].filter(Boolean).join(' · ');
+    } catch (error) {
+      console.warn(`No Wikimedia photo found for ${getDisplayName(place)}.`, error);
+    }
+  }
+
   async function getConfiguredApiKey() {
     const configuredKey = String(window.MATRI_SATHI_GOOGLE_MAPS_API_KEY || '').trim();
     if (configuredKey) return configuredKey;
@@ -158,6 +200,12 @@
     const copy = document.createElement('span');
     copy.className = 'service-card__copy';
     copy.innerHTML = `<strong>${escapeHtml(name)}</strong><span>${escapeHtml(type)} · ${escapeHtml(hours)}${escapeHtml(rating)}</span><small>${escapeHtml(address)}</small>`;
+    if (photo?.attribution) {
+      const credit = document.createElement('small');
+      credit.className = 'service-photo-credit';
+      credit.textContent = `Photo: ${photo.attribution}`;
+      copy.appendChild(credit);
+    }
     card.appendChild(copy);
 
     const distanceNode = document.createElement('span');
@@ -291,11 +339,13 @@
     results.forEach((place) => {
       if (!unique.has(place.displayName)) unique.set(place.displayName, place);
     });
-    return Array.from(unique.values())
+    const nearbyPlaces = Array.from(unique.values())
       .map((place) => ({ place, position: getCoordinates(place.location) }))
       .map((entry) => ({ ...entry, distance: distanceInKilometres(origin, entry.position) }))
       .sort((left, right) => left.distance - right.distance)
       .slice(0, 8);
+    await Promise.all(nearbyPlaces.map(({ place }) => findWikimediaPhoto(place)));
+    return nearbyPlaces;
   }
 
   async function initOpenStreetMap(root) {
