@@ -305,6 +305,10 @@ a { color: inherit; text-decoration: none; }
 .profile-dialog-summary > div { display: grid; gap: 3px; min-width: 0; }
 .profile-dialog-summary strong { overflow: hidden; color: var(--color-text-primary); font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
 .profile-dialog-summary > div span { color: var(--color-text-muted); font-size: .67rem; }
+.profile-health-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+.profile-health-details > div { display: grid; gap: 4px; min-height: 58px; align-content: center; padding: 10px 12px; border-radius: 11px; background: #fff8fc; }
+.profile-health-details small { color: var(--color-text-muted); font-size: .61rem; }
+.profile-health-details strong { color: var(--color-text-primary); font-size: .72rem; }
 .profile-menu-list { display: grid; gap: 7px; }
 .profile-menu-item { display: flex; width: 100%; min-height: 62px; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid transparent; border-radius: 12px; color: var(--color-text-secondary); background: #fff; text-align: left; transition: background .18s, border-color .18s, transform .18s; }
 .profile-menu-item:hover { border-color: #f2dce9; background: #fff7fb; transform: translateX(2px); }
@@ -322,6 +326,9 @@ a { color: inherit; text-decoration: none; }
 .interaction-form input, .interaction-form select, .interaction-form textarea { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 10px; outline: 0; color: var(--color-text-secondary); background: #fff; font-size: .7rem; }
 .interaction-form textarea { min-height: 75px; resize: vertical; }
 .interaction-form input:focus, .interaction-form select:focus, .interaction-form textarea:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 4px rgba(231,116,185,.12); }
+.profile-edit-form { gap: 8px; }
+.profile-edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 3px; }
+.profile-edit-grid > div { display: grid; align-content: start; gap: 6px; }
 .detail-list { display: grid; gap: 10px; margin: 17px 0 0; }
 .detail-row { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid #f3edf2; font-size: .68rem; }
 .detail-row span:first-child { color: #aa99a6; }

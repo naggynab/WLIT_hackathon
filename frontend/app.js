@@ -60,9 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
         name: typeof saved.name === 'string' ? saved.name : 'Sita K.',
         phone: typeof saved.phone === 'string' ? saved.phone : '',
         location: typeof saved.location === 'string' ? saved.location : 'Lalitpur',
+        age: typeof saved.age === 'string' ? saved.age : '',
+        bloodType: typeof saved.bloodType === 'string' ? saved.bloodType : '',
+        height: typeof saved.height === 'string' ? saved.height : '',
+        prePregnancyWeight: typeof saved.prePregnancyWeight === 'string' ? saved.prePregnancyWeight : '',
       };
     } catch (error) {
-      return { name: 'Sita K.', phone: '', location: 'Lalitpur' };
+      return { name: 'Sita K.', phone: '', location: 'Lalitpur', age: '', bloodType: '', height: '', prePregnancyWeight: '' };
     }
   }
 
@@ -92,10 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const initials = escapeHtml(profileInitials(profile.name));
     const location = escapeHtml(profile.location);
     const phone = escapeHtml(profile.phone || 'Add a mobile number');
+    const age = profile.age ? translate('{count} years', { count: escapeHtml(profile.age) }) : 'Not added';
+    const bloodType = escapeHtml(profile.bloodType || 'Not added');
+    const height = profile.height ? `${escapeHtml(profile.height)} cm` : 'Not added';
+    const weight = profile.prePregnancyWeight ? `${escapeHtml(profile.prePregnancyWeight)} kg` : 'Not added';
     openInteraction(
       'Your account',
       'Your profile',
-      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon" aria-hidden="true">✎</span><span><strong>Edit profile</strong><small>Update your personal details</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon" aria-hidden="true">⚙</span><span><strong>Settings</strong><small>Language and care preferences</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon" aria-hidden="true">?</span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon" aria-hidden="true">↪</span><span><strong>Sign out</strong><small>End this session safely</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button></div>`,
+      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-health-details"><div><small>Age</small><strong>${age}</strong></div><div><small>Blood type</small><strong>${bloodType}</strong></div><div><small>Height</small><strong>${height}</strong></div><div><small>Pre-pregnancy weight</small><strong>${weight}</strong></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon" aria-hidden="true">✎</span><span><strong>Edit profile</strong><small>Update your personal details</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon" aria-hidden="true">⚙</span><span><strong>Settings</strong><small>Language and care preferences</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon" aria-hidden="true">?</span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon" aria-hidden="true">↪</span><span><strong>Sign out</strong><small>End this session safely</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button></div>`,
     );
   }
 
@@ -104,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openInteraction(
       'Your account',
       'Edit profile',
-      `<form class="interaction-form" id="profile-form"><label for="profile-name">Full name</label><input id="profile-name" name="name" value="${escapeHtml(profile.name)}" autocomplete="name" required maxlength="80"><label for="profile-phone">Mobile number <span class="form-label-hint">optional</span></label><input id="profile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(profile.phone)}" placeholder="Add a mobile number" maxlength="30"><label for="profile-location">Care location</label><input id="profile-location" name="location" value="${escapeHtml(profile.location)}" autocomplete="address-level2" maxlength="80"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="open-profile">Cancel</button><button class="button button--primary" type="submit">Save profile</button></div></form>`,
+      `<form class="interaction-form profile-edit-form" id="profile-form"><label for="profile-name">Full name</label><input id="profile-name" name="name" value="${escapeHtml(profile.name)}" autocomplete="name" required maxlength="80"><label for="profile-phone">Mobile number <span class="form-label-hint">optional</span></label><input id="profile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(profile.phone)}" placeholder="Add a mobile number" maxlength="30"><label for="profile-location">Care location</label><input id="profile-location" name="location" value="${escapeHtml(profile.location)}" autocomplete="address-level2" maxlength="80"><div class="profile-edit-grid"><div><label for="profile-age">Age (years) <span class="form-label-hint">optional</span></label><input id="profile-age" name="age" type="number" min="10" max="60" step="1" inputmode="numeric" value="${escapeHtml(profile.age)}"></div><div><label for="profile-blood-type">Blood type <span class="form-label-hint">optional</span></label><select id="profile-blood-type" name="bloodType"><option value="">Select blood type</option>${['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => `<option value="${type}" ${profile.bloodType === type ? 'selected' : ''}>${type}</option>`).join('')}</select></div><div><label for="profile-height">Height (cm) <span class="form-label-hint">optional</span></label><input id="profile-height" name="height" type="number" min="80" max="250" step="0.1" inputmode="decimal" value="${escapeHtml(profile.height)}"></div><div><label for="profile-pre-pregnancy-weight">Pre-pregnancy weight (kg) <span class="form-label-hint">optional</span></label><input id="profile-pre-pregnancy-weight" name="prePregnancyWeight" type="number" min="20" max="300" step="0.1" inputmode="decimal" value="${escapeHtml(profile.prePregnancyWeight)}"></div></div><div class="interaction-actions"><button class="button button--outline" type="button" data-action="open-profile">Cancel</button><button class="button button--primary" type="submit">Save profile</button></div></form>`,
     );
     document.querySelector('#profile-name')?.focus();
   }
@@ -632,6 +640,10 @@ document.addEventListener('DOMContentLoaded', () => {
         name: String(formData.get('name') || '').trim(),
         phone: String(formData.get('phone') || '').trim(),
         location: String(formData.get('location') || '').trim(),
+        age: String(formData.get('age') || '').trim(),
+        bloodType: String(formData.get('bloodType') || '').trim(),
+        height: String(formData.get('height') || '').trim(),
+        prePregnancyWeight: String(formData.get('prePregnancyWeight') || '').trim(),
       };
       if (!profile.name) return;
       try {
