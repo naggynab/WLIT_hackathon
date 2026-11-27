@@ -95,6 +95,24 @@
   const refreshLanguage = () => window.AamaI18n?.translatePage();
   const locationMessages = new WeakMap();
   const escape = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function movementVideo(id, title) {
+    const link = window.AAMA_MOVEMENT_VIDEOS?.[id]?.trim();
+    let videoId = '';
+    try {
+      const url = new URL(link);
+      const host = url.hostname.toLowerCase();
+      if (['https:', 'http:'].includes(url.protocol)) {
+        if (host === 'youtu.be') videoId = url.pathname.split('/')[1];
+        if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'].includes(host)) {
+          videoId = url.pathname === '/watch' ? url.searchParams.get('v') : /^\/(?:embed|shorts|live)\/([^/]+)/.exec(url.pathname)?.[1];
+        }
+      }
+    } catch { /* Empty or invalid links keep the placeholder visible. */ }
+    const content = /^[\w-]{11}$/.test(videoId || '')
+      ? `<iframe src="https://www.youtube-nocookie.com/embed/${videoId}?playsinline=1" title="${escape(t(title))}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+      : `<div class="learn-video-placeholder"><span class="learn-video-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m9 5 11 7-11 7Z"/></svg></span><span>Video coming soon</span></div>`;
+    return `<div class="learn-video-frame"><div class="learn-movement-video">${content}</div></div>`;
+  }
   function init(root) {
     try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch { saved = {}; }
     location = saved.location || null;
@@ -158,7 +176,7 @@
       ['walking','Comfortable walking','Start with a short, easy walk on level ground. Build up gradually if it feels comfortable; take breaks and drink water.'],
       ['pelvic','Pelvic floor practice','Gently tighten the muscles around your vagina and back passage, hold briefly while breathing normally, then fully relax. Ask your midwife for help if unsure.'],
       ['mobility','Gentle mobility','Try relaxed shoulder rolls, ankle circles, or a supported stretch. Keep movements pain-free and avoid overheating or fall risks.']
-    ].map(([id,title,copy])=>`<article class="learn-movement"><img src="/assets/movement-${id}.svg" alt="${id === 'walking' ? 'Illustration of a pregnant person walking outdoors' : id === 'pelvic' ? 'Illustration of a pregnant person sitting comfortably on a chair' : 'Illustration of a pregnant person gently moving their arms'}" width="360" height="260"><div class="learn-movement-copy"><h3>${title}</h3><details><summary>Explore this activity</summary><p>${copy}</p></details><label class="learn-activity-done"><input type="checkbox" data-movement-done="${id}" ${saved.movement?.[id] ? 'checked' : ''}> Save to my activities</label></div></article>`).join('');
+    ].map(([id,title,copy])=>`<article class="learn-movement">${movementVideo(id, title)}<div class="learn-movement-copy"><h3>${title}</h3><details><summary>Explore this activity</summary><p>${copy}</p></details><label class="learn-activity-done"><input type="checkbox" data-movement-done="${id}" ${saved.movement?.[id] ? 'checked' : ''}> Save to my activities</label></div></article>`).join('');
     root.querySelectorAll('[data-support-question]').forEach(input => { input.checked = Boolean(saved.questions?.[input.dataset.supportQuestion]); });
     updateQuestions(root);
     renderPlan(root);

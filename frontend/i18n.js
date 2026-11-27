@@ -397,6 +397,7 @@
     'Food & nutrition': 'खाना र पोषण',
     'Local food ideas': 'स्थानीय खानाका विचार',
     'Movement': 'चालचलन',
+    'Video coming soon': 'भिडियो छिट्टै आउँदैछ',
     'Safe exercises': 'सुरक्षित व्यायाम',
     'Birth preparation': 'प्रसूति तयारी',
     'Plan with confidence': 'विश्वासका साथ योजना बनाउनुहोस्',
