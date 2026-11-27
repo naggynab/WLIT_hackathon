@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const interactionClose = document.querySelector('#interaction-close');
   const views = window.AamaViews || {};
   const apiBaseUrl = String(window.AAMA_API_URL || '').replace(/\/$/, '');
-  const translate = (value) => window.AamaI18n?.t(value) || value;
+  const translate = (value, values) => window.AamaI18n?.t(value, values) || value;
   // Keep the existing storage keys so saved user data survives the rebrand.
   const checklistStorageKey = 'aamacare-checklist';
   const customChecklistStorageKey = 'aamacare-custom-checklist';
@@ -145,6 +145,22 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data.token || !data.user) throw new Error('The server returned an incomplete sign-in response.');
 
       storeAuthSession(data.token, data.user);
+      if (endpoint === 'signup') {
+        try {
+          window.localStorage.setItem(profileStorageKey, JSON.stringify({
+            name: data.user.name,
+            phone: data.user.phone,
+            age: data.user.age ?? payload.age,
+            weightKg: data.user.weightKg ?? payload.weightKg,
+            height: data.user.height ?? payload.height,
+            bloodType: data.user.bloodType || payload.bloodType,
+            healthNotes: data.user.healthNotes ?? payload.healthNotes,
+            location: 'Lalitpur',
+          }));
+        } catch (error) {
+          console.warn('Health profile could not be saved on this device.', error);
+        }
+      }
       const dueDate = payload.dueDate || data.user.dueDate?.slice?.(0, 10);
       if (dueDate) {
         try {
@@ -402,9 +418,11 @@ document.addEventListener('DOMContentLoaded', () => {
         name: typeof saved.name === 'string' ? saved.name : user?.name || '',
         phone: typeof saved.phone === 'string' ? saved.phone : user?.phone || '',
         location: typeof saved.location === 'string' ? saved.location : 'Lalitpur',
-        age: typeof saved.age === 'string' ? saved.age : '',
-        bloodType: typeof saved.bloodType === 'string' ? saved.bloodType : '',
-        height: typeof saved.height === 'string' ? saved.height : '',
+        age: String(saved.age ?? '').trim() || (user?.age != null ? String(user.age) : ''),
+        bloodType: String(saved.bloodType || user?.bloodType || ''),
+        weightKg: String(saved.weightKg ?? '').trim() || (user?.weightKg != null ? String(user.weightKg) : ''),
+        healthNotes: String(saved.healthNotes || user?.healthNotes || ''),
+        height: String(saved.height ?? '').trim() || (user?.height != null ? String(user.height) : ''),
         prePregnancyWeight: typeof saved.prePregnancyWeight === 'string' ? saved.prePregnancyWeight : '',
       };
     } catch (error) {
@@ -436,8 +454,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const firstName = String(profile.name || '').trim().split(/\s+/)[0];
       welcomeGreeting.textContent = firstName ? `${translate(greeting)}, ${firstName}` : translate(greeting);
     }
+    updateDashboardDate();
+  }
+
+  function updateDashboardDate() {
+    const dateNode = document.querySelector('#dashboard-current-date');
+    if (!dateNode) return;
+    const language = window.AamaI18n?.getLanguage() || 'en';
+    dateNode.textContent = new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    }).format(new Date());
   }
   updateProfileDisplay(getProfile());
+  document.addEventListener('aama-language-change', () => updateProfileDisplay(getProfile()));
 
   function openProfileDialog() {
     const profile = getProfile();
@@ -449,10 +478,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const bloodType = escapeHtml(profile.bloodType || 'Not added');
     const height = profile.height ? `${escapeHtml(profile.height)} cm` : 'Not added';
     const weight = profile.prePregnancyWeight ? `${escapeHtml(profile.prePregnancyWeight)} kg` : 'Not added';
+    const currentWeight = profile.weightKg ? `${escapeHtml(profile.weightKg)} kg` : 'Not added';
+    const healthNotes = escapeHtml(profile.healthNotes || 'Not added');
     openInteraction(
       'Your account',
       'Your profile',
-      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-health-details"><div><small>Age</small><strong>${age}</strong></div><div><small>Blood type</small><strong>${bloodType}</strong></div><div><small>Height</small><strong>${height}</strong></div><div><small>Pre-pregnancy weight</small><strong>${weight}</strong></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon" aria-hidden="true">✎</span><span><strong>Edit profile</strong><small>Update your personal details</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon" aria-hidden="true">⚙</span><span><strong>Settings</strong><small>Language and care preferences</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon" aria-hidden="true">?</span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon" aria-hidden="true">↪</span><span><strong>Sign out</strong><small>End this session safely</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button></div>`,
+      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-health-details"><div><small>Age</small><strong>${age}</strong></div><div><small>Blood type</small><strong>${bloodType}</strong></div><div><small>Current weight</small><strong>${currentWeight}</strong></div><div><small>Health conditions</small><strong>${healthNotes}</strong></div><div><small>Height</small><strong>${height}</strong></div><div><small>Pre-pregnancy weight</small><strong>${weight}</strong></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon" aria-hidden="true">✎</span><span><strong>Edit profile</strong><small>Update your personal details</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon" aria-hidden="true">⚙</span><span><strong>Settings</strong><small>Language and care preferences</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon" aria-hidden="true">?</span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon" aria-hidden="true">↪</span><span><strong>Sign out</strong><small>End this session safely</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button></div>`,
     );
   }
 
@@ -461,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openInteraction(
       'Your account',
       'Edit profile',
-      `<form class="interaction-form profile-edit-form" id="profile-form"><label for="profile-name">Full name</label><input id="profile-name" name="name" value="${escapeHtml(profile.name)}" autocomplete="name" required maxlength="80"><label for="profile-phone">Mobile number <span class="form-label-hint">optional</span></label><input id="profile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(profile.phone)}" placeholder="Add a mobile number" maxlength="30"><label for="profile-location">Care location</label><input id="profile-location" name="location" value="${escapeHtml(profile.location)}" autocomplete="address-level2" maxlength="80"><div class="profile-edit-grid"><div><label for="profile-age">Age (years) <span class="form-label-hint">optional</span></label><input id="profile-age" name="age" type="number" min="10" max="60" step="1" inputmode="numeric" value="${escapeHtml(profile.age)}"></div><div><label for="profile-blood-type">Blood type <span class="form-label-hint">optional</span></label><select id="profile-blood-type" name="bloodType"><option value="">Select blood type</option>${['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => `<option value="${type}" ${profile.bloodType === type ? 'selected' : ''}>${type}</option>`).join('')}</select></div><div><label for="profile-height">Height (cm) <span class="form-label-hint">optional</span></label><input id="profile-height" name="height" type="number" min="80" max="250" step="0.1" inputmode="decimal" value="${escapeHtml(profile.height)}"></div><div><label for="profile-pre-pregnancy-weight">Pre-pregnancy weight (kg) <span class="form-label-hint">optional</span></label><input id="profile-pre-pregnancy-weight" name="prePregnancyWeight" type="number" min="20" max="300" step="0.1" inputmode="decimal" value="${escapeHtml(profile.prePregnancyWeight)}"></div></div><div class="interaction-actions"><button class="button button--outline" type="button" data-action="open-profile">Cancel</button><button class="button button--primary" type="submit">Save profile</button></div></form>`,
+      `<form class="interaction-form profile-edit-form" id="profile-form"><label for="profile-name">Full name</label><input id="profile-name" name="name" value="${escapeHtml(profile.name)}" autocomplete="name" required maxlength="80"><label for="profile-phone">Mobile number <span class="form-label-hint">optional</span></label><input id="profile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(profile.phone)}" placeholder="Add a mobile number" maxlength="30"><label for="profile-location">Care location</label><input id="profile-location" name="location" value="${escapeHtml(profile.location)}" autocomplete="address-level2" maxlength="80"><div class="profile-edit-grid"><div><label for="profile-age">Age (years) <span class="form-label-hint">optional</span></label><input id="profile-age" name="age" type="number" min="10" max="60" step="1" inputmode="numeric" value="${escapeHtml(profile.age)}"></div><div><label for="profile-blood-type">Blood type <span class="form-label-hint">optional</span></label><select id="profile-blood-type" name="bloodType"><option value="">Select blood type</option>${['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => `<option value="${type}" ${profile.bloodType === type ? 'selected' : ''}>${type}</option>`).join('')}<option value="Unknown" ${profile.bloodType === 'Unknown' ? 'selected' : ''}>I don't know</option></select></div><div><label for="profile-current-weight">Current weight (kg) <span class="form-label-hint">optional</span></label><input id="profile-current-weight" name="weightKg" type="number" min="20" max="300" step="0.1" inputmode="decimal" value="${escapeHtml(profile.weightKg)}"></div><div><label for="profile-height">Height (cm) <span class="form-label-hint">optional</span></label><input id="profile-height" name="height" type="number" min="80" max="250" step="0.1" inputmode="decimal" value="${escapeHtml(profile.height)}"></div><div><label for="profile-pre-pregnancy-weight">Pre-pregnancy weight (kg) <span class="form-label-hint">optional</span></label><input id="profile-pre-pregnancy-weight" name="prePregnancyWeight" type="number" min="20" max="300" step="0.1" inputmode="decimal" value="${escapeHtml(profile.prePregnancyWeight)}"></div></div><label for="profile-health-notes">Health conditions <span class="form-label-hint">optional</span></label><textarea id="profile-health-notes" name="healthNotes" maxlength="500">${escapeHtml(profile.healthNotes)}</textarea><div class="interaction-actions"><button class="button button--outline" type="button" data-action="open-profile">Cancel</button><button class="button button--primary" type="submit">Save profile</button></div></form>`,
     );
     document.querySelector('#profile-name')?.focus();
   }
@@ -1176,6 +1207,11 @@ document.addEventListener('DOMContentLoaded', () => {
       name: document.querySelector('#signup-name')?.value.trim(),
       phone: signupPhoneInput?.value.trim(),
       dueDate: signupDueDateInput?.value,
+      age: Number(document.querySelector('#signup-age')?.value),
+      weightKg: Number(document.querySelector('#signup-weight')?.value),
+      height: Number(document.querySelector('#signup-height')?.value),
+      bloodType: document.querySelector('#signup-blood-type')?.value,
+      healthNotes: document.querySelector('#signup-health-notes')?.value.trim() || '',
       password: document.querySelector('#signup-password')?.value || '',
       preferredLanguage: window.AamaI18n?.getLanguage() || 'ne',
     }, signupForm, 'Account created successfully.');
@@ -1302,6 +1338,8 @@ document.addEventListener('DOMContentLoaded', () => {
         location: String(formData.get('location') || '').trim(),
         age: String(formData.get('age') || '').trim(),
         bloodType: String(formData.get('bloodType') || '').trim(),
+        weightKg: String(formData.get('weightKg') || '').trim(),
+        healthNotes: String(formData.get('healthNotes') || '').trim(),
         height: String(formData.get('height') || '').trim(),
         prePregnancyWeight: String(formData.get('prePregnancyWeight') || '').trim(),
       };
