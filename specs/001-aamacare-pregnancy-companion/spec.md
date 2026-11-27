@@ -1,14 +1,14 @@
-# AamaCare Pregnancy Companion Specification
+# MatriSathi Pregnancy Companion Specification
 
 ## Overview
 
-AamaCare is a warm, Nepali-first pregnancy companion for mothers and families in Nepal. The MVP lets a person preview or create a pregnancy profile without signing in, follow week-specific pregnancy guidance, manage care tasks and records, find nearby services, and ask Aama AI general questions in English or Nepali.
+MatriSathi is a warm, Nepali-first pregnancy companion for mothers and families in Nepal. The MVP lets a person preview or create a pregnancy profile without signing in, follow week-specific pregnancy guidance, manage care tasks and records, find nearby services, and ask MatriSathi AI general questions in English or Nepali.
 
 The app is informational and organizational. It does not diagnose, prescribe, or replace a qualified health worker. Danger signs must prompt clear direction to qualified health workers or emergency services.
 
 ## User Stories
 
-- As an expectant mother, I want to preview AamaCare or create a pregnancy profile without logging in, so that I can use the app without an account.
+- As an expectant mother, I want to preview MatriSathi or create a pregnancy profile without logging in, so that I can use the app without an account.
 - As an expectant mother, I want to enter and update my estimated due date, so that my pregnancy information stays current.
 - As an expectant mother, I want to see my current pregnancy week, trimester, progress toward 40 weeks, and baby-size guidance, so that I can understand where I am in my pregnancy.
 - As an expectant mother, I want the current week reflected consistently across the dashboard, journey, weekly guide, checklist, learning content, and milestones, so that the app gives me relevant, coherent guidance.
@@ -26,7 +26,7 @@ The app is informational and organizational. It does not diagnose, prescribe, or
 
 ### Pregnancy profile and due-date setup
 
-Given a person opens AamaCare without a saved profile
+Given a person opens MatriSathi without a saved profile
 When they choose to preview or create a profile and enter a valid estimated due date
 Then they can continue to the dashboard without login and see the profile's pregnancy information.
 
@@ -37,7 +37,7 @@ Then the app explains what needs correction and does not save invalid pregnancy 
 ### Automatic week and trimester calculation
 
 Given a valid estimated due date
-When AamaCare calculates pregnancy progress
+When MatriSathi calculates pregnancy progress
 Then it derives gestational age from the standard 280-day pregnancy duration, displays the completed week and trimester, and shows progress toward week 40 and week-appropriate baby-size guidance.
 
 Given the due date is more than 280 days away or has passed
@@ -48,7 +48,7 @@ Then it handles the date boundary without displaying a negative week or a week a
 
 Given a profile has a saved estimated due date
 When the person changes it to another valid date and saves
-Then AamaCare recalculates the pregnancy information and persists the new date.
+Then MatriSathi recalculates the pregnancy information and persists the new date.
 
 Given the replacement date is invalid
 When the person attempts to save it
@@ -86,7 +86,7 @@ Then they can see appointment timing and care summaries in a clear chronological
 
 Given no records or appointments exist
 When the person opens the view
-Then AamaCare shows an understandable empty state and does not imply that care has been received or scheduled.
+Then MatriSathi shows an understandable empty state and does not imply that care has been received or scheduled.
 
 ### Family hub and sharing controls
 
@@ -143,7 +143,7 @@ When they reload the app in the same browser
 Then those values are restored from localStorage without a login or database.
 
 Given localStorage contains missing, malformed, or incompatible data
-When AamaCare starts
+When MatriSathi starts
 Then it handles the invalid stored value safely, provides a usable preview or recovery path, and does not present corrupted data as valid medical information.
 
 ### Responsive and accessible interactions
@@ -162,7 +162,7 @@ Then focus is managed accessibly and the page remains operable.
 
 ## Functional Requirements
 
-- The frontend uses the existing project structure, AamaCare visual style, responsive layout, and dashboard navigation. Use the existing plain HTML, CSS, and vanilla JavaScript approach; do not introduce React solely for this MVP.
+- The frontend uses the existing project structure, MatriSathi visual style, responsive layout, and dashboard navigation. Use the existing plain HTML, CSS, and vanilla JavaScript approach; do not introduce React solely for this MVP.
 - No authentication system or database is required. Profile and demo care data are local to the browser.
 - A single shared pregnancy state is the source of truth for the due date and calculated week across all relevant views.
 - Educational content must be clear, localized for Nepal, and reviewed by qualified health professionals before production use. Demo content must not be presented as a personalized medical instruction.

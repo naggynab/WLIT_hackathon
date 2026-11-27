@@ -7,6 +7,7 @@
   const kicker = $('.card-kicker');
   const dueInput = $('.due-date-input');
   const error = $('.due-date-error');
+  // Keep the persisted key stable so existing due dates are retained.
   const STORAGE_KEY = 'aamacare-due-date';
   const DAY = 86400000;
 

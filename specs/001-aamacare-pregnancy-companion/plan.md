@@ -1,4 +1,4 @@
-# AamaCare Pregnancy Companion Implementation Plan
+# MatriSathi Pregnancy Companion Implementation Plan
 
 ## 1. Technical Context
 

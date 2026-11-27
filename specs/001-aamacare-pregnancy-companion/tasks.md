@@ -1,4 +1,4 @@
-# Tasks: AamaCare Pregnancy Companion
+# Tasks: MatriSathi Pregnancy Companion
 
 **Input documents:** `specs/001-aamacare-pregnancy-companion/spec.md`, `specs/001-aamacare-pregnancy-companion/plan.md`
 
@@ -21,7 +21,7 @@
 
 ## Phase 3: User Story 1 - Preview or create a profile without login
 
-**Goal:** Let a person enter AamaCare in preview mode or create a local demo profile without authentication.
+**Goal:** Let a person enter MatriSathi in preview mode or create a local demo profile without authentication.
 
 **Independent test criteria:** A new visitor can choose preview or save a profile and reach the dashboard without signing in; profile information remains local.
 

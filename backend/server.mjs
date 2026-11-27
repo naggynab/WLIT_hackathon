@@ -3,6 +3,10 @@ import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {connectDB} from './db.mjs';
+import authRoutes from './routes/auth.routes.mjs';
+import healthRecordRoutes from './routes/healthRecords.routes.mjs';
+import { requireAuth } from './middleware/requireAuth.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 dotenv.config({ path: path.join(projectRoot, '.env') });
@@ -10,6 +14,7 @@ dotenv.config({ path: path.join(projectRoot, '.env') });
 const app = express();
 const port = Number(process.env.PORT || 3000);
 const geminiApiKey = process.env.GEMINI_API_KEY?.trim();
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || '';
 const gemini = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 const frontendRoot = path.join(projectRoot, 'frontend');
 const campusHubRoot = path.join(projectRoot, 'campus-event-hub');
@@ -25,7 +30,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', allowedOrigins.includes('*') ? '*' : requestOrigin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -33,13 +38,15 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '32kb' }));
 app.use(express.static(frontendRoot));
 app.use('/events', express.static(campusHubRoot));
-// app.get(/^\/(?:login|home(?:\/.*)?)$/, (_req, res) => {
-app.get(/^\/(?:login|home(?:\/.*)?|health-post(?:\/.*)?)$/, (_req, res) => {
+app.get(/^\/(?:login|sign|home(?:\/.*)?|health-post(?:\/.*)?)$/, (_req, res) => {
   res.sendFile(path.join(frontendRoot, 'index.html'));
 });
 app.get(['/events', '/events/'], (_req, res) => {
   res.sendFile(path.join(campusHubRoot, 'index.html'));
 });
+
+app.use('/api/auth', authRoutes);
+app.use('/api/health-records', requireAuth, healthRecordRoutes);
 
 const assistantInstructions = `
 You are MatriSathi AI, a warm pregnancy companion for users in Nepal.
@@ -130,6 +137,13 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// Google Maps browser keys are public by design, but must be restricted by
+// HTTP referrer in Google Cloud Console. This endpoint keeps local and hosted
+// configuration in one place without hard-coding the key in the HTML.
+app.get('/api/maps/config', (_req, res) => {
+  res.json({ apiKey: googleMapsApiKey });
+});
+
 app.post('/api/chat', async (req, res) => {
   const message = String(req.body?.message || '').trim();
   if (!message) return res.status(400).json({ error: 'Please enter a message.' });
@@ -150,4 +164,5 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+await connectDB();
 app.listen(port, () => console.log(`MatriSathi is running at http://localhost:${port}`));

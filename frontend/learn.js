@@ -1,4 +1,5 @@
 (() => {
+  // Keep the persisted key stable so existing learning progress is retained.
   const storageKey = 'aamacare-learn-plan-v1';
   const areas = [
     { name: 'Lalitpur', region: 'valley', lat: 27.6588, lon: 85.3247 },
@@ -140,7 +141,7 @@
       if (event.target.closest('[data-download-plan]')) {
         const text = Object.entries(plans).map(([key, [tip, tasks]]) => `${t({early: 'Early pregnancy', middle: 'Middle pregnancy', late: 'Late pregnancy'}[key])}\n${t(tip)}\n${tasks.map(([id,title,copy]) => `${saved.completed?.[id] ? '[x]' : '[ ]'} ${t(title)}\n    ${t(copy)}`).join('\n')}`).join('\n\n');
         const url = URL.createObjectURL(new Blob([t('MatriSathi · My birth preparation checklist') + '\n\n' + text], {type:'text/plain;charset=utf-8'}));
-        const link = document.createElement('a'); link.href = url; link.download = 'aamacare-birth-checklist.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        const link = document.createElement('a'); link.href = url; link.download = 'matrisathi-birth-checklist.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     });
   }

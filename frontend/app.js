@@ -4,6 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const dashboardContent = document.querySelector('.dashboard-content');
   const secondaryView = document.querySelector('#secondary-view');
   const loginForm = document.querySelector('#login-form');
+  const signupForm = document.querySelector('#signup-form');
+  const phoneInput = document.querySelector('#phone');
+  const signupPhoneInput = document.querySelector('#signup-phone');
+  const signupDueDateInput = document.querySelector('#signup-due-date');
+  const rememberInput = document.querySelector('#remember');
+  const signupView = document.querySelector('#signup-view');
+  const loginCopy = document.querySelector('.auth-panel > .auth-copy');
+  const loginFooter = document.querySelector('.auth-panel > .auth-footer');
+  const showSignupLink = document.querySelector('#show-signup');
+  const showLoginLink = document.querySelector('#show-login');
   const demoLogin = document.querySelector('#demo-login');
   const logoutButton = document.querySelector('#logout-button');
   const profileButton = document.querySelector('.profile-button');
@@ -34,9 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const views = window.AamaViews || {};
   const apiBaseUrl = String(window.AAMA_API_URL || '').replace(/\/$/, '');
   const translate = (value) => window.AamaI18n?.t(value) || value;
+  // Keep the existing storage keys so saved user data survives the rebrand.
   const checklistStorageKey = 'aamacare-checklist';
   const customChecklistStorageKey = 'aamacare-custom-checklist';
   const familyPermissionsStorageKey = 'matrisathi-family-permissions';
+  const authTokenKey = 'aamacare-auth-token';
+  const authUserKey = 'aamacare-auth-user';
   const defaultFamilyPermissions = {
     'Tasks and appointments': true,
     'Pregnancy journey': true,
@@ -49,6 +62,116 @@ document.addEventListener('DOMContentLoaded', () => {
   let latestAssistantReply = null;
   let currentAssistantAudio = null;
   let interactionReturnFocus = null;
+
+  if (signupDueDateInput) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateValue = (date) => {
+      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return localDate.toISOString().slice(0, 10);
+    };
+    const earliestDueDate = new Date(today);
+    earliestDueDate.setDate(earliestDueDate.getDate() - 14);
+    const latestDueDate = new Date(today);
+    latestDueDate.setDate(latestDueDate.getDate() + 280);
+    signupDueDateInput.min = dateValue(earliestDueDate);
+    signupDueDateInput.max = dateValue(latestDueDate);
+  }
+
+  function readAuthUser() {
+    for (const getStorage of [() => window.localStorage, () => window.sessionStorage]) {
+      try {
+        const user = JSON.parse(getStorage().getItem(authUserKey) || 'null');
+        if (user?.name) return user;
+      } catch (error) {
+        console.warn('Could not read the saved sign-in session.', error);
+      }
+    }
+    return null;
+  }
+
+  function storeAuthSession(token, user) {
+    clearAuthSession();
+    const storageGetter = rememberInput?.checked ? () => window.localStorage : () => window.sessionStorage;
+    try {
+      const storage = storageGetter();
+      storage.setItem(authTokenKey, token);
+      storage.setItem(authUserKey, JSON.stringify(user));
+    } catch (error) {
+      if (!rememberInput?.checked) {
+        console.error('Could not save the sign-in session.', error);
+        throw new Error('Your account was verified, but this browser could not save the sign-in session.');
+      }
+      console.warn('Persistent sign-in is unavailable; using a temporary session instead.', error);
+      try {
+        window.sessionStorage.setItem(authTokenKey, token);
+        window.sessionStorage.setItem(authUserKey, JSON.stringify(user));
+      } catch (storageError) {
+        console.error('Could not save the sign-in session.', storageError);
+        throw new Error('Your account was verified, but this browser could not save the sign-in session.');
+      }
+    }
+  }
+
+  function clearAuthSession() {
+    for (const getStorage of [() => window.localStorage, () => window.sessionStorage]) {
+      try {
+        getStorage().removeItem(authTokenKey);
+        getStorage().removeItem(authUserKey);
+      } catch (error) {
+        console.warn('Could not clear the saved sign-in session.', error);
+      }
+    }
+  }
+
+  async function submitAuthForm(endpoint, payload, form, successMessage) {
+    const button = form?.querySelector('button[type="submit"]');
+    if (!button) return;
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? await response.json() : {};
+      if (!response.ok) {
+        throw new Error(data.error || `Authentication failed (HTTP ${response.status}). Please try again.`);
+      }
+      if (!data.token || !data.user) throw new Error('The server returned an incomplete sign-in response.');
+
+      storeAuthSession(data.token, data.user);
+      const dueDate = payload.dueDate || data.user.dueDate?.slice?.(0, 10);
+      if (dueDate) {
+        try {
+          window.localStorage.setItem('aamacare-due-date', dueDate);
+        } catch (error) {
+          console.warn('The estimated due date could not be saved on this device.', error);
+        }
+        const dueDateInput = document.querySelector('.due-date-input');
+        if (dueDateInput) {
+          dueDateInput.value = dueDate;
+          dueDateInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+
+      navigate('/home');
+      showToast(successMessage);
+    } catch (error) {
+      const message = error instanceof TypeError
+        ? translate('Could not connect to the server. Try again.')
+        : error.message || translate('Could not connect to the server. Try again.');
+      showToast(message);
+    } finally {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      button.innerHTML = originalContent;
+    }
+  }
 
   function getWeekSnapshot() {
     const source = window.AamaPregnancy?.getSnapshot?.() || {};
@@ -262,75 +385,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function focusCareMap(card, openPopup = false) {
-    const place = window.aamaCareMap?.places?.get(card?.dataset.service);
-    if (!place) return;
-    secondaryView?.querySelectorAll('.service-card').forEach((item) => item.classList.remove('is-selected'));
-    card.classList.add('is-selected');
-    window.aamaCareMap.map.setView([place.lat, place.lng], 16, { animate: true });
-    if (openPopup) place.marker.openPopup();
+    const serviceId = card?.dataset.service;
+    if (!serviceId) return;
+    window.MatriSathiGoogleMaps?.select(serviceId, openPopup);
   }
 
   function initCareMap() {
-    const mapElement = secondaryView?.querySelector('#care-map');
-    if (!mapElement) return;
-
-    window.aamaCareMap?.cleanup?.();
-
-    if (!window.L) {
-      mapElement.innerHTML = '<div class="map-unavailable"><strong>Map unavailable</strong><span>OpenStreetMap could not load right now. Try refreshing the page.</span></div>';
-      return;
-    }
-
-    const map = window.L.map(mapElement, { scrollWheelZoom: false, zoomControl: true }).setView([27.6683, 85.3204], 15);
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
-
-    const places = new Map();
-    secondaryView.querySelectorAll('.service-card').forEach((card, index) => {
-      const name = card.dataset.service || `Care place ${index + 1}`;
-      const lat = Number(card.dataset.lat);
-      const lng = Number(card.dataset.lng);
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-      const icon = window.L.divIcon({
-        className: 'care-map-marker-wrap',
-        html: `<span class="care-map-marker"><span class="care-map-marker-symbol">${index === 0 ? '✚' : index === 1 ? '♡' : '＋'}</span></span>`,
-        iconSize: [38, 44],
-        iconAnchor: [19, 40],
-        popupAnchor: [0, -38],
-      });
-      const marker = window.L.marker([lat, lng], { icon }).addTo(map);
-      marker.bindPopup(`<strong>${translate(name)}</strong><br><span>${translate('Tap a place to see directions, phone numbers, and available services.')}</span>`);
-      marker.on('click', () => focusCareMap(card));
-      places.set(name, { card, lat, lng, marker });
-    });
-
-    window.aamaCareMap = { map, places };
-    const selected = secondaryView.querySelector('.service-card.is-selected');
-    if (selected) focusCareMap(selected);
-    const refreshMapSize = () => map.invalidateSize({ pan: false, animate: false });
-    const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(refreshMapSize) : null;
-    resizeObserver?.observe(mapElement);
-    window.addEventListener('resize', refreshMapSize, { passive: true });
-    window.aamaCareMap.cleanup = () => {
-      resizeObserver?.disconnect();
-      window.removeEventListener('resize', refreshMapSize);
-      map.remove();
-    };
-    window.requestAnimationFrame(() => {
-      refreshMapSize();
-      window.requestAnimationFrame(refreshMapSize);
-    });
-    window.setTimeout(refreshMapSize, 500);
+    window.MatriSathiGoogleMaps?.init(secondaryView);
   }
 
   function getProfile() {
     try {
       const saved = JSON.parse(window.localStorage.getItem(profileStorageKey) || '{}');
+      const user = readAuthUser();
       return {
-        name: typeof saved.name === 'string' ? saved.name : 'Sita K.',
-        phone: typeof saved.phone === 'string' ? saved.phone : '',
+        name: typeof saved.name === 'string' ? saved.name : user?.name || 'Sita K.',
+        phone: typeof saved.phone === 'string' ? saved.phone : user?.phone || '',
         location: typeof saved.location === 'string' ? saved.location : 'Lalitpur',
         age: typeof saved.age === 'string' ? saved.age : '',
         bloodType: typeof saved.bloodType === 'string' ? saved.bloodType : '',
@@ -565,11 +635,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function showDashboard() {
     loginScreen?.classList.add('is-hidden');
     dashboardScreen?.classList.remove('is-hidden');
+    updateProfileDisplay(getProfile());
     document.title = translate('MatriSathi · My care dashboard');
     window.AamaI18n?.translatePage();
     syncWeekReferences();
     setupScrollReveal();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setAuthMode(mode) {
+    const signingUp = mode === 'signup';
+    loginCopy?.classList.toggle('is-hidden', signingUp);
+    loginForm?.classList.toggle('is-hidden', signingUp);
+    loginFooter?.classList.toggle('is-hidden', signingUp);
+    signupView?.classList.toggle('is-hidden', !signingUp);
+    loginScreen?.setAttribute('aria-labelledby', signingUp ? 'signup-title' : 'login-title');
   }
 
   function showLogin() {
@@ -654,7 +734,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
-    document.title = isHealthPost ? `AamaCare · ${label}` : 'AamaCare · My care dashboard';
+    document.title = isHealthPost ? `MatriSathi · ${label}` : 'MatriSathi · My care dashboard';
     window.AamaI18n?.translatePage();
     if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
     syncWeekReferences();
@@ -892,6 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryView?.querySelectorAll('.service-card').forEach((card) => card.classList.remove('is-selected'));
       target.classList.add('is-selected');
       focusCareMap(target, true);
+      focusCareMap(target, true);
       const service = target.dataset.service || 'Health service';
       openInteraction('Nearby care', service, '<div class="detail-list"><div class="detail-row"><span>Distance</span><strong>2.4 km from you</strong></div><div class="detail-row"><span>Services</span><strong>Maternity care · Emergency</strong></div><div class="detail-row"><span>Phone</span><strong>01-5522295</strong></div></div>', '<button class="button button--outline" type="button" data-toast="Calling the health service">Call</button><button class="button button--primary" type="button" data-toast="Directions opened">Get directions</button>');
     } else if (action === 'topic-filter') {
@@ -905,6 +986,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveSettings();
     } else if (action === 'confirm-logout') {
       closeInteraction();
+      clearAuthSession();
       navigate('/login');
       showToast('You have been signed out safely.');
     }
@@ -912,12 +994,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function navigate(path, replace = false) {
     const requestedPath = path === '/' ? '/login' : path;
-    const destination = requestedPath === '/login' || routeMap[requestedPath] ? requestedPath : '/login';
+    const destination = requestedPath === '/login' || requestedPath === '/sign' || routeMap[requestedPath] ? requestedPath : '/login';
     if (window.location.pathname !== destination) {
       const method = replace ? 'replaceState' : 'pushState';
       window.history[method]({}, '', destination);
     }
-    if (destination === '/login') {
+    if (destination === '/login' || destination === '/sign') {
+      setAuthMode(destination === '/sign' ? 'signup' : 'login');
       showLogin();
       return;
     }
@@ -1066,10 +1149,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loginForm?.addEventListener('submit', (event) => {
     event.preventDefault();
-    navigate('/home');
-    showToast('Welcome back, Sita. Your care dashboard is ready.');
+    submitAuthForm('login', {
+      phone: phoneInput?.value.trim(),
+      password: pinInput?.value || '',
+    }, loginForm, 'Signed in successfully.');
+  });
+  showSignupLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    navigate('/sign');
+  });
+  showLoginLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    navigate('/login');
+  });
+  signupForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    submitAuthForm('signup', {
+      name: document.querySelector('#signup-name')?.value.trim(),
+      phone: signupPhoneInput?.value.trim(),
+      dueDate: signupDueDateInput?.value,
+      password: document.querySelector('#signup-password')?.value || '',
+      preferredLanguage: window.AamaI18n?.getLanguage() || 'ne',
+    }, signupForm, 'Account created successfully.');
   });
   demoLogin?.addEventListener('click', () => {
+    clearAuthSession();
     navigate('/home');
     showToast('Preview mode started. No account was created.');
   });
