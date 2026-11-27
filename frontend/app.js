@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-const loginScreen = document.querySelector('#login-screen');
-const dashboardScreen = document.querySelector('#dashboard-screen');
-const loginForm = document.querySelector('#login-form');
-const demoLogin = document.querySelector('#demo-login');
-const logoutButton = document.querySelector('#logout-button');
-const togglePin = document.querySelector('#toggle-pin');
-const pinInput = document.querySelector('#pin');
-const toast = document.querySelector('#toast');
-const sidebar = document.querySelector('#sidebar');
-const menuButton = document.querySelector('#menu-button');
-const languageButton = document.querySelector('.language-button');
-let toastTimer;
-=======
 document.addEventListener('DOMContentLoaded', () => {
   const loginScreen = document.querySelector('#login-screen');
   const dashboardScreen = document.querySelector('#dashboard-screen');
@@ -35,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const toast = document.querySelector('#toast');
   const sidebar = document.querySelector('#sidebar');
   const menuButton = document.querySelector('#menu-button');
+  const languageButton = document.querySelector('.language-button');
   const forgotLink = document.querySelector('#forgot-link');
   const alertClose = document.querySelector('.alert-close');
   const breadcrumbCurrent = document.querySelector('.breadcrumb strong');
@@ -57,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const customChecklistStorageKey = 'aamacare-custom-checklist';
   let toastTimer;
   let activeRecognition = null;
->>>>>>> fa15b29 (Added authentication login/signup and maintained database)
 
 // ---------- Language ----------
 const LANGUAGE_KEY = 'aamacare-lang';
@@ -104,13 +90,14 @@ function readSavedLanguage() {
   }
 }
 
-<<<<<<< HEAD
 function saveLanguage(language) {
   try {
     localStorage.setItem(LANGUAGE_KEY, language);
   } catch {
     // Storage is blocked: the choice lasts until refresh.
-=======
+  }
+}
+
   function storeAuthSession(token, user) {
     try {
       window.localStorage.removeItem(authTokenKey);
@@ -290,9 +277,7 @@ function saveLanguage(language) {
 
   function getChecklistTasks() {
     return Array.from(document.querySelectorAll('.task-row input[type="checkbox"]'));
->>>>>>> fa15b29 (Added authentication login/signup and maintained database)
   }
-}
 
 // Replaces only the element's own text, so icons, arrows and links inside it remain.
 function setText(element, value) {
@@ -318,11 +303,10 @@ function translatePage() {
       const value = messages[element.getAttribute(`data-i18n-${attribute}`)];
       if (value !== undefined) element.setAttribute(attribute, value);
     });
-<<<<<<< HEAD
-=======
-  }
+  });
+}
 
-  function restoreChecklist() {
+function restoreChecklist() {
     getCustomChecklistItems().forEach((item) => createChecklistRow(item));
     try {
       const savedTasks = JSON.parse(window.localStorage.getItem(checklistStorageKey) || '{}');
@@ -526,70 +510,52 @@ function translatePage() {
   document.addEventListener('aama-pregnancy-week-change', (event) => {
     window.AamaPregnancyJourneyState = event.detail;
     if (!secondaryView?.classList.contains('is-hidden')) applyJourneyCalendar(event.detail);
->>>>>>> fa15b29 (Added authentication login/signup and maintained database)
   });
-  document.documentElement.lang = currentLanguage;
-  // The <span> shows the current language; the plain text shows the other one.
-  setText(languageButton, currentLanguage === 'en' ? 'ने' : 'EN');
-  languageButton.querySelector('span').textContent = currentLanguage === 'en' ? 'EN' : 'ने';
-  updateTitle();
-}
 
-<<<<<<< HEAD
 async function setLanguage(language) {
   try {
     if (!locales[language]) {
       const response = await fetch(`locales/${language}.json`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       locales[language] = await response.json();
-=======
-  document.addEventListener('aama-language-change', () => {
-    renderWelcome();
-    renderProfileSummary();
-    if (window.AamaPregnancyJourneyState && !secondaryView?.classList.contains('is-hidden')) {
-      applyJourneyCalendar(window.AamaPregnancyJourneyState);
-    }
-  });
-  function restoreSettings() {
-    try {
-      const savedSettings = JSON.parse(window.localStorage.getItem('aamacare-settings') || '{}');
-      const language = secondaryView?.querySelector('.settings-row select');
-      if (language && savedSettings.language) language.value = savedSettings.language;
-      secondaryView?.querySelectorAll('.settings-row input[type="checkbox"]').forEach((input) => {
-        const key = input.getAttribute('aria-label');
-        if (key && typeof savedSettings[key] === 'boolean') input.checked = savedSettings[key];
-      });
-    } catch (error) {
-      console.warn('Saved settings could not be restored.', error);
->>>>>>> fa15b29 (Added authentication login/signup and maintained database)
     }
     messages = { ...locales[language], ...SCRIPT_TEXT[language] };
     currentLanguage = language;
     translatePage();
+    document.documentElement.lang = currentLanguage;
+    setText(languageButton, currentLanguage === 'en' ? 'ने' : 'EN');
+    languageButton.querySelector('span').textContent = currentLanguage === 'en' ? 'EN' : 'ने';
+    updateTitle();
     saveLanguage(language);
   } catch (error) {
     console.error(`Could not load the "${language}" language file.`, error);
   }
 }
 
+document.addEventListener('aama-language-change', () => {
+    renderWelcome();
+    renderProfileSummary();
+    if (window.AamaPregnancyJourneyState && !secondaryView?.classList.contains('is-hidden')) {
+      applyJourneyCalendar(window.AamaPregnancyJourneyState);
+    }
+  });
+function restoreSettings() {
+  try {
+    const savedSettings = JSON.parse(window.localStorage.getItem('aamacare-settings') || '{}');
+    const language = secondaryView?.querySelector('.settings-row select');
+    if (language && savedSettings.language) language.value = savedSettings.language;
+    secondaryView?.querySelectorAll('.settings-row input[type="checkbox"]').forEach((input) => {
+      const key = input.getAttribute('aria-label');
+      if (key && typeof savedSettings[key] === 'boolean') input.checked = savedSettings[key];
+    });
+  } catch (error) {
+    console.warn('Saved settings could not be restored.', error);
+  }
+}
+
 languageButton.addEventListener('click', () => setLanguage(currentLanguage === 'en' ? 'ne' : 'en'));
 
 // ---------- App ----------
-function showDashboard() {
-  loginScreen.classList.add('is-hidden');
-  dashboardScreen.classList.remove('is-hidden');
-  updateTitle();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function showLogin() {
-  dashboardScreen.classList.add('is-hidden');
-  loginScreen.classList.remove('is-hidden');
-  updateTitle();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-<<<<<<< HEAD
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add('is-visible');
@@ -597,12 +563,7 @@ function showToast(message) {
   toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2600);
 }
 
-loginForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  showDashboard();
-  showToast(t('msg.welcome', 'Welcome back, Sita. Your care dashboard is ready.'));
-=======
-  function handleAction(action, target) {
+function handleAction(action, target) {
     if (action === 'open-profile') {
       showUserProfile();
     } else if (action === 'today-plan') {
@@ -936,62 +897,5 @@ loginForm.addEventListener('submit', (event) => {
   window.addEventListener('popstate', () => navigate(window.location.pathname, true));
   navigate(window.location.pathname, true);
   restoreChecklist();
->>>>>>> fa15b29 (Added authentication login/signup and maintained database)
+  setLanguage(readSavedLanguage());
 });
-
-demoLogin.addEventListener('click', () => {
-  showDashboard();
-  showToast(t('msg.preview', 'Preview mode started. No account was created.'));
-});
-
-logoutButton.addEventListener('click', () => {
-  showLogin();
-  showToast(t('msg.signedOut', 'You have been signed out safely.'));
-});
-
-togglePin.addEventListener('click', () => {
-  const isPassword = pinInput.type === 'password';
-  pinInput.type = isPassword ? 'text' : 'password';
-  togglePin.textContent = isPassword ? '◌' : '◉';
-  // Update the key too, so switching language keeps the correct label.
-  const key = isPassword ? 'a11y.hidePassword' : 'a11y.showPassword';
-  togglePin.setAttribute('data-i18n-aria-label', key);
-  togglePin.setAttribute('aria-label', t(key, isPassword ? 'Hide password' : 'Show password'));
-});
-
-document.querySelector('#forgot-link').addEventListener('click', (event) => {
-  event.preventDefault();
-  showToast(t('msg.pinRecovery', 'PIN recovery will be connected to SMS in the next build.'));
-});
-
-document.querySelectorAll('[data-toast]').forEach((button) => {
-  button.addEventListener('click', () => showToast(button.dataset.toast));
-});
-
-document.querySelectorAll('.nav-item:not(.nav-item--quiet)').forEach((item) => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item:not(.nav-item--quiet)').forEach((nav) => nav.classList.remove('is-active'));
-    item.classList.add('is-active');
-    const page = item.querySelector('span:last-child').textContent;
-    showToast(t('msg.navPending', '{page} is ready for the next build.').replace('{page}', page));
-    sidebar.classList.remove('is-open');
-  });
-});
-
-document.querySelectorAll('.task-row input').forEach((input) => {
-  input.addEventListener('change', () => {
-    input.closest('.task-row').classList.toggle('is-complete', input.checked);
-    showToast(input.checked
-      ? t('msg.taskDone', 'Task marked complete.')
-      : t('msg.taskUndone', 'Task added back to your list.'));
-  });
-});
-
-document.querySelector('.alert-close').addEventListener('click', (event) => {
-  event.currentTarget.closest('.alert-banner').remove();
-  showToast(t('msg.alertDismissed', 'Weather alert dismissed for now.'));
-});
-
-menuButton.addEventListener('click', () => sidebar.classList.toggle('is-open'));
-
-setLanguage(readSavedLanguage());
