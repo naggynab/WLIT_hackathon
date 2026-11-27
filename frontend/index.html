@@ -117,12 +117,15 @@
             </section>
 
             <section class="overview-grid" aria-label="Pregnancy overview">
-              <article class="pregnancy-card panel">
-                <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2>24 weeks <span>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options">•••</button></div>
-                <div class="journey-progress"><div class="progress-line"><span></span></div><div class="progress-labels"><span>Week 1</span><strong>Week 24</strong><span>Week 40</span></div></div>
-                <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small>Estimated due date</small><strong>15 March 2027</strong></span></div><div><span class="meta-icon">♡</span><span><small>Baby's size</small><strong>About an eggplant</strong></span></div></div>
-                <button class="text-action" type="button" data-route="/home/pregnancy-journey">Explore this week's journey <span>→</span></button>
-              </article>
+             <article class="pregnancy-card panel" data-due-date="2027-03-15">
+  <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2><b data-week-title>24 weeks</b> <span data-trimester>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options">•••</button></div>
+  <div class="journey-slider">
+    <input class="week-slider" type="range" min="1" max="40" step="1" value="24" aria-label="Pregnancy week">
+    <div class="week-labels"><span data-week-start>Week 1</span><strong data-week-label>Week 24</strong><span data-week-end>Week 40</span></div>
+  </div>
+  <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small>Estimated due date</small><input class="due-date-input" type="date" aria-label="Estimated due date"><small class="due-date-error" role="alert"></small></span></div><div><span class="meta-icon">♡</span><span><small>Baby's size</small><strong data-baby-size>About an eggplant</strong></span></div></div>
+  <button class="text-action" type="button" data-route="/home/pregnancy-journey">Explore this week's journey <span>→</span></button>
+</article>
               <article class="next-care-card panel">
                 <div class="panel-heading"><div><p class="card-kicker">Next up</p><h2>Health checkup</h2></div><span class="date-tile"><strong>03</strong><small>DEC</small></span></div>
                 <div class="appointment-info"><span class="appointment-icon">✚</span><div><strong>Routine antenatal visit</strong><span>Thu, 3 December · 10:30 AM</span><small>Patan Hospital · Outpatient wing</small></div></div>
@@ -218,5 +221,6 @@
     <script src="i18n.js"></script>
     <script src="views.js"></script>
     <script src="app.js"></script>
+    <script src="pregnancy-card.js"></script>
   </body>
 </html>

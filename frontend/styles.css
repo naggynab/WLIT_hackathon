@@ -181,12 +181,22 @@ a { color: inherit; text-decoration: none; }
 .overview-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; }
 .pregnancy-card, .next-care-card { min-height: 224px; padding: 23px 24px 21px; }
 .pregnancy-card h2 span { color: #b6a5b1; font-size: .67rem; font-weight: 700; }
-.journey-progress { margin: 35px 4px 22px; }
-.progress-line { height: 8px; border-radius: 99px; background: #f3dce9; }
-.progress-line span { display: block; position: relative; width: 60%; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--color-primary), var(--color-accent)); }
-.progress-line span::after { position: absolute; width: 15px; height: 15px; top: -4px; right: -4px; border: 3px solid #fff; border-radius: 50%; content: ""; background: var(--color-primary); box-shadow: 0 2px 6px rgba(225,73,160,.3); }
-.progress-labels { display: flex; justify-content: space-between; margin-top: 9px; color: #b7a5b3; font-size: .62rem; }
-.progress-labels strong { color: var(--color-primary); }
+.journey-slider { margin: 32px 0 22px; }
+.week-slider { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 28px; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+
+/* Chrome, Edge, Safari */
+.week-slider::-webkit-slider-runnable-track { height: 12px; border-radius: 99px; background: linear-gradient(90deg, var(--color-primary), var(--color-accent) var(--fill, 59%), #f3dce9 var(--fill, 59%)); }
+.week-slider::-webkit-slider-thumb { -webkit-appearance: none; box-sizing: border-box; width: 28px; height: 28px; margin-top: -8px; border: 4px solid #fff; border-radius: 50%; background: var(--color-primary); box-shadow: 0 2px 8px rgba(225,73,160,.3); }
+
+/* Firefox */
+.week-slider::-moz-range-track { height: 12px; border-radius: 99px; background: #f3dce9; }
+.week-slider::-moz-range-progress { height: 12px; border-radius: 99px; background: var(--color-primary); }
+.week-slider::-moz-range-thumb { box-sizing: border-box; width: 28px; height: 28px; border: 4px solid #fff; border-radius: 50%; background: var(--color-primary); box-shadow: 0 2px 8px rgba(225,73,160,.3); }
+
+.week-labels { position: relative; display: flex; justify-content: space-between; margin-top: 8px; color: #b7a5b3; font-size: .68rem; }
+.week-labels strong { position: absolute; transform: translateX(-50%); white-space: nowrap; color: var(--color-primary); }
+.due-date-input { display: block; margin-top: 2px; padding: 3px 6px; border: 1px solid var(--color-border); border-radius: 7px; color: var(--color-text-secondary); background: #fff; font-size: .75rem; font-weight: 700; cursor: pointer; }
+.journey-meta .due-date-error { color: var(--color-emergency); }
 .journey-meta { display: flex; gap: 28px; padding: 15px 0 13px; border-top: 1px solid #f2e9f0; }
 .journey-meta > div { display: flex; align-items: center; gap: 9px; }
 .meta-icon { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 8px; color: var(--color-primary); background: #fff0f8; }
