@@ -46,16 +46,16 @@
             </div>
             <div class="input-wrap input-wrap--password">
               <input id="pin" name="pin" type="password" placeholder="Enter your password" autocomplete="current-password" required>
-              <button class="input-action" type="button" id="toggle-pin" aria-label="Show password">◉</button>
+              <button class="input-action" type="button" id="toggle-pin" aria-label="Show password"><i data-lucide="eye" aria-hidden="true"></i></button>
             </div>
 
             <label class="check-row" for="remember">
               <input id="remember" type="checkbox" checked>
-              <span class="fake-check"></span>
+              <span class="fake-check"><i data-lucide="check" aria-hidden="true"></i></span>
               <span>Keep me signed in</span>
             </label>
 
-            <button class="button button--primary button--full" type="submit">Continue securely <span aria-hidden="true">→</span></button>
+            <button class="button button--primary button--full" type="submit">Continue securely <i data-lucide="arrow-right" aria-hidden="true"></i></button>
             <div class="or-divider"><span>or</span></div>
             <button class="button button--soft button--full" type="button" id="demo-login">Preview the dashboard</button>
             <button class="button button--outline button--full" type="button" id="health-post-preview">Preview the Health Post dashboard</button>
@@ -93,11 +93,11 @@
               </div>
               <label for="signup-password">Create password or PIN</label>
               <div class="input-wrap"><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
-              <button class="button button--primary button--full" type="submit">Create account <span aria-hidden="true">→</span></button>
+              <button class="button button--primary button--full" type="submit">Create account <i data-lucide="arrow-right" aria-hidden="true"></i></button>
             </form>
             <p class="auth-footer">Already have an account? <a class="text-link" id="show-login" href="/login">Sign in</a></p>
           </div>
-          <p class="privacy-note"><span aria-hidden="true">⌁</span> Your health information stays private and secure.</p>
+          <p class="privacy-note"><i data-lucide="shield-check" aria-hidden="true"></i> Your health information stays private and secure.</p>
         </div>
       </section>
 
@@ -109,13 +109,12 @@
           </a>
           <div class="sidebar-section-label">Your care space</div>
           <nav class="side-nav" aria-label="Main navigation">
-            <button class="nav-item is-active" type="button" data-view="overview" data-route="/home"><span class="nav-icon">⌂</span><span>Overview</span></button>
-            <button class="nav-item" type="button" data-view="journey" data-route="/home/pregnancy-journey"><span class="nav-icon">◒</span><span>Pregnancy journey</span></button>
-            <button class="nav-item" type="button" data-view="records" data-route="/home/health-records"><span class="nav-icon">▤</span><span>Health records</span></button>
-            <button class="nav-item" type="button" data-view="family" data-route="/home/family-hub"><span class="nav-icon">♧</span><span>Family hub</span></button>
-            <button class="nav-item" type="button" data-view="community" data-route="/home/community-hub"><span class="nav-icon">♡</span><span>Community hub</span></button>
-            <button class="nav-item" type="button" data-view="services" data-route="/home/health-services"><span class="nav-icon">⌖</span><span>Health services</span></button>
-            <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare" aria-expanded="false" aria-controls="learn-subnav"><span class="nav-icon">▱</span><span>Learn &amp; prepare</span></button>
+            <button class="nav-item is-active" type="button" data-view="overview" data-route="/home"><span class="nav-icon"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span><span>Overview</span></button>
+            <button class="nav-item" type="button" data-view="journey" data-route="/home/pregnancy-journey"><span class="nav-icon"><i data-lucide="baby" aria-hidden="true"></i></span><span>Pregnancy journey</span></button>
+            <button class="nav-item" type="button" data-view="records" data-route="/home/health-records"><span class="nav-icon"><i data-lucide="notebook-tabs" aria-hidden="true"></i></span><span>Health records</span></button>
+            <button class="nav-item" type="button" data-view="family" data-route="/home/family-hub"><span class="nav-icon"><i data-lucide="users-round" aria-hidden="true"></i></span><span>Family hub</span></button>
+            <button class="nav-item" type="button" data-view="services" data-route="/home/health-services"><span class="nav-icon"><i data-lucide="map-pin" aria-hidden="true"></i></span><span>Health services</span></button>
+            <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare" aria-expanded="false" aria-controls="learn-subnav"><span class="nav-icon"><i data-lucide="book-open" aria-hidden="true"></i></span><span>Learn &amp; prepare</span></button>
             <div class="learn-subnav is-hidden" id="learn-subnav" aria-label="Learn and prepare topics">
               <button class="learn-subnav-item" type="button" data-learn-nav="food">Food &amp; nutrition</button>
               <button class="learn-subnav-item" type="button" data-learn-nav="movement">Movement</button>
@@ -126,24 +125,24 @@
           </nav>
           <div class="sidebar-bottom">
             <div class="support-card">
-              <div class="support-icon">?</div>
+              <div class="support-icon"><i data-lucide="circle-help" aria-hidden="true"></i></div>
               <strong>Need a little help?</strong>
-              <p>Ask MaatriSaathi AI in Nepali or English.</p>
-              <button class="support-link ai-launcher" type="button">Ask MaatriSaathi AI <span>↗</span></button>
+              <p>Ask MatriSathi AI in Nepali or English.</p>
+              <button class="support-link ai-launcher" type="button">Ask MatriSathi AI <span class="support-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></button>
             </div>
-            <button class="nav-item nav-item--quiet" type="button" data-view="settings" data-route="/home/settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
-            <button class="nav-item nav-item--quiet" type="button" id="logout-button"><span class="nav-icon">↪</span><span>Sign out</span></button>
+            <button class="nav-item nav-item--quiet" type="button" data-view="settings" data-route="/home/settings"><span class="nav-icon"><i data-lucide="settings" aria-hidden="true"></i></span><span>Settings</span></button>
+            <button class="nav-item nav-item--quiet" type="button" id="logout-button"><span class="nav-icon"><i data-lucide="log-out" aria-hidden="true"></i></span><span>Sign out</span></button>
           </div>
         </aside>
 
         <main class="dashboard-main">
           <header class="topbar">
-            <button class="mobile-menu" type="button" id="menu-button" aria-label="Open navigation">☰</button>
+            <button class="mobile-menu" type="button" id="menu-button" aria-label="Open navigation"><i data-lucide="menu" aria-hidden="true"></i></button>
             <div class="breadcrumb"><span>Overview</span><span class="breadcrumb-separator">/</span><span class="breadcrumb-learn is-hidden">Learn &amp; prepare</span><span class="breadcrumb-separator breadcrumb-learn-separator is-hidden">/</span><strong>My care dashboard</strong></div>
             <div class="topbar-actions">
               <button class="icon-button language-button" type="button" aria-label="Change language">ने <span>EN</span></button>
-              <button class="icon-button notification-button" type="button" aria-label="Open emergency helplines"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 3.5h3l1.4 4.1-2 1.6a15 15 0 0 0 5.2 5.2l1.6-2 4.1 1.4v3c0 1-.8 1.8-1.8 1.8A15.7 15.7 0 0 1 5.4 5.3c0-1 .8-1.8 1.8-1.8Z"/><path d="M14.5 4.5a5 5 0 0 1 5 5m-5-8a8 8 0 0 1 8 8"/></svg></button>
-              <button class="profile-button" type="button" aria-label="Open profile menu" aria-haspopup="dialog" aria-expanded="false"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><span class="chevron">⌄</span></button>
+              <button class="icon-button notification-button" type="button" aria-label="Open emergency helplines"><i data-lucide="phone-call" aria-hidden="true"></i></button>
+              <button class="profile-button" type="button" aria-label="Open profile menu" aria-haspopup="dialog" aria-expanded="false"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><i class="chevron" data-lucide="chevron-down" aria-hidden="true"></i></button>
             </div>
           </header>
 
@@ -151,10 +150,10 @@
             <div class="welcome-row">
               <div>
                 <p class="eyebrow" id="dashboard-current-date"></p>
-                <h1><span data-welcome-greeting>Good morning</span> <span aria-hidden="true">✦</span></h1>
+                <h1><span data-welcome-greeting>Good morning</span> <i class="ms-icon ms-icon--accent" data-lucide="sparkles" aria-hidden="true"></i></h1>
                 <p class="welcome-subtitle">You are doing a wonderful job taking care of you and your baby.</p>
               </div>
-              <button class="button button--primary button--compact" type="button" data-action="today-plan">View today's plan <span aria-hidden="true">→</span></button>
+              <button class="button button--primary button--compact" type="button" data-action="today-plan">View today's plan <i data-lucide="arrow-right" aria-hidden="true"></i></button>
             </div>
 
             <section class="alert-banner" id="weather-alert" aria-label="Weather alert">
@@ -168,17 +167,17 @@
 
             <section class="overview-grid" aria-label="Pregnancy overview">
              <article class="pregnancy-card panel" data-due-date="2027-03-15">
-  <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2><b data-week-title>24 weeks</b> <span data-trimester>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options">•••</button></div>
+  <div class="panel-heading"><div><p class="card-kicker">Your pregnancy journey</p><h2><b data-week-title>24 weeks</b> <span data-trimester>· 2nd trimester</span></h2></div><button class="more-button" type="button" aria-label="More pregnancy journey options"><i data-lucide="ellipsis" aria-hidden="true"></i></button></div>
   <div class="journey-slider">
     <input class="week-slider" type="range" min="1" max="40" step="1" value="24" aria-label="Pregnancy week">
     <div class="week-labels"><span data-week-start>Week 1</span><strong data-week-label>Week 24</strong><span data-week-end>Week 40</span></div>
   </div>
-  <div class="journey-meta"><div><span class="meta-icon">◷</span><span><small>Estimated due date</small><input class="due-date-input" type="date" aria-label="Estimated due date"><small class="due-date-error" role="alert"></small></span></div><div><span class="meta-icon">♡</span><span><small>Baby's size</small><strong data-baby-size>About an eggplant</strong></span></div></div>
-  <button class="text-action" type="button" data-route="/home/pregnancy-journey">Explore this week's journey <span>→</span></button>
+  <div class="journey-meta"><div><span class="meta-icon"><i data-lucide="calendar-days" aria-hidden="true"></i></span><span><small>Estimated due date</small><input class="due-date-input" type="date" aria-label="Estimated due date"><small class="due-date-error" role="alert"></small></span></div><div><span class="meta-icon"><i data-lucide="heart" aria-hidden="true"></i></span><span><small>Baby's size</small><strong data-baby-size>About an eggplant</strong></span></div></div>
+  <button class="text-action" type="button" data-route="/home/pregnancy-journey">Explore this week's journey <i data-lucide="arrow-right" aria-hidden="true"></i></button>
 </article>
               <article class="next-care-card panel">
                 <div class="panel-heading"><div><p class="card-kicker">Next up</p><h2>Health checkup</h2></div><span class="date-tile"><strong>03</strong><small>DEC</small></span></div>
-                <div class="appointment-info"><span class="appointment-icon">✚</span><div><strong>Routine antenatal visit</strong><span>Thu, 3 December · 10:30 AM</span><small>Patan Hospital · Outpatient wing</small></div></div>
+                <div class="appointment-info"><span class="appointment-icon"><i data-lucide="heart-pulse" aria-hidden="true"></i></span><div><strong>Routine antenatal visit</strong><span>Thu, 3 December · 10:30 AM</span><small>Patan Hospital · Outpatient wing</small></div></div>
                 <div class="appointment-actions"><button class="button button--outline" type="button" data-action="appointment-detail">View details</button><button class="button button--lavender" type="button" data-action="appointment-reminder">Remind me</button></div>
                 <div class="benefits-teaser" data-benefits-teaser data-state="loading" aria-live="polite"><span class="benefits-teaser__copy">Loading checkup progress…</span></div>
               </article>
@@ -187,48 +186,48 @@
             <section class="quick-actions" aria-label="Quick actions">
               <div class="section-title-row"><div><p class="card-kicker">Here when you need it</p><h2>Quick actions</h2></div></div>
               <div class="action-grid">
-                <button class="quick-action quick-action--pink ai-launcher" type="button"><span class="quick-icon">✦</span><span><strong>Ask MaatriSaathi AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--lavender" type="button" data-route="/home/health-records"><span class="quick-icon">＋</span><span><strong>Add health record</strong><small>Keep your care history close</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--peach" type="button" data-route="/home/health-services"><span class="quick-icon">⌖</span><span><strong>Find nearby care</strong><small>Health posts &amp; hospitals</small></span><span class="action-arrow">↗</span></button>
-                <button class="quick-action quick-action--mint" type="button" data-route="/home/family-hub"><span class="quick-icon">♧</span><span><strong>Open family hub</strong><small>Keep your circle connected</small></span><span class="action-arrow">↗</span></button>
+                <button class="quick-action quick-action--pink ai-launcher" type="button"><span class="quick-icon"><i data-lucide="sparkles" aria-hidden="true"></i></span><span><strong>Ask MatriSathi AI</strong><small>Text or speak in Nepali</small></span><span class="action-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></button>
+                <button class="quick-action quick-action--lavender" type="button" data-route="/home/health-records"><span class="quick-icon"><i data-lucide="file-plus-2" aria-hidden="true"></i></span><span><strong>Add health record</strong><small>Keep your care history close</small></span><span class="action-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></button>
+                <button class="quick-action quick-action--peach" type="button" data-route="/home/health-services"><span class="quick-icon"><i data-lucide="map-pin" aria-hidden="true"></i></span><span><strong>Find nearby care</strong><small>Health posts &amp; hospitals</small></span><span class="action-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></button>
+                <button class="quick-action quick-action--mint" type="button" data-route="/home/family-hub"><span class="quick-icon"><i data-lucide="users-round" aria-hidden="true"></i></span><span><strong>Open family hub</strong><small>Keep your circle connected</small></span><span class="action-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></button>
               </div>
             </section>
 
             <section class="content-grid">
               <div class="main-column">
                 <article class="panel checklist-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Small steps, big care</p><h2>Today's checklist</h2></div><div class="checklist-heading-actions"><span class="completion-pill" role="status" aria-live="polite">2 of 4 done</span><button class="button button--soft button--compact checklist-add-button" type="button" data-action="add-checklist">＋ Add item</button></div></div>
+                  <div class="panel-heading"><div><p class="card-kicker">Small steps, big care</p><h2>Today's checklist</h2></div><div class="checklist-heading-actions"><span class="completion-pill" role="status" aria-live="polite">2 of 4 done</span><button class="button button--soft button--compact checklist-add-button" type="button" data-action="add-checklist"><i data-lucide="plus" aria-hidden="true"></i> Add item</button></div></div>
                   <div class="checklist">
-                    <label class="task-row is-complete"><input type="checkbox" checked data-task-id="water"><span class="task-check"></span><span class="task-copy"><strong>Drink 8 glasses of water</strong><small>Stay hydrated throughout the day</small></span><span class="task-time">8:00 AM</span></label>
-                    <label class="task-row is-complete"><input type="checkbox" checked data-task-id="supplement"><span class="task-check"></span><span class="task-copy"><strong>Take your prescribed supplement</strong><small>As advised by your health worker</small></span><span class="task-time">9:00 AM</span></label>
-                    <label class="task-row"><input type="checkbox" data-task-id="video"><span class="task-check"></span><span class="task-copy"><strong>Watch this week's care video</strong><small data-week-task-trimester>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
-                    <label class="task-row"><input type="checkbox" data-task-id="weather"><span class="task-check"></span><span class="task-copy"><strong>Share the weather watch with family</strong><small>Keep your support circle informed</small></span><span class="task-time">Today</span></label>
+                    <label class="task-row is-complete"><input type="checkbox" checked data-task-id="water"><span class="task-check"><i data-lucide="check" aria-hidden="true"></i></span><span class="task-copy"><strong>Drink 8 glasses of water</strong><small>Stay hydrated throughout the day</small></span><span class="task-time">8:00 AM</span></label>
+                    <label class="task-row is-complete"><input type="checkbox" checked data-task-id="supplement"><span class="task-check"><i data-lucide="check" aria-hidden="true"></i></span><span class="task-copy"><strong>Take your prescribed supplement</strong><small>As advised by your health worker</small></span><span class="task-time">9:00 AM</span></label>
+                    <label class="task-row"><input type="checkbox" data-task-id="video"><span class="task-check"><i data-lucide="check" aria-hidden="true"></i></span><span class="task-copy"><strong>Watch this week's care video</strong><small data-week-task-trimester>Movement and comfort in trimester two</small></span><span class="task-time">Today</span></label>
+                    <label class="task-row"><input type="checkbox" data-task-id="weather"><span class="task-check"><i data-lucide="check" aria-hidden="true"></i></span><span class="task-copy"><strong>Share the weather watch with family</strong><small>Keep your support circle informed</small></span><span class="task-time">Today</span></label>
                   </div>
-                  <button class="text-action" type="button" data-action="show-reminders">See all reminders <span>→</span></button>
+                  <button class="text-action" type="button" data-action="show-reminders">See all reminders <i data-lucide="arrow-right" aria-hidden="true"></i></button>
                 </article>
 
                 <article class="panel guide-panel">
-                  <div class="panel-heading"><div><p class="card-kicker" data-week-guide>Made for week 24</p><h2>Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened">See all <span>→</span></button></div>
+                  <div class="panel-heading"><div><p class="card-kicker" data-week-guide>Made for week 24</p><h2>Your weekly guide</h2></div><button class="text-action" type="button" data-toast="All learning content opened">See all <i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
                   <div class="guide-grid">
-                    <button class="guide-card guide-card--food" type="button" data-toast="Local food guide opened"><span class="guide-visual">◒</span><span class="guide-tag">Nutrition</span><strong>Simple local foods for you and baby</strong><span class="guide-link">Read guide →</span></button>
-                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened"><span class="guide-visual">◌</span><span class="guide-tag" data-week-trimester>Movement and comfort in trimester two</span><strong>Gentle movement for a growing belly</strong><span class="guide-link">Watch now →</span></button>
+                    <button class="guide-card guide-card--food" type="button" data-toast="Local food guide opened"><span class="guide-visual"><i data-lucide="salad" aria-hidden="true"></i></span><span class="guide-tag">Nutrition</span><strong>Simple local foods for you and baby</strong><span class="guide-link">Read guide <i data-lucide="arrow-right" aria-hidden="true"></i></span></button>
+                    <button class="guide-card guide-card--movement" type="button" data-toast="Movement video opened"><span class="guide-visual"><i data-lucide="person-standing" aria-hidden="true"></i></span><span class="guide-tag" data-week-trimester>Movement and comfort in trimester two</span><strong>Gentle movement for a growing belly</strong><span class="guide-link">Watch now <i data-lucide="arrow-right" aria-hidden="true"></i></span></button>
                   </div>
                 </article>
               </div>
 
               <aside class="side-column">
                 <article class="panel family-panel">
-                  <div class="panel-heading"><div><p class="card-kicker">Your support circle</p><h2>Family hub</h2></div><button class="more-button" type="button" aria-label="More family hub options">•••</button></div>
+                  <div class="panel-heading"><div><p class="card-kicker">Your support circle</p><h2>Family hub</h2></div><button class="more-button" type="button" aria-label="More family hub options"><i data-lucide="ellipsis" aria-hidden="true"></i></button></div>
                   <div class="family-panel__photo"><img src="/assets/mom4.jpg" alt="A mother and child sharing a joyful moment"></div>
-                  <div class="family-members"><div class="member-avatar member-avatar--one">RK</div><div class="member-avatar member-avatar--two">AM</div><div class="member-avatar member-avatar--three">SK</div><button class="add-member" type="button" data-toast="Invite a family member">＋</button></div>
+                  <div class="family-members"><div class="member-avatar member-avatar--one">RK</div><div class="member-avatar member-avatar--two">AM</div><div class="member-avatar member-avatar--three">SK</div><button class="add-member" type="button" aria-label="Invite a family member" data-toast="Invite a family member"><i data-lucide="plus" aria-hidden="true"></i></button></div>
                   <p class="family-copy"><strong>Ram and Asha</strong> are following your care plan.</p>
-                  <button class="button button--soft button--full" type="button" data-route="/home/family-hub">Open family hub <span>→</span></button>
+                  <button class="button button--soft button--full" type="button" data-route="/home/family-hub">Open family hub <i data-lucide="arrow-right" aria-hidden="true"></i></button>
                 </article>
                 <article class="panel care-panel">
-                  <div class="care-panel-icon">⌖</div><p class="card-kicker">Nearby care</p><h2>Patan Hospital</h2><p>2.4 km away · Open today until 5:00 PM</p><button class="text-action" type="button" data-toast="Directions opened">Get directions <span>↗</span></button>
+                  <div class="care-panel-icon"><i data-lucide="map-pin" aria-hidden="true"></i></div><p class="card-kicker">Nearby care</p><h2>Patan Hospital</h2><p>2.4 km away · Open today until 5:00 PM</p><button class="text-action" type="button" data-toast="Directions opened">Get directions <i data-lucide="arrow-up-right" aria-hidden="true"></i></button>
                 </article>
                 <article class="emergency-card">
-                  <div><span class="emergency-icon">!</span><div><strong>Need urgent help?</strong><p>Call your trusted contact or find emergency care.</p></div></div><button type="button" data-toast="Emergency contacts opened">Get help <span>→</span></button>
+                  <div><span class="emergency-icon"><i data-lucide="triangle-alert" aria-hidden="true"></i></span><div><strong>Need urgent help?</strong><p>Call your trusted contact or find emergency care.</p></div></div><button type="button" data-toast="Emergency contacts opened">Get help <i data-lucide="arrow-right" aria-hidden="true"></i></button>
                 </article>
               </aside>
             </section>
@@ -244,7 +243,7 @@
               <p class="card-kicker">Your trusted companion</p>
               <h2 id="assistant-title">Ask MaatriSaathi AI</h2>
             </div>
-            <button class="assistant-close" id="assistant-close" type="button" aria-label="Close MaatriSaathi AI">×</button>
+            <button class="assistant-close" id="assistant-close" type="button" aria-label="Close MatriSathi AI"><i data-lucide="x" aria-hidden="true"></i></button>
           </div>
           <p class="assistant-intro">Ask a pregnancy-care question in English or Nepali. You can type or use your voice.</p>
           <div class="assistant-messages" id="assistant-messages" aria-live="polite">
@@ -263,22 +262,24 @@
           <div class="assistant-compose">
             <textarea id="assistant-input" rows="2" placeholder="Type your question..." aria-label="Message for MaatriSaathi AI"></textarea>
             <div class="assistant-compose__actions">
-              <button class="button button--lavender" id="assistant-voice" type="button">🎙 Speak</button>
-              <button class="button button--primary" id="assistant-send" type="button">Send <span aria-hidden="true">→</span></button>
+              <button class="button button--lavender" id="assistant-voice" type="button"><i data-lucide="mic" aria-hidden="true"></i> Speak</button>
+              <button class="button button--primary" id="assistant-send" type="button">Send <i data-lucide="arrow-right" aria-hidden="true"></i></button>
             </div>
             <p class="assistant-status" id="assistant-status" role="status" aria-live="polite">Press Speak, then ask your question.</p>
           </div>
-          <p class="assistant-disclaimer">MaatriSaathi AI supports—not replaces—your health worker. For urgent symptoms, contact local emergency care.</p>
+          <p class="assistant-disclaimer">Here to support, alongside your health worker. Urgent symptoms? Seek emergency care.</p>
         </section>
       </div>
       <div class="interaction-modal is-hidden" id="interaction-modal" aria-hidden="true">
         <section class="interaction-dialog" role="dialog" aria-modal="true" aria-labelledby="interaction-title">
-          <button class="interaction-close" id="interaction-close" type="button" aria-label="Close dialog">×</button>
+          <button class="interaction-close" id="interaction-close" type="button" aria-label="Close dialog"><i data-lucide="x" aria-hidden="true"></i></button>
           <div id="interaction-content"></div>
         </section>
       </div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
+    <script src="/assets/vendor/lucide.min.js"></script>
+    <script src="/icons.js"></script>
     <script src="/config.js"></script>
     <script src="/i18n.js"></script>
     <script src="/views.js"></script>

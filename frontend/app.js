@@ -645,7 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openInteraction(
       'Your account',
       'Your profile',
-      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-health-details"><div><small>Age</small><strong>${age}</strong></div><div><small>Blood type</small><strong>${bloodType}</strong></div><div><small>Current weight</small><strong>${currentWeight}</strong></div><div><small>Health conditions</small><strong>${healthNotes}</strong></div><div><small>Height</small><strong>${height}</strong></div><div><small>Pre-pregnancy weight</small><strong>${weight}</strong></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon" aria-hidden="true">✎</span><span><strong>Edit profile</strong><small>Update your personal details</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon" aria-hidden="true">⚙</span><span><strong>Settings</strong><small>Language and care preferences</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon" aria-hidden="true">?</span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon" aria-hidden="true">↪</span><span><strong>Sign out</strong><small>End this session safely</small></span><span class="profile-menu-arrow" aria-hidden="true">→</span></button></div>`,
+      `<div class="profile-dialog-summary"><span class="avatar">${initials}</span><div><strong>${name}</strong><span>${phone}</span><span>${location}</span></div></div><div class="profile-health-details"><div><small>Age</small><strong>${age}</strong></div><div><small>Blood type</small><strong>${bloodType}</strong></div><div><small>Current weight</small><strong>${currentWeight}</strong></div><div><small>Health conditions</small><strong>${healthNotes}</strong></div><div><small>Height</small><strong>${height}</strong></div><div><small>Pre-pregnancy weight</small><strong>${weight}</strong></div></div><div class="profile-menu-list"><button class="profile-menu-item" type="button" data-action="edit-profile"><span class="profile-menu-icon"><i data-lucide="pencil" aria-hidden="true"></i></span><span><strong>Edit profile</strong><small>Update your personal details</small></span><i class="profile-menu-arrow" data-lucide="arrow-right" aria-hidden="true"></i></button><button class="profile-menu-item" type="button" data-action="account-settings"><span class="profile-menu-icon"><i data-lucide="settings" aria-hidden="true"></i></span><span><strong>Settings</strong><small>Language and care preferences</small></span><i class="profile-menu-arrow" data-lucide="arrow-right" aria-hidden="true"></i></button><button class="profile-menu-item" type="button" data-action="account-help"><span class="profile-menu-icon"><i data-lucide="circle-help" aria-hidden="true"></i></span><span><strong>Help &amp; support</strong><small>Ask Aama AI for help</small></span><i class="profile-menu-arrow" data-lucide="arrow-right" aria-hidden="true"></i></button><button class="profile-menu-item profile-menu-item--signout" type="button" data-action="open-logout"><span class="profile-menu-icon"><i data-lucide="log-out" aria-hidden="true"></i></span><span><strong>Sign out</strong><small>End this session safely</small></span><i class="profile-menu-arrow" data-lucide="arrow-right" aria-hidden="true"></i></button></div>`,
     );
   }
 
@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (progress) progress.textContent = `${completed} of ${tasks.length} done`;
     list.innerHTML = tasks.map((task) => `
       <button class="shared-item${task.completed ? ' is-complete' : ''}" type="button" aria-pressed="${String(Boolean(task.completed))}" data-action="toggle-shared" data-family-task-id="${escapeHtml(task.id)}">
-        <span class="shared-check${task.completed ? ' is-done' : ''}">${task.completed ? '✓' : ''}</span>
+        <span class="shared-check${task.completed ? ' is-done' : ''}">${task.completed ? '<i data-lucide="check" aria-hidden="true"></i>' : ''}</span>
         <strong>${escapeHtml(task.title)}</strong>
         <small>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.completed ? 'Done' : task.time === 'Done' ? 'Today' : task.time || 'This week')}</small>
       </button>
@@ -919,6 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const check = document.createElement('span');
     check.className = 'task-check';
+    check.innerHTML = '<i data-lucide="check" aria-hidden="true"></i>';
 
     const copy = document.createElement('span');
     copy.className = 'task-copy';
@@ -951,7 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const title = row?.querySelector('.task-copy strong')?.textContent || 'Care reminder';
       const time = row?.querySelector('.task-time')?.textContent || 'Today';
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
-      return `<div class="detail-row"><span>${escapeHtml(time)}</span><strong>${task.checked ? '✓ ' : ''}${escapeHtml(title)}</strong></div>`;
+      return `<div class="detail-row"><span>${escapeHtml(time)}</span><strong>${task.checked ? '<i data-lucide="check" aria-hidden="true"></i> ' : ''}${escapeHtml(title)}</strong></div>`;
     }).join('');
     openInteraction('Small steps, big care', 'Your reminders', `<div class="detail-list">${taskRows}</div><div class="modal-callout">Tap a checklist item on your dashboard whenever you finish it. Your progress is saved on this device.</div>`, '<button class="button button--primary" type="button" data-action="close-modal">Back to checklist</button>');
   }
@@ -1001,15 +1002,15 @@ document.addEventListener('DOMContentLoaded', () => {
     updateProfileDisplay(getProfile());
     if (isHealthPost && sideNav) {
       const items = [
-        ['hp-dashboard', '/health-post', '⌂', 'Dashboard'],
-        ['hp-mothers', '/health-post/mothers', '♡', 'All Registered Mothers'],
-        ['hp-due-soon', '/health-post/due-soon', '◷', 'Due Soon Mothers'],
-        ['hp-appointments', '/health-post/appointments', '▦', 'Appointments'],
-        ['hp-followups', '/health-post/follow-ups', '↻', 'Follow-ups'],
-        ['hp-high-risk', '/health-post/high-risk', '!', 'High-Risk Mothers'],
-        ['hp-reports', '/health-post/reports', '▤', 'Reports'],
+        ['hp-dashboard', '/health-post', 'layout-dashboard', 'Dashboard'],
+        ['hp-mothers', '/health-post/mothers', 'heart-pulse', 'All Registered Mothers'],
+        ['hp-due-soon', '/health-post/due-soon', 'calendar-clock', 'Due Soon Mothers'],
+        ['hp-appointments', '/health-post/appointments', 'calendar-days', 'Appointments'],
+        ['hp-followups', '/health-post/follow-ups', 'rotate-cw', 'Follow-ups'],
+        ['hp-high-risk', '/health-post/high-risk', 'triangle-alert', 'High-Risk Mothers'],
+        ['hp-reports', '/health-post/reports', 'chart-no-axes-column-increasing', 'Reports'],
       ];
-      sideNav.innerHTML = items.map(([key, route, icon, text]) => `<a class="nav-item${view === key ? ' is-active' : ''}" data-view="${key}" data-route="${route}" href="${route}"${view === key ? ' aria-current="page"' : ''}><span class="nav-icon" aria-hidden="true">${icon}</span><span>${text}</span></a>`).join('');
+      sideNav.innerHTML = items.map(([key, route, icon, text]) => `<a class="nav-item${view === key ? ' is-active' : ''}" data-view="${key}" data-route="${route}" href="${route}"${view === key ? ' aria-current="page"' : ''}><span class="nav-icon"><i data-lucide="${icon}" aria-hidden="true"></i></span><span>${text}</span></a>`).join('');
       if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Health post';
       supportCard?.classList.add('is-hidden');
       maternalSettingsItem?.classList.add('is-hidden');
@@ -1209,9 +1210,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     const rows = contacts.map(([name, type, phone]) => `
       <article class="helpline-row">
-        <span class="helpline-row__icon" aria-hidden="true">+</span>
+        <span class="helpline-row__icon"><i data-lucide="phone-call" aria-hidden="true"></i></span>
         <div class="helpline-row__details"><strong>${name}</strong><span>${type}</span></div>
-        <a class="helpline-call" href="tel:${phone}" aria-label="Call ${name} at ${phone}"><span aria-hidden="true">☎</span>${phone}</a>
+        <a class="helpline-call" href="tel:${phone}" aria-label="Call ${name} at ${phone}"><i data-lucide="phone" aria-hidden="true"></i>${phone}</a>
       </article>
     `).join('');
     openInteraction(
@@ -1248,7 +1249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openInteraction(
       'Family hub',
       `Edit permissions for ${escapeHtml(memberName)}`,
-      `<p>Choose what this person can see and which updates they should receive.</p><form class="permission-form" id="permission-form" data-member="${escapeHtml(memberName)}"><div class="permission-group"><div class="permission-group__heading"><span>Shared access</span><small>Visible in their Family Hub</small></div>${permissionRows.slice(0, 3).join('')}</div><div class="permission-group"><div class="permission-group__heading"><span>Alerts</span><small>Keep them informed when it matters</small></div>${permissionRows.slice(3).join('')}</div><p class="permission-note"><span aria-hidden="true">⌁</span> You can change these permissions at any time.</p><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Save permissions</button></div></form>`
+      `<p>Choose what this person can see and which updates they should receive.</p><form class="permission-form" id="permission-form" data-member="${escapeHtml(memberName)}"><div class="permission-group"><div class="permission-group__heading"><span>Shared access</span><small>Visible in their Family Hub</small></div>${permissionRows.slice(0, 3).join('')}</div><div class="permission-group"><div class="permission-group__heading"><span>Alerts</span><small>Keep them informed when it matters</small></div>${permissionRows.slice(3).join('')}</div><p class="permission-note"><i data-lucide="shield-check" aria-hidden="true"></i> You can change these permissions at any time.</p><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Save permissions</button></div></form>`
     );
     document.querySelector('#permission-form input')?.focus();
   }
@@ -1378,7 +1379,7 @@ document.addEventListener('DOMContentLoaded', () => {
       openInteraction('Shared support', 'Add a family task', '<form class="interaction-form" id="family-task-form"><label for="family-task-title">Task</label><input id="family-task-title" name="title" maxlength="90" placeholder="e.g. Pack hospital documents" required><label for="family-task-owner">Who is responsible?</label><select id="family-task-owner" name="owner"><option>Everyone</option><option>Sita</option><option>Ram</option><option>Asha</option></select><label for="family-task-time">When?</label><input id="family-task-time" name="time" maxlength="30" placeholder="e.g. Today or This week"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add task</button></div></form>');
     } else if (action === 'shared-checklist') {
       const tasks = getFamilyChecklistItems();
-      const rows = tasks.map((task) => `<div class="detail-row"><span>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.time || 'This week')}</span><strong>${task.completed ? '✓ ' : ''}${escapeHtml(task.title)}</strong></div>`).join('');
+      const rows = tasks.map((task) => `<div class="detail-row"><span>${escapeHtml(task.owner || 'Everyone')} · ${escapeHtml(task.time || 'This week')}</span><strong>${task.completed ? '<i data-lucide="check" aria-hidden="true"></i> ' : ''}${escapeHtml(task.title)}</strong></div>`).join('');
       openInteraction('Shared support', 'Everyone knows the next step', `<div class="detail-list">${rows}</div><div class="modal-callout">Your family checklist is saved on this device. Add or update tasks from the Family Hub.</div>`, '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
     } else if (action === 'show-reminders') {
       openReminders();
@@ -1635,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pinInput) return;
     const isPassword = pinInput.type === 'password';
     pinInput.type = isPassword ? 'text' : 'password';
-    togglePin.textContent = isPassword ? '◌' : '◉';
+    togglePin.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" aria-hidden="true"></i>`;
     togglePin.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
   });
   forgotLink?.addEventListener('click', (event) => {
@@ -1924,7 +1925,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
     recognition.onstart = () => {
-      assistantVoice.textContent = '■ Stop';
+      assistantVoice.innerHTML = '<i data-lucide="square" aria-hidden="true"></i> Stop';
       assistantVoice.classList.add('is-listening');
       if (assistantStatus) assistantStatus.textContent = 'Listening… speak now.';
     };
@@ -1952,7 +1953,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     recognition.onend = () => {
       activeRecognition = null;
-      assistantVoice.textContent = '🎙 Speak';
+      assistantVoice.innerHTML = '<i data-lucide="mic" aria-hidden="true"></i> Speak';
       assistantVoice.classList.remove('is-listening');
     };
 

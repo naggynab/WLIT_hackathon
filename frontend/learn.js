@@ -111,7 +111,7 @@
     } catch { /* Empty or invalid links keep the placeholder visible. */ }
     const content = /^[\w-]{11}$/.test(videoId || '')
       ? `<iframe src="https://www.youtube-nocookie.com/embed/${videoId}?playsinline=1" title="${escape(t(title))}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
-      : `<div class="learn-video-placeholder"><span class="learn-video-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m9 5 11 7-11 7Z"/></svg></span><span>Video coming soon</span></div>`;
+      : `<div class="learn-video-placeholder"><span class="learn-video-play"><i data-lucide="play" aria-hidden="true"></i></span><span>Video coming soon</span></div>`;
     return `<div class="learn-video-frame"><div class="learn-movement-video">${content}</div></div>`;
   }
   function init(root) {
@@ -177,7 +177,7 @@
       ['walking','Comfortable walking','Start with a short, easy walk on level ground. Build up gradually if it feels comfortable; take breaks and drink water.'],
       ['pelvic','Pelvic floor practice','Gently tighten the muscles around your vagina and back passage, hold briefly while breathing normally, then fully relax. Ask your midwife for help if unsure.'],
       ['mobility','Gentle mobility','Try relaxed shoulder rolls, ankle circles, or a supported stretch. Keep movements pain-free and avoid overheating or fall risks.']
-    ].map(([id,title,copy])=>`<article class="learn-movement">${movementVideo(id, title)}<div class="learn-movement-copy"><h3>${title}</h3><details><summary>Explore this activity</summary><p>${copy}</p></details><label class="learn-activity-done"><input type="checkbox" data-movement-done="${id}" ${saved.movement?.[id] ? 'checked' : ''}> Save to my activities</label></div></article>`).join('');
+    ].map(([id,title,copy])=>`<article class="learn-movement">${movementVideo(id, title)}<div class="learn-movement-copy"><h3>${title}</h3><details><summary>Explore this activity<i class="disclosure-icon" data-lucide="chevron-down" aria-hidden="true"></i></summary><p>${copy}</p></details><label class="learn-activity-done"><input type="checkbox" data-movement-done="${id}" ${saved.movement?.[id] ? 'checked' : ''}> Save to my activities</label></div></article>`).join('');
     root.querySelectorAll('[data-support-question]').forEach(input => { input.checked = Boolean(saved.questions?.[input.dataset.supportQuestion]); });
     updateQuestions(root);
     renderPlan(root);
