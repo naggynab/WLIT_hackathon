@@ -134,7 +134,6 @@
       if (event.target.matches('[data-birth-stage]')) { saved.stage = event.target.value; save(); renderPlan(root); }
       if (event.target.matches('[data-plan-task]')) { saved.completed ||= {}; saved.completed[event.target.dataset.planTask] = event.target.checked; save(); updateProgress(root); }
       if (event.target.matches('[data-movement-done]')) { saved.movement ||= {}; saved.movement[event.target.dataset.movementDone] = event.target.checked; save(); }
-      if (event.target.matches('[data-support-question]')) { saved.questions ||= {}; saved.questions[event.target.dataset.supportQuestion] = event.target.checked; save(); updateQuestions(root); }
       if (event.target.matches('[data-save-meal]')) { saved.meals ||= {}; saved.meals[event.target.dataset.saveMeal] = event.target.checked; save(); }
     });
     root.addEventListener('click', event => {
@@ -182,11 +181,6 @@
     updateQuestions(root);
     renderPlan(root);
     refreshLanguage();
-  }
-  function updateQuestions(root) {
-    const count = root.querySelector('[data-support-count]');
-    const total = root.querySelectorAll('[data-support-question]:checked').length;
-    if (count) setText(count, t('{count} questions saved for your next conversation · Saved on this device', {count: number(total)}));
   }
   function renderPlan(root) {
     const stage=root.querySelector('[data-birth-stage]'); const key=stage?.value || 'early';

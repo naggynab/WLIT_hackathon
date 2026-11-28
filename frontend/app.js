@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/home/community-hub': { view: 'community', label: 'Community hub' },
     '/home/health-services': { view: 'services', label: 'Health services' },
     '/home/learn-prepare': { view: 'learn', label: 'Learn & prepare' },
-    '/home/learn-prepare/benefits': { view: 'benefits', label: 'Benefits & support' },
+    '/home/learn-prepare/benefits': { view: 'benefits', label: 'Nepal Government Incentives' },
     '/home/settings': { view: 'settings', label: 'Settings' },
     '/health-post': { view: 'hp-dashboard', label: 'Health Post Dashboard' },
     '/health-post/mothers': { view: 'hp-mothers', label: 'All Registered Mothers' },
