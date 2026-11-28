@@ -1,6 +1,7 @@
-// Leave empty for same-origin mode when the backend serves the frontend.
-// For a separately deployed frontend, set this to the public backend URL.
-window.AAMA_API_URL = '';
+// The frontend and backend are deployed as separate Vercel projects.
+// Keep the URL empty for local same-origin development; production requests
+// go to the public backend deployment.
+window.AAMA_API_URL = 'https://wlit-hackathon.vercel.app';
 
 // Use a browser-restricted Google Maps Platform key. Enable Maps JavaScript API
 // and Places API (New) for the same Google Cloud project. For local development
