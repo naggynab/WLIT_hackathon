@@ -362,6 +362,8 @@ a { color: inherit; text-decoration: none; }
 .interaction-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
 .profile-dialog-summary { display: flex; align-items: center; gap: 13px; margin: 17px 0 18px; padding: 15px; border: 1px solid #f3e7ef; border-radius: 14px; background: #fff9fc; }
 .profile-dialog-summary .avatar { width: 48px; height: 48px; flex: 0 0 48px; font-size: .75rem; }
+.profile-dialog-summary .profile-photo { display: block; object-fit: cover; object-position: center 35%; border: 2px solid #fff; box-shadow: 0 0 0 1px #f0dce9; }
+.profile-button .profile-photo { object-fit: cover; object-position: center 35%; }
 .profile-dialog-summary > div { display: grid; gap: 3px; min-width: 0; }
 .profile-dialog-summary strong { overflow: hidden; color: var(--color-text-primary); font-size: calc(.82rem + 3px); text-overflow: ellipsis; white-space: nowrap; }
 .profile-dialog-summary > div span { color: var(--color-text-muted); font-size: calc(.67rem + 3px); }
