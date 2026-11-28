@@ -1017,6 +1017,17 @@ document.addEventListener('DOMContentLoaded', () => {
       notificationButton?.classList.add('is-hidden');
     } else if (sideNav) {
       sideNav.innerHTML = originalSideNav;
+      if (!sideNav.querySelector('[data-view="community"]')) {
+        const communityNav = document.createElement('button');
+        communityNav.className = 'nav-item';
+        communityNav.type = 'button';
+        communityNav.dataset.view = 'community';
+        communityNav.dataset.route = '/home/community-hub';
+        communityNav.innerHTML = '<span class="nav-icon"><i data-lucide="heart" aria-hidden="true"></i></span><span>Community hub</span>';
+        const servicesNav = sideNav.querySelector('[data-view="services"]');
+        sideNav.insertBefore(communityNav, servicesNav || null);
+        window.lucide?.createIcons?.();
+      }
       if (sidebarSectionLabel) sidebarSectionLabel.textContent = 'Your care space';
       supportCard?.classList.remove('is-hidden');
       maternalSettingsItem?.classList.remove('is-hidden');
@@ -1570,7 +1581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (assistantVoice) assistantVoice.disabled = true;
     const thinkingMessage = addAssistantMessage(translate('Thinking…'), 'bot');
     try {
-      const response = await fetch(`${apiBaseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: cleanMessage }) });
+      const response = await fetch(`${apiBaseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: cleanMessage, language: window.AamaI18n?.getLanguage() === 'ne' ? 'ne' : 'en' }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Request failed');
       renderAssistantReply(thinkingMessage, data.reply);
