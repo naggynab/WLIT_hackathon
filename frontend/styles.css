@@ -135,8 +135,8 @@ a { color: inherit; text-decoration: none; }
 .brand--auth .brand-name { color: var(--color-primary); }
 .brand--auth .brand-name span:last-child { color: var(--color-text-primary); }
 .brand--auth { gap: 12px; margin-bottom: 14px; font-size: clamp(2.1rem, 4vw, 2.6rem); }
-.brand--auth .brand-mark { width: 52px; height: 52px; }
-.brand-mark { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; overflow: hidden; border-radius: 50%; background: transparent; line-height: 1; }
+.brand--auth .brand-mark { width: 48px; height: 48px; }
+.brand-mark { display: block; width: 31px; height: 31px; flex: 0 0 auto; overflow: hidden; border-radius: 50%; background: transparent; line-height: 1; }
 .brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .auth-copy { margin: 24px 0 38px; }
 .brand--auth + .eyebrow { margin-bottom: 8px; }
@@ -500,7 +500,7 @@ a { color: inherit; text-decoration: none; }
 .family-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; }
 .members-panel, .shared-panel { padding: 22px 23px; }
 .member-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 17px; }
-.member-card { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--color-border); border-radius: 13px; background: #fff; }
+.member-card { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--color-border); border-radius: 13px; background: #fff; text-align: left; }
 .member-card .member-avatar { width: 33px; height: 33px; margin: 0; flex: 0 0 33px; }
 .member-card strong, .member-card small { display: block; }
 .member-card strong { color: var(--color-text-secondary); font-size: .66rem; }
@@ -1009,7 +1009,7 @@ body { overflow-x: hidden; background: #fffafd; }
   margin: 0 18px 70px;
   font-size: 1.5rem;
 }
-.brand--sidebar .brand-mark { width: 40px; height: 40px; }
+.brand--sidebar .brand-mark { width: 38px; height: 38px; }
 .sidebar-section-label {
   margin: 0 18px 16px;
   color: #a98fa2;
