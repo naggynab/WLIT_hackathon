@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Mukta:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Arya:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Mukta:wght@400;500;600;700;800&display=swap');
 
 :root {
   --color-primary: #e149a0;
@@ -17,6 +17,7 @@
   --sidebar-width: 244px;
   --font-english: "Bricolage Grotesque", "Segoe UI", Arial, sans-serif;
   --font-nepali: "Mukta", "Noto Sans Devanagari", "Nirmala UI", sans-serif;
+  --font-brand-nepali: "Arya", "Noto Sans Devanagari", "Nirmala UI", sans-serif;
   color: var(--color-text-primary);
   background: #fffafd;
   font-family: var(--font-english);
@@ -127,9 +128,10 @@ a { color: inherit; text-decoration: none; }
 .language-button--auth:hover { transform: translateY(-1px); border-color: #e9bdd8; box-shadow: 0 5px 13px rgba(73, 43, 67, .1); }
 .language-button--auth:focus-visible { outline: 3px solid rgba(225, 73, 160, .22); outline-offset: 2px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; width: fit-content; color: var(--color-text-primary); font-size: 1.3rem; font-weight: 900; letter-spacing: -.04em; }
-.brand > span:last-child span { color: var(--color-primary); }
-.brand--auth > span:last-child { color: var(--color-primary); }
-.brand--auth > span:last-child span { color: var(--color-text-primary); }
+.brand-name { color: var(--color-text-primary); }
+.brand-name span:last-child { color: var(--color-primary); }
+.brand--auth .brand-name { color: var(--color-primary); }
+.brand--auth .brand-name span:last-child { color: var(--color-text-primary); }
 .brand--auth { gap: 12px; margin-bottom: 14px; font-size: clamp(2.1rem, 4vw, 2.6rem); }
 .brand--auth .brand-mark { width: 48px; height: 48px; font-size: 2rem; }
 .brand-mark { display: grid; width: 31px; height: 31px; place-items: center; border-radius: 50% 50% 50% 12px; color: #fff; background: var(--color-primary); font-family: Georgia, serif; font-size: 1.45rem; font-style: italic; line-height: 1; }
@@ -648,7 +650,7 @@ a { color: inherit; text-decoration: none; }
   .dashboard-footer span:last-child { margin-top: 8px; }
 }
 
-/* MatriSathi AI assistant */
+/* MaatriSaathi AI assistant */
 .assistant-overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 24px; background: rgba(40,26,45,.34); backdrop-filter: blur(6px); }
 .assistant-overlay.is-hidden { display: none; }
 .assistant-panel { width: min(100%, 520px); max-height: min(720px, 92vh); overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 24px; border: 1px solid rgba(255,255,255,.8); border-radius: 24px; background: #fffafc; box-shadow: 0 24px 80px rgba(71,37,63,.24); }
@@ -806,6 +808,8 @@ html[lang="ne"] .button,
 html[lang="ne"] .nav-item,
 html[lang="ne"] .quick-action strong,
 html[lang="ne"] .task-copy strong { font-family: var(--font-nepali); letter-spacing: 0; }
+
+html[lang="ne"] .brand-name { font-family: var(--font-brand-nepali); font-size: 1.12em; font-weight: 700; letter-spacing: 0; }
 
 html[lang="ne"] .eyebrow,
 html[lang="ne"] .card-kicker,
