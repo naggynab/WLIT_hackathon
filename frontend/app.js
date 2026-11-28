@@ -842,17 +842,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function communityRelativeTime(value) {
     const elapsed = Math.max(0, Date.now() - new Date(value).getTime());
     const minutes = Math.floor(elapsed / 60000);
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 1) return translate('just now');
+    const count = new Intl.NumberFormat(window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en').format(minutes);
+    if (minutes < 60) return translate('{count}m ago', { count });
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+    if (hours < 24) return translate('{count}h ago', { count: new Intl.NumberFormat(window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en').format(hours) });
+    return translate('{count}d ago', { count: new Intl.NumberFormat(window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en').format(Math.floor(hours / 24)) });
   }
 
   function communityPlanDate(value) {
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Date to be confirmed';
-    return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date);
+    if (Number.isNaN(date.getTime())) return translate('Date to be confirmed');
+    const locale = window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en-US';
+    return new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date);
   }
 
   function renderCommunityFeed() {
@@ -861,30 +863,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const filtered = communityState.filter === 'all' ? communityState.posts : communityState.posts.filter((post) => communityState.filter === 'story' ? post.type !== 'question' : post.type === communityState.filter);
     const labels = { question: 'Question', story: 'Story', tip: 'Tip' };
     const count = secondaryView.querySelector('[data-community-post-count]');
-    if (count) count.textContent = String(Math.max(24, communityState.posts.length));
+    if (count) count.textContent = new Intl.NumberFormat(window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en').format(Math.max(24, communityState.posts.length));
     list.innerHTML = filtered.length ? filtered.map((post) => `
       <article class="community-post-card">
         <div class="community-post-card__top"><span class="member-avatar member-avatar--${post.type === 'question' ? 'one' : post.type === 'story' ? 'two' : 'three'}">${escapeHtml(post.authorInitials || 'Y')}</span><div><strong>${escapeHtml(post.authorName || 'Neighbour')}</strong><small>${escapeHtml(post.location || 'Nearby')} · ${escapeHtml(communityRelativeTime(post.createdAt))}</small></div><span class="community-post-type community-post-type--${escapeHtml(post.type)}">${labels[post.type] || 'Post'}</span></div>
-        <h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.body)}</p><div class="community-post-card__footer"><span>#${escapeHtml(post.topic || 'General')}</span><button class="community-post-reply" type="button" data-action="community-post-detail" data-community-post-id="${escapeHtml(post.id)}">${post.replies || 0} ${post.replies === 1 ? 'reply' : 'replies'} <span>→</span></button></div>
+        <h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.body)}</p><div class="community-post-card__footer"><span>#${escapeHtml(post.topic || 'General')}</span><button class="community-post-reply" type="button" data-action="community-post-detail" data-community-post-id="${escapeHtml(post.id)}">${escapeHtml(translate(post.replies === 1 ? '{count} reply' : '{count} replies', { count: new Intl.NumberFormat(window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en').format(post.replies || 0) }))} <span>→</span></button></div>
       </article>
     `).join('') : '<div class="community-empty"><strong>No posts in this view yet.</strong><span>Start the conversation with women nearby.</span></div>';
+    window.AamaI18n?.translatePage();
   }
 
   function renderCommunityPlans() {
     const list = secondaryView?.querySelector('[data-community-plans]');
     if (!list) return;
     const count = secondaryView.querySelector('[data-community-plan-count]');
-    if (count) count.textContent = String(Math.max(communityState.plans.length, 6));
+    if (count) count.textContent = new Intl.NumberFormat(window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en').format(Math.max(communityState.plans.length, 6));
     list.innerHTML = communityState.plans.length ? communityState.plans.slice(0, 3).map((plan) => {
       const full = Number(plan.attendeeCount) >= Number(plan.spots);
-      return `<article class="community-plan"><div class="community-plan__date"><strong>${escapeHtml(communityPlanDate(plan.startsAt).split(',')[0])}</strong><small>${escapeHtml(communityPlanDate(plan.startsAt).split(',').slice(1).join(',').trim())}</small></div><div class="community-plan__copy"><strong>${escapeHtml(plan.title)}</strong><small>${escapeHtml(plan.location)}</small><span>${escapeHtml(String(plan.attendeeCount || 0))}/${escapeHtml(String(plan.spots || 8))} women joined</span></div><button class="community-plan__join${plan.joined ? ' is-joined' : ''}" type="button" data-action="community-join-plan" data-community-plan-id="${escapeHtml(plan.id)}"${full && !plan.joined ? ' disabled' : ''}>${plan.joined ? 'Joined' : full ? 'Full' : 'Join'}</button></article>`;
+      const numberLocale = window.AamaI18n?.getLanguage() === 'ne' ? 'ne-NP' : 'en';
+      const attendance = translate('{count}/{total} women joined', { count: new Intl.NumberFormat(numberLocale).format(Number(plan.attendeeCount || 0)), total: new Intl.NumberFormat(numberLocale).format(Number(plan.spots || 8)) });
+      return `<article class="community-plan"><div class="community-plan__date"><strong>${escapeHtml(communityPlanDate(plan.startsAt).split(',')[0])}</strong><small>${escapeHtml(communityPlanDate(plan.startsAt).split(',').slice(1).join(',').trim())}</small></div><div class="community-plan__copy"><strong>${escapeHtml(plan.title)}</strong><small>${escapeHtml(plan.location)}</small><span>${escapeHtml(attendance)}</span></div><button class="community-plan__join${plan.joined ? ' is-joined' : ''}" type="button" data-action="community-join-plan" data-community-plan-id="${escapeHtml(plan.id)}"${full && !plan.joined ? ' disabled' : ''}>${plan.joined ? 'Joined' : full ? 'Full' : 'Join'}</button></article>`;
     }).join('') : '<div class="community-empty"><strong>No plans yet.</strong><span>Be the first to plan a gentle get-together.</span></div>';
+    window.AamaI18n?.translatePage();
   }
 
   function renderCommunityHub() {
     renderCommunityFeed();
     renderCommunityPlans();
   }
+
+  document.addEventListener('aama-language-change', () => {
+    if (window.location.pathname === '/home/community-hub') renderCommunityHub();
+  });
 
   async function initCommunityHub() {
     const local = getLocalCommunity();
