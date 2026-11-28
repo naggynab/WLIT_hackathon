@@ -1435,6 +1435,60 @@ html[lang="ne"] .interaction-form--filters .filter-option { font-size: 1rem; lin
   .map-visual { height: 320px; margin-inline: -21px; border-radius: 0 0 24px 24px; }
   .map-credit { margin-inline: -21px; }
 }
+
+/* Weather details */
+.alert-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+.alert-main:hover .alert-copy strong { color: var(--color-primary); }
+.alert-main:focus-visible { outline: 3px solid rgba(225,73,160,.22); outline-offset: 5px; border-radius: 10px; }
+.alert-main .alert-copy { min-width: 0; }
+.weather-current { display: flex; align-items: center; gap: 14px; margin: 19px 0 17px; padding: 16px; border-radius: 15px; background: linear-gradient(135deg, #fff3fa, #f3edff); }
+.weather-current-icon { display: grid; width: 54px; height: 54px; flex: 0 0 54px; place-items: center; border-radius: 16px; color: #fff; background: var(--color-primary); font-size: 1.9rem; }
+.weather-current > div { display: grid; gap: 2px; min-width: 0; }
+.weather-current > div strong { color: var(--color-text-primary); font-size: 1.55rem; letter-spacing: -.05em; }
+.weather-current > div span { color: var(--color-text-secondary); font-size: .76rem; font-weight: 800; }
+.weather-current > div small { color: var(--color-text-muted); font-size: .65rem; }
+.weather-current-place { margin-left: auto; color: var(--color-primary); font-size: .7rem; font-weight: 900; text-align: right; }
+.weather-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.weather-metrics > div { padding: 11px 10px; border: 1px solid #f0e5ee; border-radius: 11px; background: #fffafd; }
+.weather-metrics small, .weather-metrics strong { display: block; }
+.weather-metrics small { color: #aa99a6; font-size: .61rem; }
+.weather-metrics strong { margin-top: 4px; color: var(--color-text-secondary); font-size: .72rem; }
+.weather-forecast { overflow: hidden; border: 1px solid #f0e5ee; border-radius: 14px; }
+.weather-forecast-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 13px 14px 10px; border-bottom: 1px solid #f3edf2; }
+.weather-forecast-heading strong { color: var(--color-text-secondary); font-size: .72rem; }
+.weather-forecast-heading small { color: #b19eae; font-size: .61rem; }
+.weather-forecast-row { display: grid; grid-template-columns: minmax(0, 1fr) 29px auto auto; align-items: center; gap: 9px; min-height: 54px; padding: 8px 14px; }
+.weather-forecast-row + .weather-forecast-row { border-top: 1px solid #f3edf2; }
+.weather-forecast-row > div { display: grid; gap: 2px; min-width: 0; }
+.weather-forecast-row > div strong { color: var(--color-text-secondary); font-size: .68rem; }
+.weather-forecast-row > div small { overflow: hidden; color: #aa99a6; font-size: .59rem; text-overflow: ellipsis; white-space: nowrap; }
+.weather-forecast-icon { font-size: 1.15rem; text-align: center; }
+.weather-forecast-row > strong { color: var(--color-text-secondary); font-size: .68rem; white-space: nowrap; }
+.weather-forecast-row > strong small { color: #aa99a6; font-size: .6rem; font-weight: 600; }
+.weather-rain { color: var(--color-primary); font-size: .6rem; font-weight: 800; white-space: nowrap; }
+.weather-source { margin: 15px 0 0 !important; color: #ad9aa9 !important; font-size: .62rem !important; line-height: 1.5 !important; }
+.weather-empty { margin: 0; padding: 16px 14px; color: #aa99a6; font-size: .7rem; }
+.weather-modal-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 9px; margin-top: 22px; }
+.weather-location-status { padding: 11px 12px; border-radius: 10px; background: #fff7e9; }
+
+@media (max-width: 560px) {
+  .alert-main { width: 100%; flex: 1 1 100%; align-items: flex-start; }
+  .weather-current-place { max-width: 8ch; }
+  .weather-forecast-row { grid-template-columns: minmax(0, 1fr) 25px auto; }
+  .weather-rain { grid-column: 1 / -1; margin-top: -4px; }
+  .weather-modal-actions { flex-direction: column-reverse; }
+  .weather-modal-actions .button { width: 100%; }
+}
 .learn-topic-shell, .learn-subpage { margin-top: 28px; }
 .learn-subpage { padding: 26px; }
 .learn-subpage > h2 { margin: 8px 0; }

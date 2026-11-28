@@ -18,6 +18,48 @@ const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || '';
 const gemini = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 const frontendRoot = path.join(projectRoot, 'frontend');
 const campusHubRoot = path.join(projectRoot, 'campus-event-hub');
+const weatherCache = new Map();
+const weatherCacheTtlMs = 10 * 60 * 1000;
+
+const weatherCodeDetails = {
+  0: { label: 'Clear sky', icon: '☀' },
+  1: { label: 'Mainly clear', icon: '🌤' },
+  2: { label: 'Partly cloudy', icon: '⛅' },
+  3: { label: 'Overcast', icon: '☁' },
+  45: { label: 'Foggy', icon: '🌫' },
+  48: { label: 'Rime fog', icon: '🌫' },
+  51: { label: 'Light drizzle', icon: '🌦' },
+  53: { label: 'Drizzle', icon: '🌦' },
+  55: { label: 'Heavy drizzle', icon: '🌧' },
+  56: { label: 'Freezing drizzle', icon: '🌧' },
+  57: { label: 'Heavy freezing drizzle', icon: '🌧' },
+  61: { label: 'Light rain', icon: '🌦' },
+  63: { label: 'Rain', icon: '🌧' },
+  65: { label: 'Heavy rain', icon: '🌧' },
+  66: { label: 'Freezing rain', icon: '🌧' },
+  67: { label: 'Heavy freezing rain', icon: '🌧' },
+  71: { label: 'Light snow', icon: '🌨' },
+  73: { label: 'Snow', icon: '🌨' },
+  75: { label: 'Heavy snow', icon: '❄' },
+  77: { label: 'Snow grains', icon: '❄' },
+  80: { label: 'Light rain showers', icon: '🌦' },
+  81: { label: 'Rain showers', icon: '🌧' },
+  82: { label: 'Heavy rain showers', icon: '🌧' },
+  85: { label: 'Snow showers', icon: '🌨' },
+  86: { label: 'Heavy snow showers', icon: '🌨' },
+  95: { label: 'Thunderstorm', icon: '⛈' },
+  96: { label: 'Thunderstorm with hail', icon: '⛈' },
+  99: { label: 'Heavy thunderstorm with hail', icon: '⛈' },
+};
+
+function weatherDetails(code) {
+  return weatherCodeDetails[Number(code)] || { label: 'Conditions unavailable', icon: '•' };
+}
+
+function numericValue(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
 
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || '*')
   .split(',')
@@ -142,6 +184,100 @@ app.get('/api/health', (_req, res) => {
 // configuration in one place without hard-coding the key in the HTML.
 app.get('/api/maps/config', (_req, res) => {
   res.json({ apiKey: googleMapsApiKey });
+});
+
+app.get('/api/weather', async (req, res) => {
+  const latitude = Number(req.query.lat);
+  const longitude = Number(req.query.lon);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90
+    || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    return res.status(400).json({ error: 'A valid latitude and longitude are required.' });
+  }
+
+  const cacheKey = `${latitude.toFixed(3)},${longitude.toFixed(3)}`;
+  const cached = weatherCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return res.json(cached.data);
+
+  const providerUrl = new URL('https://api.open-meteo.com/v1/forecast');
+  providerUrl.search = new URLSearchParams({
+    latitude: String(latitude),
+    longitude: String(longitude),
+    current: [
+      'temperature_2m',
+      'apparent_temperature',
+      'relative_humidity_2m',
+      'precipitation',
+      'rain',
+      'showers',
+      'weather_code',
+      'wind_speed_10m',
+    ].join(','),
+    daily: [
+      'weather_code',
+      'temperature_2m_max',
+      'temperature_2m_min',
+      'precipitation_probability_max',
+      'precipitation_sum',
+      'rain_sum',
+    ].join(','),
+    forecast_days: '4',
+    timezone: 'auto',
+    temperature_unit: 'celsius',
+    wind_speed_unit: 'kmh',
+  }).toString();
+
+  try {
+    const providerResponse = await fetch(providerUrl, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!providerResponse.ok) {
+      throw new Error(`Weather provider returned HTTP ${providerResponse.status}.`);
+    }
+
+    const providerData = await providerResponse.json();
+    const current = providerData.current || {};
+    const daily = providerData.daily || {};
+    const forecast = (daily.time || []).map((date, index) => {
+      const code = numericValue(daily.weather_code?.[index]);
+      return {
+        date,
+        weatherCode: code,
+        condition: weatherDetails(code).label,
+        icon: weatherDetails(code).icon,
+        temperatureMaxC: numericValue(daily.temperature_2m_max?.[index]),
+        temperatureMinC: numericValue(daily.temperature_2m_min?.[index]),
+        precipitationProbability: numericValue(daily.precipitation_probability_max?.[index]),
+        precipitationMm: numericValue(daily.precipitation_sum?.[index]),
+        rainMm: numericValue(daily.rain_sum?.[index]),
+      };
+    });
+    const code = numericValue(current.weather_code);
+    const data = {
+      source: 'Open-Meteo',
+      timezone: providerData.timezone || 'auto',
+      fetchedAt: new Date().toISOString(),
+      location: { latitude, longitude },
+      current: {
+        weatherCode: code,
+        condition: weatherDetails(code).label,
+        icon: weatherDetails(code).icon,
+        temperatureC: numericValue(current.temperature_2m),
+        apparentTemperatureC: numericValue(current.apparent_temperature),
+        relativeHumidityPct: numericValue(current.relative_humidity_2m),
+        precipitationMm: numericValue(current.precipitation),
+        rainMm: numericValue(current.rain),
+        showersMm: numericValue(current.showers),
+        windKph: numericValue(current.wind_speed_10m),
+      },
+      forecast,
+    };
+    weatherCache.set(cacheKey, { data, expiresAt: Date.now() + weatherCacheTtlMs });
+    return res.json(data);
+  } catch (error) {
+    console.error('Weather request failed:', error.message);
+    return res.status(502).json({ error: 'Weather data is temporarily unavailable.' });
+  }
 });
 
 app.post('/api/chat', async (req, res) => {

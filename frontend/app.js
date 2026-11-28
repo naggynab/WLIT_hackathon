@@ -61,6 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
     'Emergency alerts': true,
   };
   const profileStorageKey = 'aamacare-profile';
+  const weatherLocationStorageKey = 'matrisathi-weather-location';
+  const defaultWeatherLocation = { label: 'Lalitpur', latitude: 27.6588, longitude: 85.3247 };
+  const weatherState = { data: null, location: { ...defaultWeatherLocation }, loading: false };
   let toastTimer;
   let activeRecognition = null;
   let latestAssistantReply = null;
@@ -434,6 +437,127 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function readWeatherLocation() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(weatherLocationStorageKey) || 'null');
+      if (saved && Number.isFinite(Number(saved.latitude)) && Number.isFinite(Number(saved.longitude))) {
+        return {
+          label: String(saved.label || 'Your location'),
+          latitude: Number(saved.latitude),
+          longitude: Number(saved.longitude),
+        };
+      }
+    } catch (error) {
+      console.warn('Saved weather location could not be restored.', error);
+    }
+    return { ...defaultWeatherLocation, label: getProfile().location || defaultWeatherLocation.label };
+  }
+
+  function saveWeatherLocation(location) {
+    weatherState.location = { ...location };
+    try {
+      window.localStorage.setItem(weatherLocationStorageKey, JSON.stringify(weatherState.location));
+    } catch (error) {
+      console.warn('Weather location could not be saved locally.', error);
+    }
+  }
+
+  function weatherNumber(value, suffix = '') {
+    return Number.isFinite(Number(value)) ? `${Math.round(Number(value))}${suffix}` : '—';
+  }
+
+  function formatWeatherDate(date) {
+    if (!date) return '—';
+    return new Intl.DateTimeFormat(window.AamaI18n?.getLanguage?.() === 'ne' ? 'ne-NP' : 'en-US', {
+      weekday: 'short', month: 'short', day: 'numeric',
+    }).format(new Date(`${date}T12:00:00`));
+  }
+
+  function updateWeatherBanner(data, location) {
+    const title = document.querySelector('[data-weather-title]');
+    const summary = document.querySelector('[data-weather-summary]');
+    const icon = document.querySelector('[data-weather-icon]');
+    if (!title || !summary || !icon) return;
+
+    const current = data?.current;
+    if (!current) {
+      title.textContent = `Weather watch for ${location.label}`;
+      summary.textContent = 'Weather data is unavailable right now. Tap to try again.';
+      icon.textContent = '!';
+      return;
+    }
+
+    const rainy = Number(current.precipitationMm) > 0 || /rain|drizzle|thunderstorm/i.test(current.condition || '');
+    const rainChance = data.forecast?.[0]?.precipitationProbability;
+    title.textContent = rainy || Number(rainChance) >= 50
+      ? `Weather watch for ${location.label}`
+      : `${current.condition} in ${location.label}`;
+    summary.textContent = `${weatherNumber(current.temperatureC, '°C')} · ${current.condition}. Rain chance up to ${weatherNumber(rainChance, '%')} today.`;
+    icon.textContent = current.icon || (rainy ? '🌧' : '☀');
+  }
+
+  async function refreshWeather(location = readWeatherLocation()) {
+    if (weatherState.loading) return weatherState.data;
+    weatherState.loading = true;
+    updateWeatherBanner(null, location);
+    try {
+      const query = new URLSearchParams({ lat: String(location.latitude), lon: String(location.longitude) });
+      const response = await fetch(`${apiBaseUrl}/api/weather?${query.toString()}`);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Weather data is unavailable.');
+      weatherState.data = data;
+      weatherState.location = location;
+      updateWeatherBanner(data, location);
+      return data;
+    } catch (error) {
+      weatherState.data = null;
+      updateWeatherBanner(null, location);
+      console.warn('Weather could not be loaded.', error);
+      return null;
+    } finally {
+      weatherState.loading = false;
+    }
+  }
+
+  function weatherDetailsMarkup(data, location) {
+    const current = data?.current || {};
+    const forecast = Array.isArray(data?.forecast) ? data.forecast : [];
+    const forecastRows = forecast.map((day) => `<div class="weather-forecast-row"><div><strong>${escapeHtml(formatWeatherDate(day.date))}</strong><small>${escapeHtml(day.condition || 'Conditions unavailable')}</small></div><span class="weather-forecast-icon" aria-hidden="true">${escapeHtml(day.icon || '•')}</span><strong>${weatherNumber(day.temperatureMaxC, '°')} <small>${weatherNumber(day.temperatureMinC, '°')}</small></strong><span class="weather-rain">${weatherNumber(day.precipitationProbability, '%')} rain</span></div>`).join('');
+    const fetchedAt = data?.fetchedAt ? new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(data.fetchedAt)) : '—';
+    return `<div class="weather-current"><span class="weather-current-icon" aria-hidden="true">${escapeHtml(current.icon || '•')}</span><div><strong>${weatherNumber(current.temperatureC, '°C')}</strong><span>${escapeHtml(current.condition || 'Conditions unavailable')}</span><small>Feels like ${weatherNumber(current.apparentTemperatureC, '°C')}</small></div><span class="weather-current-place">${escapeHtml(location.label)}</span></div><div class="weather-metrics"><div><small>Humidity</small><strong>${weatherNumber(current.relativeHumidityPct, '%')}</strong></div><div><small>Wind</small><strong>${weatherNumber(current.windKph, ' km/h')}</strong></div><div><small>Rain now</small><strong>${weatherNumber(current.rainMm, ' mm')}</strong></div></div><div class="weather-forecast"><div class="weather-forecast-heading"><strong>4-day outlook</strong><small>Updated ${escapeHtml(fetchedAt)}</small></div>${forecastRows || '<p class="weather-empty">Forecast is not available right now.</p>'}</div><p class="weather-source">Weather data provided by Open-Meteo · Forecasts are approximate and should not replace local emergency guidance.</p>`;
+  }
+
+  async function openWeatherDetails() {
+    const location = weatherState.location || readWeatherLocation();
+    openInteraction('Weather watch', 'Your local weather', '<p>Checking the latest conditions for your selected location…</p>', '<button class="button button--outline" type="button" data-action="close-modal">Close</button>');
+    const data = await refreshWeather(location);
+    if (!data) {
+      openInteraction('Weather watch', 'Weather unavailable', '<p>We could not load weather data right now. Check your connection and try again.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="button" data-action="weather-refresh">Try again</button>');
+      return;
+    }
+    openInteraction('Weather watch', `Weather for ${escapeHtml(location.label)}`, weatherDetailsMarkup(data, location), '<div class="weather-modal-actions"><button class="button button--outline" type="button" data-action="weather-use-location">Use my location</button><button class="button button--soft" type="button" data-action="weather-refresh">Refresh</button><button class="button button--primary" type="button" data-action="close-modal">Close</button></div>');
+  }
+
+  function useCurrentWeatherLocation() {
+    if (!navigator.geolocation) {
+      showToast('Location is not available in this browser.');
+      return;
+    }
+    openInteraction('Weather watch', 'Use your current location?', '<p>MatriSathi will use your location to retrieve local weather. Your precise coordinates stay on this device.</p><p id="weather-location-status" class="weather-location-status" role="status">Waiting for location permission…</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button>');
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      const location = { label: 'Your location', latitude: coords.latitude, longitude: coords.longitude };
+      saveWeatherLocation(location);
+      await openWeatherDetails();
+    }, (error) => {
+      const status = document.querySelector('#weather-location-status');
+      const message = error.code === error.PERMISSION_DENIED
+        ? 'Location permission was not granted. You can continue using Lalitpur.'
+        : 'We could not find your location. Please try again.';
+      if (status) status.textContent = message;
+      showToast(message);
+    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
+  }
+
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, (character) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -692,6 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginScreen?.classList.add('is-hidden');
     dashboardScreen?.classList.remove('is-hidden');
     updateProfileDisplay(getProfile());
+    void refreshWeather();
     document.title = translate('MatriSathi · My care dashboard');
     window.AamaI18n?.translatePage();
     syncWeekReferences();
@@ -963,6 +1088,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleAction(action, target) {
     if (action === 'open-profile') {
       openProfileDialog();
+    } else if (action === 'weather-details') {
+      void openWeatherDetails();
+    } else if (action === 'weather-refresh') {
+      void openWeatherDetails();
+    } else if (action === 'weather-use-location') {
+      useCurrentWeatherLocation();
     } else if (action === 'edit-profile') {
       openProfileEditor();
     } else if (action === 'account-settings') {

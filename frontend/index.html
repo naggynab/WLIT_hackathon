@@ -153,9 +153,11 @@
               <button class="button button--primary button--compact" type="button" data-action="today-plan">View today's plan <span aria-hidden="true">→</span></button>
             </div>
 
-            <section class="alert-banner" aria-label="Weather alert">
-              <div class="alert-badge">!</div>
-              <div class="alert-copy"><strong>Weather watch for Lalitpur</strong><span>Heavy rain is expected tonight. Keep your emergency contacts close.</span></div>
+            <section class="alert-banner" id="weather-alert" aria-label="Weather alert">
+              <button class="alert-main" type="button" data-action="weather-details" aria-label="Open local weather details">
+                <span class="alert-badge" data-weather-icon aria-hidden="true">!</span>
+                <span class="alert-copy"><strong data-weather-title>Weather watch for Lalitpur</strong><span data-weather-summary>Heavy rain is expected tonight. Keep your emergency contacts close.</span></span>
+              </button>
               <button class="alert-action" type="button" data-route="/home/family-hub">Prepare with family <span aria-hidden="true">→</span></button>
               <button class="alert-close" type="button" aria-label="Dismiss weather alert">×</button>
             </section>
