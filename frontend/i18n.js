@@ -780,7 +780,7 @@
     });
     document.documentElement.lang = language;
     document.querySelectorAll('[data-brand-name]').forEach((brand) => {
-      brand.innerHTML = language === 'ne' ? 'मातृसाथी' : '<span>Maatri</span><span>Sathi</span>';
+      brand.innerHTML = language === 'ne' ? 'मातृसाथी' : '<span>Maatri</span><span>Saathi</span>';
     });
     document.querySelectorAll('.language-button').forEach((button) => {
       button.setAttribute('aria-label', language === 'en' ? 'Change language' : 'भाषा परिवर्तन गर्नुहोस्');
