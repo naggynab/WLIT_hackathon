@@ -8,7 +8,7 @@
     <title>MaatriSaathi · Pregnancy companion</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3J8mX4Q1d+8wQ1U8s1kN1d5c4M4yQ=" crossorigin="">
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=family-checklist-2">
   </head>
   <body>
     <div class="app-shell">
@@ -20,7 +20,7 @@
         <div class="auth-panel">
           <div class="auth-header">
             <a class="brand brand--auth" href="/login" aria-label="MaatriSaathi home">
-              <span class="brand-mark">m</span>
+              <span class="brand-mark"><img src="/assets/maternity-heart-emblem.png" alt="" aria-hidden="true"></span>
               <span class="brand-name" data-brand-name><span>Maatri</span><span>Sathi</span></span>
             </a>
             <button class="icon-button language-button language-button--auth" type="button" aria-label="Change language">ने <span>EN</span></button>
@@ -104,7 +104,7 @@
       <section class="dashboard-screen is-hidden" id="dashboard-screen" aria-label="MaatriSaathi dashboard">
         <aside class="sidebar" id="sidebar">
           <a class="brand brand--sidebar" href="/home" aria-label="MaatriSaathi dashboard">
-            <span class="brand-mark">m</span>
+            <span class="brand-mark"><img src="/assets/maternity-heart-emblem.png" alt="" aria-hidden="true"></span>
             <span class="brand-name" data-brand-name><span>Maatri</span><span>Sathi</span></span>
           </a>
           <div class="sidebar-section-label">Your care space</div>
@@ -113,6 +113,7 @@
             <button class="nav-item" type="button" data-view="journey" data-route="/home/pregnancy-journey"><span class="nav-icon"><i data-lucide="baby" aria-hidden="true"></i></span><span>Pregnancy journey</span></button>
             <button class="nav-item" type="button" data-view="records" data-route="/home/health-records"><span class="nav-icon"><i data-lucide="notebook-tabs" aria-hidden="true"></i></span><span>Health records</span></button>
             <button class="nav-item" type="button" data-view="family" data-route="/home/family-hub"><span class="nav-icon"><i data-lucide="users-round" aria-hidden="true"></i></span><span>Family hub</span></button>
+            <button class="nav-item" type="button" data-view="community" data-route="/home/community-hub"><span class="nav-icon"><i data-lucide="heart" aria-hidden="true"></i></span><span>Community hub</span></button>
             <button class="nav-item" type="button" data-view="services" data-route="/home/health-services"><span class="nav-icon"><i data-lucide="map-pin" aria-hidden="true"></i></span><span>Health services</span></button>
             <button class="nav-item" type="button" data-view="learn" data-route="/home/learn-prepare" aria-expanded="false" aria-controls="learn-subnav"><span class="nav-icon"><i data-lucide="book-open" aria-hidden="true"></i></span><span>Learn &amp; prepare</span></button>
             <div class="learn-subnav is-hidden" id="learn-subnav" aria-label="Learn and prepare topics">
@@ -290,7 +291,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="/google-maps.js"></script>
     <script src="/learn.js"></script>
-    <script src="/app.js"></script>
+    <script src="/app.js?v=family-checklist-2"></script>
     <script src="/pregnancy-card.js"></script>
   </body>
 </html>
