@@ -172,7 +172,7 @@
     const address = place.formattedAddress || 'Address unavailable';
     const type = getTypeLabel(place);
     const hours = getOpeningLabel(place);
-    const rating = Number(place.rating) > 0 ? ` · ★ ${Number(place.rating).toFixed(1)}` : '';
+    const rating = Number(place.rating) > 0 ? ` · <i data-lucide="star" aria-hidden="true"></i> ${Number(place.rating).toFixed(1)}` : '';
     const photo = getPhotoData(place);
     const card = document.createElement('button');
     card.className = `service-card${index === 0 ? ' is-selected' : ''}`;
@@ -192,7 +192,7 @@
     } else {
       const fallback = document.createElement('span');
       fallback.className = 'service-card__photo service-card__photo--fallback';
-      fallback.textContent = '✚';
+      fallback.innerHTML = '<i data-lucide="heart-pulse" aria-hidden="true"></i>';
       fallback.setAttribute('aria-hidden', 'true');
       card.appendChild(fallback);
     }
@@ -237,7 +237,7 @@
     const name = getDisplayName(place);
     const address = place.formattedAddress || 'Address unavailable';
     const phone = place.nationalPhoneNumber ? `<div>${escapeHtml(place.nationalPhoneNumber)}</div>` : '';
-    const rating = Number(place.rating) > 0 ? `<div>★ ${Number(place.rating).toFixed(1)}${place.userRatingCount ? ` · ${Number(place.userRatingCount).toLocaleString()} reviews` : ''}</div>` : '';
+    const rating = Number(place.rating) > 0 ? `<div><i data-lucide="star" aria-hidden="true"></i> ${Number(place.rating).toFixed(1)}${place.userRatingCount ? ` · ${Number(place.userRatingCount).toLocaleString()} reviews` : ''}</div>` : '';
     const photoCredit = getPhotoData(place)?.attribution;
     return `<div class="google-map-info"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(address)}</span><span>${escapeHtml(getOpeningLabel(place))} · ${distance.toFixed(1)} km away</span>${phone}${rating}${photoCredit ? `<small>Photo: ${escapeHtml(photoCredit)}</small>` : ''}</div>`;
   }
@@ -436,7 +436,7 @@
         const markerContent = document.createElement('div');
         markerContent.className = 'google-care-marker';
         const markerSymbol = document.createElement('span');
-        markerSymbol.textContent = index === 0 ? '✚' : '＋';
+        markerSymbol.innerHTML = `<i data-lucide="${index === 0 ? 'heart-pulse' : 'map-pin'}" aria-hidden="true"></i>`;
         markerContent.appendChild(markerSymbol);
         const marker = new AdvancedMarkerElement({ map, position, title: getDisplayName(place), content: markerContent });
         marker.addListener('click', () => selectPlace(id));

@@ -44,7 +44,7 @@
   }
 
   function appointmentRows(items, emptyMessage) {
-    if (!items.length) return `<div class="hp-empty"><span aria-hidden="true">✓</span><strong>All clear</strong><p>${emptyMessage}</p></div>`;
+    if (!items.length) return `<div class="hp-empty"><i data-lucide="circle-check" aria-hidden="true"></i><strong>All clear</strong><p>${emptyMessage}</p></div>`;
     return `<div class="hp-table-wrap"><table class="hp-table"><thead><tr><th>Mother</th><th>Date &amp; time</th><th>Appointment type</th><th>Status</th></tr></thead><tbody>${items.map((item) => {
       const mother = getMother(item.motherId);
       return `<tr><td><strong>${escapeHtml(mother.name)}</strong>${contactControl(mother)}</td><td>${dateLabel(dayDate(item.dayOffset))}<small>${escapeHtml(item.time)}</small></td><td>${escapeHtml(item.type)}</td><td>${statusPill(getStatus(item))}</td></tr>`;
@@ -52,7 +52,7 @@
   }
 
   function motherRows(items, withAppointment = false) {
-    if (!items.length) return `<div class="hp-empty"><span aria-hidden="true">✓</span><strong>No mothers to show</strong><p>There are no records in this preview section.</p></div>`;
+    if (!items.length) return `<div class="hp-empty"><i data-lucide="circle-check" aria-hidden="true"></i><strong>No mothers to show</strong><p>There are no records in this preview section.</p></div>`;
     return `<div class="hp-table-wrap"><table class="hp-table"><thead><tr><th>Mother</th><th>Contact</th><th>Pregnancy week</th>${withAppointment ? '<th>Next appointment</th><th>Days left</th>' : '<th>Follow-up</th><th>Risk level</th>'}</tr></thead><tbody>${items.map((mother) => {
       const next = appointments.filter((item) => item.motherId === mother.id && getStatus(item) === 'upcoming').sort((a, b) => a.dayOffset - b.dayOffset)[0];
       return `<tr><td><strong>${escapeHtml(mother.name)}</strong></td><td>${contactControl(mother)}</td><td>Week ${mother.week}</td>${withAppointment
@@ -62,7 +62,7 @@
   }
 
   function statCard(label, value, note, icon, tone) {
-    return `<article class="hp-stat hp-stat--${tone}"><span class="hp-stat-icon" aria-hidden="true">${icon}</span><div><p>${label}</p><strong>${value}</strong><small>${note}</small></div></article>`;
+    return `<article class="hp-stat hp-stat--${tone}"><span class="hp-stat-icon"><i data-lucide="${icon}" aria-hidden="true"></i></span><div><p>${label}</p><strong>${value}</strong><small>${note}</small></div></article>`;
   }
 
   function pregnancyStageChart() {
@@ -98,13 +98,13 @@
     const todayAppointments = today.map((item) => ({ ...item, dayOffset: 0 }));
     return `<div class="hp-preview-banner"><span>PREVIEW MODE</span><p>Sample records for demonstration. This dashboard is not connected to real patient data.</p></div>
       <div class="page-heading hp-heading"><div><p class="eyebrow">Health Post Personnel</p><h1>Health Post Dashboard</h1><p>Good morning, Health Worker. Here is the care schedule for your health post.</p></div><span class="hp-date">${dateLabel(dayDate(0), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
-      <section class="hp-stats" aria-label="Health post summary statistics">${statCard('Total Registered Mothers', mothers.length, 'in this health post', '♡', 'pink')}${statCard('Mothers Due Soon', due.length, 'appointments in the next 7 days', '◷', 'amber')}${statCard('Overdue Appointments', overdueCount, 'need follow-up', '!', 'red')}${statCard("Today's Appointments", today.length, 'scheduled for today', '✓', 'green')}</section>
+      <section class="hp-stats" aria-label="Health post summary statistics">${statCard('Total Registered Mothers', mothers.length, 'in this health post', 'heart-pulse', 'pink')}${statCard('Mothers Due Soon', due.length, 'appointments in the next 7 days', 'calendar-clock', 'amber')}${statCard('Overdue Appointments', overdueCount, 'need follow-up', 'triangle-alert', 'red')}${statCard("Today's Appointments", today.length, 'scheduled for today', 'calendar-check', 'green')}</section>
       <section class="hp-charts" aria-label="Pregnancy and appointment charts">${pregnancyStageChart()}${appointmentStatusChart()}</section>
-      <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">Next 7 days</p><h2>Due Soon Mothers</h2></div><a class="text-action" href="/health-post/due-soon" data-route="/health-post/due-soon">View all <span>→</span></a></div>${motherRows(due.map((appointment) => ({ ...getMother(appointment.motherId), appointment })), true)}</section>
-      <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">${dateLabel(dayDate(0), { weekday: 'long' })}</p><h2>Today's Appointments</h2></div><a class="text-action" href="/health-post/appointments" data-route="/health-post/appointments">View schedule <span>→</span></a></div><div class="hp-today-list">${todayAppointments.length ? todayAppointments.map((item) => {
+      <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">Next 7 days</p><h2>Due Soon Mothers</h2></div><a class="text-action" href="/health-post/due-soon" data-route="/health-post/due-soon">View all <i data-lucide="arrow-right" aria-hidden="true"></i></a></div>${motherRows(due.map((appointment) => ({ ...getMother(appointment.motherId), appointment })), true)}</section>
+      <section class="hp-section panel"><div class="panel-heading"><div><p class="card-kicker">${dateLabel(dayDate(0), { weekday: 'long' })}</p><h2>Today's Appointments</h2></div><a class="text-action" href="/health-post/appointments" data-route="/health-post/appointments">View schedule <i data-lucide="arrow-right" aria-hidden="true"></i></a></div><div class="hp-today-list">${todayAppointments.length ? todayAppointments.map((item) => {
         const mother = getMother(item.motherId);
         return `<article class="hp-today-item"><span class="hp-time">${escapeHtml(item.time)}</span><span class="hp-today-copy"><strong>${escapeHtml(mother.name)}</strong><small>${escapeHtml(item.type)}</small></span>${statusPill(getStatus(item))}</article>`;
-      }).join('') : '<div class="hp-empty"><span aria-hidden="true">✓</span><strong>No appointments today</strong><p>Your schedule is clear for today.</p></div>'}</div></section>`;
+      }).join('') : '<div class="hp-empty"><i data-lucide="circle-check" aria-hidden="true"></i><strong>No appointments today</strong><p>Your schedule is clear for today.</p></div>'}</div></section>`;
   }
 
   function section(view) {
