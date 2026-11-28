@@ -6,11 +6,11 @@
   // dynamically-rendered screens. Keeping this map in one place means new
   // views and modal content get the same language behavior automatically.
   const translations = {
-    'MaatriSathi · Pregnancy companion': 'मातृसाथी · गर्भावस्था सहयात्री',
-    'MaatriSathi · My care dashboard': 'मातृसाथी · मेरो हेरचाह ड्यासबोर्ड',
-    'MaatriSathi home': 'मातृसाथी गृहपृष्ठ',
-    // 'AamaCare · Pregnancy companion': 'आमाकेयर · गर्भावस्था सहयात्री', // obsolete brand; MaatriSathi translation is above
-    // 'AamaCare · My care dashboard': 'आमाकेयर · मेरो हेरचाह ड्यासबोर्ड', // obsolete brand; MaatriSathi translation is above
+    'MaatriSaathi · Pregnancy companion': 'मातृसाथी · गर्भावस्था सहयात्री',
+    'MaatriSaathi · My care dashboard': 'मातृसाथी · मेरो हेरचाह ड्यासबोर्ड',
+    'MaatriSaathi home': 'मातृसाथी गृहपृष्ठ',
+    // 'AamaCare · Pregnancy companion': 'आमाकेयर · गर्भावस्था सहयात्री', // obsolete brand; MaatriSaathi translation is above
+    // 'AamaCare · My care dashboard': 'आमाकेयर · मेरो हेरचाह ड्यासबोर्ड', // obsolete brand; MaatriSaathi translation is above
     'Care, every week': 'हरेक हप्ता हेरचाह',
     'तपाईंको साथमा': 'तपाईंको साथमा',
     'Family connected': 'परिवार जोडिएको',
@@ -31,9 +31,9 @@
     'Continue securely': 'सुरक्षित रूपमा जारी राख्नुहोस्',
     'or': 'वा',
     'Preview the dashboard': 'ड्यासबोर्ड हेर्नुहोस्',
-    'New to MaatriSathi?': 'मातृसाथीमा नयाँ हुनुहुन्छ?',
+    'New to MaatriSaathi?': 'मातृसाथीमा नयाँ हुनुहुन्छ?',
     'Create an account': 'खाता बनाउनुहोस्',
-    // 'New to AamaCare?': 'आमाकेयरमा नयाँ हुनुहुन्छ?', // obsolete brand; MaatriSathi translation is above
+    // 'New to AamaCare?': 'आमाकेयरमा नयाँ हुनुहुन्छ?', // obsolete brand; MaatriSaathi translation is above
     // 'Create an account': 'खाता बनाउनुहोस्', // duplicate translation; keep the first entry above
     'Start your care journey': 'आफ्नो हेरचाह यात्रा सुरु गर्नुहोस्',
     'Create your account': 'आफ्नो खाता बनाउनुहोस्',
@@ -146,8 +146,8 @@
     'Ask Aama AI': 'आमा AI लाई सोध्नुहोस्',
     'Learn & prepare': 'सिक्नुहोस् र तयारी गर्नुहोस्',
     'Need a little help?': 'अलिकति सहयोग चाहिन्छ?',
-    'Ask MaatriSathi AI in Nepali or English.': 'नेपाली वा अंग्रेजीमा मातृसाथी AI लाई सोध्नुहोस्।',
-    'Ask MaatriSathi AI': 'मातृसाथी AI लाई सोध्नुहोस्',
+    'Ask MaatriSaathi AI in Nepali or English.': 'नेपाली वा अंग्रेजीमा मातृसाथी AI लाई सोध्नुहोस्।',
+    'Ask MaatriSaathi AI': 'मातृसाथी AI लाई सोध्नुहोस्',
     'Settings': 'सेटिङहरू',
     'Sign out': 'साइन आउट',
     'My care dashboard': 'मेरो हेरचाह ड्यासबोर्ड',
@@ -232,7 +232,7 @@
     'Need urgent help?': 'तत्काल सहयोग चाहिन्छ?',
     'Call your trusted contact or find emergency care.': 'आफ्नो भरपर्दो सम्पर्कमा फोन गर्नुहोस् वा आपतकालीन हेरचाह खोज्नुहोस्।',
     'Get help': 'सहयोग लिनुहोस्',
-    'MaatriSathi is here to support, not replace, your health worker.': 'मातृसाथी तपाईंको स्वास्थ्यकर्मीको सहयोगी हो, विकल्प होइन।',
+    'MaatriSaathi is here to support, not replace, your health worker.': 'मातृसाथी तपाईंको स्वास्थ्यकर्मीको सहयोगी हो, विकल्प होइन।',
     'Privacy': 'गोपनीयता',
     'Help center': 'सहयोग केन्द्र',
     'Your nine-month story': 'तपाईंको नौ महिनाको कथा',
@@ -433,7 +433,7 @@
     "{done} of {total} ready": "{total} मध्ये {done} तयारी पूरा",
     "All set for this stage!": "यस चरणको तयारी पूरा भयो!",
     "One step at a time": "एक पटकमा एउटा काम",
-    "MaatriSathi · My birth preparation checklist": "म्याट्रिसाथी · मेरो प्रसूति तयारी जाँचसूची",
+    "MaatriSaathi · My birth preparation checklist": "म्याट्रिसाथी · मेरो प्रसूति तयारी जाँचसूची",
     "Early pregnancy": "सुरुको गर्भावस्था",
     "Middle pregnancy": "बीचको गर्भावस्था",
     "Late pregnancy": "अन्तिम गर्भावस्था",
@@ -597,7 +597,7 @@
     'Your profile has been updated.': 'तपाईंको प्रोफाइल अद्यावधिक गरियो।',
     'Profile could not be saved on this device.': 'यो उपकरणमा प्रोफाइल सुरक्षित गर्न सकिएन।',
     'Dismiss weather alert': 'मौसम चेतावनी हटाउनुहोस्',
-    'Close MaatriSathi AI': 'मातृसाथी AI बन्द गर्नुहोस्',
+    'Close MaatriSaathi AI': 'मातृसाथी AI बन्द गर्नुहोस्',
     'Read answers aloud': 'जवाफ ठूलो स्वरमा पढ्नुहोस्',
     'Speak the latest AI reply automatically': 'AI को पछिल्लो जवाफ स्वतः सुनाउनुहोस्',
     'Read-aloud is on.': 'ठूलो स्वरमा पढ्ने सुविधा अन छ।',
@@ -660,7 +660,7 @@
     'What should I pay attention to after delivery?': 'सुत्केरी भएपछि के ध्यान दिने?',
     'Have a health check within 24 hours after delivery, then on day 3 and day 7. Breastfeed your newborn within 1 hour of birth and give only breast milk for the first 6 months.': 'सुत्केरी भएको २४ घन्टा भित्र, ३ दिन, र ७ दिनमा स्वास्थ्य जाँच गराउनुहोस्। नवजात शिशुलाई जन्मको १ घन्टा भित्र आमाको दूध खुवाउनुहोस् र ६ महिनासम्म आमाको दूध मात्र खुवाउनुहोस्।',
     'If you want, we can also turn this into a printable or shareable PDF or Word file, or expand a topic such as nutrition or danger signs.': 'चाहनुहुन्छ भने हामी यसलाई छापेर वा सेयर गर्न मिल्ने PDF वा Word फाइलमा बनाउन सक्छौँ, वा पोषण अथवा खतराका चिन्ह जस्तो कुनै विषयलाई थप विस्तारमा लेख्न सक्छौँ।',
-    'MaatriSathi dashboard': 'मातृसाथी ड्यासबोर्ड',
+    'MaatriSaathi dashboard': 'मातृसाथी ड्यासबोर्ड',
     'Weather alert': 'मौसम चेतावनी',
     'Pregnancy overview': 'गर्भावस्था अवलोकन',
     'More pregnancy journey options': 'गर्भावस्था यात्राका थप विकल्प',
@@ -683,7 +683,7 @@
     'Save changes': 'परिवर्तन सुरक्षित गर्नुहोस्',
     'Your settings have been saved': 'तपाईंका सेटिङहरू सुरक्षित गरियो',
     'Personal preferences': 'व्यक्तिगत प्राथमिकताहरू',
-    'Make MaatriSathi feel right for you': 'मातृसाथीलाई आफ्ना लागि उपयुक्त बनाउनुहोस्',
+    'Make MaatriSaathi feel right for you': 'मातृसाथीलाई आफ्ना लागि उपयुक्त बनाउनुहोस्',
     'Language': 'भाषा',
     'Choose the language used in guidance and reminders.': 'मार्गदर्शन र सम्झनामा प्रयोग हुने भाषा छान्नुहोस्।',
     'English': 'अंग्रेजी',
@@ -695,7 +695,7 @@
     'Receive local safety alerts for Lalitpur.': 'ललितपुरका स्थानीय सुरक्षा सूचना पाउनुहोस्।',
     'Privacy and support': 'गोपनीयता र सहयोग',
     'Your information stays in your control.': 'तपाईंको जानकारीमाथि नियन्त्रण तपाईंसँगै रहन्छ।',
-    'MaatriSathi supports your conversations with your health worker. You decide what to share with family, and you can change these choices whenever you want.': 'मातृसाथीले स्वास्थ्यकर्मीसँगको कुराकानीमा सहयोग गर्छ। परिवारसँग के बाँड्ने भन्ने निर्णय तपाईंले गर्नुहुन्छ र चाहेको बेला परिवर्तन गर्न सक्नुहुन्छ।',
+    'MaatriSaathi supports your conversations with your health worker. You decide what to share with family, and you can change these choices whenever you want.': 'मातृसाथीले स्वास्थ्यकर्मीसँगको कुराकानीमा सहयोग गर्छ। परिवारसँग के बाँड्ने भन्ने निर्णय तपाईंले गर्नुहुन्छ र चाहेको बेला परिवर्तन गर्न सक्नुहुन्छ।',
     'Review privacy controls': 'गोपनीयता नियन्त्रण हेर्नुहोस्',
     'Privacy controls opened': 'गोपनीयता नियन्त्रण खोलियो',
     'Open help center': 'सहयोग केन्द्र खोल्नुहोस्',
@@ -791,8 +791,8 @@
       select.value = language === 'ne' ? 'नेपाली' : 'English';
     });
     document.title = language === 'ne'
-      ? (document.querySelector('#dashboard-screen:not(.is-hidden)') ? translations['MaatriSathi · My care dashboard'] : translations['MaatriSathi · Pregnancy companion'])
-      : (document.querySelector('#dashboard-screen:not(.is-hidden)') ? 'MaatriSathi · My care dashboard' : 'MaatriSathi · Pregnancy companion');
+      ? (document.querySelector('#dashboard-screen:not(.is-hidden)') ? translations['MaatriSaathi · My care dashboard'] : translations['MaatriSaathi · Pregnancy companion'])
+      : (document.querySelector('#dashboard-screen:not(.is-hidden)') ? 'MaatriSaathi · My care dashboard' : 'MaatriSaathi · Pregnancy companion');
   }
 
   function setLanguage(nextLanguage) {
