@@ -1,5 +1,7 @@
 (function () {
-  const origin = { lat: 27.6683, lng: 85.3204 };
+  const defaultOrigin = { lat: 27.6683, lng: 85.3204 };
+  let activeOrigin = defaultOrigin;
+  let activeLocationLabel = 'Lalitpur';
   let loadPromise = null;
   let activeState = null;
 
@@ -212,7 +214,6 @@
     distanceNode.className = 'service-distance';
     distanceNode.textContent = `${distance.toFixed(1)} km`;
     card.appendChild(distanceNode);
-    card.addEventListener('click', () => selectPlace(id));
     return card;
   }
 
@@ -245,7 +246,7 @@
   function selectPlace(id, openInfo = true) {
     const state = activeState;
     const entry = state?.placesById?.get(id);
-    if (!entry) return;
+    if (!entry) return null;
     state.root.querySelectorAll('.service-card').forEach((card) => {
       const selected = card.dataset.service === id;
       card.classList.toggle('is-selected', selected);
@@ -254,7 +255,7 @@
     if (state.provider === 'leaflet') {
       state.map.setView([entry.position.lat, entry.position.lng], 16, { animate: true });
       if (openInfo) entry.marker.openPopup();
-      return;
+      return entry;
     }
     state.map.panTo(entry.position);
     if (openInfo) {
@@ -262,6 +263,7 @@
       state.infoWindow.setContent(infoContent(entry.place, entry.distance));
       state.infoWindow.open({ map: state.map, anchor: entry.marker });
     }
+    return entry;
   }
 
   function osmPlace(element) {
@@ -292,75 +294,50 @@
     };
   }
 
-  function nominatimPlace(result, category) {
-    const position = getCoordinates({ lat: result.lat, lng: result.lon });
-    if (!position) return null;
-    const extra = result.extratags || {};
-    const address = result.display_name || 'Address unavailable';
-    const photoUrl = /^https?:\/\//i.test(extra.image || '') ? extra.image : '';
-    return {
-      id: `osm-${result.osm_type || 'place'}-${result.osm_id || result.place_id}`,
-      displayName: result.name || `${category} near Lalitpur`,
-      formattedAddress: address,
-      location: position,
-      primaryType: result.type || category,
-      nationalPhoneNumber: extra.phone || extra['contact:phone'] || '',
-      openingHours: extra.opening_hours || '',
-      photoUrl,
-      photoAttribution: photoUrl ? 'OpenStreetMap listing' : '',
-    };
-  }
-
-  async function fetchFreeHealthPlaces() {
-    // Nominatim is used only for the user opening this page and requests are
-    // spaced out to respect its public-service limit of one request per second.
-    const categories = ['hospital', 'clinic', 'pharmacy'];
-    const results = [];
-    for (const [index, category] of categories.entries()) {
-      if (index) await new Promise((resolve) => window.setTimeout(resolve, 1100));
-      const params = new URLSearchParams({
-        format: 'jsonv2',
-        addressdetails: '1',
-        extratags: '1',
-        limit: '8',
-        q: `${category} Lalitpur Nepal`,
-      });
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
-        headers: { Accept: 'application/json' },
-      });
-      if (!response.ok) throw new Error(`OpenStreetMap search returned ${response.status}.`);
-      const healthResults = (await response.json()).filter((result) => {
-        const type = String(result.type || '').toLowerCase();
-        return ['hospital', 'clinic', 'doctors', 'pharmacy', 'chemist', 'health_centre', 'health_center', 'healthcare'].some((allowed) => type.includes(allowed));
-      });
-      results.push(...healthResults.map((result) => nominatimPlace(result, category)).filter(Boolean));
-    }
+  async function fetchFreeHealthPlaces(searchOrigin) {
+    const radius = 10000;
+    const amenityTypes = 'hospital|clinic|doctors|pharmacy';
+    const healthcareTypes = 'hospital|clinic|doctor|pharmacy|health_post';
+    const query = `[out:json][timeout:25];(node["amenity"~"^(${amenityTypes})$"](around:${radius},${searchOrigin.lat},${searchOrigin.lng});way["amenity"~"^(${amenityTypes})$"](around:${radius},${searchOrigin.lat},${searchOrigin.lng});relation["amenity"~"^(${amenityTypes})$"](around:${radius},${searchOrigin.lat},${searchOrigin.lng});node["healthcare"~"^(${healthcareTypes})$"](around:${radius},${searchOrigin.lat},${searchOrigin.lng});way["healthcare"~"^(${healthcareTypes})$"](around:${radius},${searchOrigin.lat},${searchOrigin.lng});relation["healthcare"~"^(${healthcareTypes})$"](around:${radius},${searchOrigin.lat},${searchOrigin.lng}););out center tags;`;
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: new URLSearchParams({ data: query }).toString(),
+    });
+    if (!response.ok) throw new Error(`OpenStreetMap search returned ${response.status}.`);
+    const results = (await response.json()).elements
+      .map(osmPlace)
+      .filter(Boolean);
     const unique = new Map();
     results.forEach((place) => {
-      if (!unique.has(place.displayName)) unique.set(place.displayName, place);
+      const position = getCoordinates(place.location);
+      if (!position) return;
+      const name = getDisplayName(place).trim().toLowerCase().replace(/\s+/g, ' ');
+      const key = `${name}:${position.lat.toFixed(3)}:${position.lng.toFixed(3)}`;
+      if (!unique.has(key)) unique.set(key, place);
     });
     const nearbyPlaces = Array.from(unique.values())
       .map((place) => ({ place, position: getCoordinates(place.location) }))
-      .map((entry) => ({ ...entry, distance: distanceInKilometres(origin, entry.position) }))
+      .map((entry) => ({ ...entry, distance: distanceInKilometres(searchOrigin, entry.position) }))
       .sort((left, right) => left.distance - right.distance)
       .slice(0, 8);
     await Promise.all(nearbyPlaces.map(({ place }) => findWikimediaPhoto(place)));
     return nearbyPlaces;
   }
 
-  async function initOpenStreetMap(root) {
+  async function initOpenStreetMap(root, searchOrigin) {
     if (!window.L) throw new Error('The free map library is not available.');
     const mapElement = root?.querySelector('#care-map');
-    if (!mapElement) return;
+    if (!mapElement) return false;
     mapElement.replaceChildren();
-    const map = window.L.map(mapElement, { scrollWheelZoom: false, zoomControl: true }).setView([origin.lat, origin.lng], 14);
+    const map = window.L.map(mapElement, { scrollWheelZoom: false, zoomControl: true }).setView([searchOrigin.lat, searchOrigin.lng], 14);
     window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
     let places;
     try {
-      places = await fetchFreeHealthPlaces();
+      places = await fetchFreeHealthPlaces(searchOrigin);
     } catch (error) {
       map.remove();
       throw error;
@@ -383,18 +360,24 @@
     const credit = root.querySelector('.map-credit');
     if (credit) credit.textContent = 'Map and place data © OpenStreetMap contributors.';
     if (places.length) selectPlace(places[0].place.id, false);
+    return true;
   }
 
-  async function init(root) {
+  async function init(root, searchOrigin = activeOrigin) {
     cleanup();
     const mapElement = root?.querySelector('#care-map');
-    if (!mapElement) return;
+    if (!mapElement) return false;
+    const locationLabel = root.querySelector('[data-service-location]');
+    if (locationLabel) locationLabel.textContent = `Near ${activeLocationLabel}`;
+    const locationStatus = root.querySelector('[data-location-status]');
+    if (locationStatus && activeLocationLabel === 'you') {
+      locationStatus.textContent = 'Showing services near you. Coordinates are sent to the map provider and are not stored by MaatriSaathi.';
+    }
     try {
       const includePhotos = Boolean(window.MATRI_SATHI_GOOGLE_MAPS_INCLUDE_PHOTOS);
       const configuredApiKey = await getConfiguredApiKey();
       if (!configuredApiKey) {
-        await initOpenStreetMap(root);
-        return;
+        return await initOpenStreetMap(root, searchOrigin);
       }
       const maps = await loadGoogleMaps(configuredApiKey);
       const [{ Map }, { AdvancedMarkerElement }, { Place, SearchNearbyRankPreference }] = await Promise.all([
@@ -404,7 +387,7 @@
       ]);
       if (!root.isConnected) return;
       const map = new Map(mapElement, {
-        center: origin,
+        center: searchOrigin,
         zoom: 14,
         mapId: 'DEMO_MAP_ID',
         mapTypeControl: false,
@@ -416,7 +399,7 @@
       if (includePhotos) fields.push('photos', 'rating', 'userRatingCount');
       const response = await Place.searchNearby({
         fields,
-        locationRestriction: { center: origin, radius: 9000 },
+        locationRestriction: { center: searchOrigin, radius: 9000 },
         includedPrimaryTypes: ['hospital', 'medical_clinic', 'pharmacy'],
         maxResultCount: 8,
         rankPreference: SearchNearbyRankPreference.DISTANCE,
@@ -426,7 +409,7 @@
       const places = (response.places || [])
         .map((place) => ({ place, position: getCoordinates(place.location) }))
         .filter((entry) => entry.position)
-        .map((entry) => ({ ...entry, distance: distanceInKilometres(origin, entry.position) }));
+        .map((entry) => ({ ...entry, distance: distanceInKilometres(searchOrigin, entry.position) }));
       const markers = new Map();
       const placesById = new Map();
       activeState = { root, map, infoWindow, markers, placesById };
@@ -444,10 +427,11 @@
         placesById.set(id, { place, position, distance, marker });
       });
       if (places.length) selectPlace(places[0].place.id || places[0].place.name || 'place-0', false);
+      return true;
     } catch (error) {
       console.error('Google Maps could not load nearby care data.', error);
       try {
-        await initOpenStreetMap(root);
+        return await initOpenStreetMap(root, searchOrigin);
       } catch (freeMapError) {
         console.error('The free OpenStreetMap fallback could not load nearby care data.', freeMapError);
         showMapStatus(root, 'Map data is temporarily unavailable', 'Please check your internet connection and refresh the page.');
@@ -461,9 +445,58 @@
         }
         const count = root.querySelector('[data-service-count]');
         if (count) count.textContent = 'Unavailable';
+        return false;
       }
     }
   }
 
-  window.MatriSathiGoogleMaps = { init, cleanup, select: selectPlace };
+  function useCurrentLocation(root) {
+    const button = root?.querySelector('[data-action="use-location"]');
+    const status = root?.querySelector('[data-location-status]');
+    if (!root || !button || !status) return;
+    if (!navigator.geolocation) {
+      status.textContent = `Device location is unavailable in this browser. Current results remain near ${activeLocationLabel}.`;
+      return;
+    }
+
+    button.disabled = true;
+    status.textContent = 'Requesting your device location…';
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      if (!root.isConnected || !root.querySelector('#care-map')) return;
+      const searchOrigin = getCoordinates({ lat: coords.latitude, lng: coords.longitude });
+      if (!searchOrigin) {
+        status.textContent = `Your device returned an invalid location. Current results remain near ${activeLocationLabel}.`;
+        button.disabled = false;
+        return;
+      }
+
+      activeOrigin = searchOrigin;
+      activeLocationLabel = 'you';
+      status.textContent = 'Finding health services near your current location…';
+      try {
+        const loaded = await init(root, searchOrigin);
+        if (root.isConnected) {
+          status.textContent = loaded
+            ? 'Showing services near your current location. Coordinates are sent to the map provider and are not stored by MaatriSaathi.'
+            : 'Your location was found, but nearby services could not be loaded. Please try again.';
+        }
+      } catch (error) {
+        console.error('Nearby services could not be updated for the current location.', error);
+        if (root.isConnected) status.textContent = 'Your location was found, but nearby services could not be loaded. Please try again.';
+      } finally {
+        if (root.isConnected) button.disabled = false;
+      }
+    }, (error) => {
+      if (!root.isConnected) return;
+      const message = error.code === 1
+        ? 'Location permission was denied. Allow location access in your browser and try again.'
+        : error.code === 3
+          ? 'The location request timed out. Check your device location settings and try again.'
+          : 'Could not get your device location. Check location services and try again.';
+      status.textContent = `${message} Current results remain near ${activeLocationLabel}.`;
+      button.disabled = false;
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  }
+
+  window.MatriSathiGoogleMaps = { init, cleanup, select: selectPlace, useCurrentLocation };
 })();

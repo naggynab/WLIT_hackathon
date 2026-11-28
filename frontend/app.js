@@ -415,8 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function focusCareMap(card, openPopup = false) {
     const serviceId = card?.dataset.service;
-    if (!serviceId) return;
-    window.MatriSathiGoogleMaps?.select(serviceId, openPopup);
+    if (!serviceId) return null;
+    return window.MatriSathiGoogleMaps?.select(serviceId, openPopup) || null;
   }
 
   function initCareMap() {
@@ -1386,19 +1386,29 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (action === 'add-checklist') {
       openInteraction('Small steps, big care', 'Add a checklist item', '<form class="interaction-form" id="checklist-form"><label for="checklist-title">What do you want to remember?</label><input id="checklist-title" name="title" placeholder="e.g. Take a short walk" required maxlength="80"><label for="checklist-details">Details <span class="form-label-hint">optional</span></label><input id="checklist-details" name="details" placeholder="e.g. Move gently for 10 minutes" maxlength="120"><label for="checklist-time">When?</label><input id="checklist-time" name="time" placeholder="e.g. Today or 4:00 PM" maxlength="30"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add to checklist</button></div></form>');
     } else if (action === 'use-location') {
-      openInteraction('Nearby care', 'Use your current location?', '<p>Location helps MaatriSaathi sort health posts and hospitals by distance. You can also keep using the Lalitpur location already selected.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Keep Lalitpur</button><button class="button button--primary" type="button" data-action="location-confirm">Use location</button>');
-    } else if (action === 'location-confirm') {
-      closeInteraction();
-      showToast('Location access will be connected to the service directory.');
+      window.MatriSathiGoogleMaps?.useCurrentLocation(secondaryView);
     } else if (action === 'service-filter') {
       openInteraction('Health services', 'Filter nearby care', '<div class="interaction-form interaction-form--filters"><label class="filter-option"><input type="checkbox" checked><span>Maternity care</span></label><label class="filter-option"><input type="checkbox"><span>Emergency care</span></label><label class="filter-option"><input type="checkbox"><span>Pharmacy</span></label><label class="filter-option"><input type="checkbox"><span>Open now</span></label></div>', '<button class="button button--primary" type="button" data-action="close-modal">Apply filters</button>');
     } else if (action === 'select-service') {
       secondaryView?.querySelectorAll('.service-card').forEach((card) => card.classList.remove('is-selected'));
       target.classList.add('is-selected');
-      focusCareMap(target, true);
-      focusCareMap(target, true);
-      const service = target.dataset.service || 'Health service';
-      openInteraction('Nearby care', service, '<div class="detail-list"><div class="detail-row"><span>Distance</span><strong>2.4 km from you</strong></div><div class="detail-row"><span>Services</span><strong>Maternity care · Emergency</strong></div><div class="detail-row"><span>Phone</span><strong>01-5522295</strong></div></div>', '<button class="button button--outline" type="button" data-toast="Calling the health service">Call</button><button class="button button--primary" type="button" data-toast="Directions opened">Get directions</button>');
+      const selectedPlace = focusCareMap(target, true);
+      const place = selectedPlace?.place;
+      const position = selectedPlace?.position;
+      const distance = Number.isFinite(selectedPlace?.distance) ? `${selectedPlace.distance.toFixed(1)} km away` : 'Distance unavailable';
+      const serviceType = String(place?.primaryType || place?.types?.[0] || 'Health service').replaceAll('_', ' ');
+      const details = [
+        ['Distance', distance],
+        ['Type', serviceType],
+        ['Address', place?.formattedAddress || 'Address unavailable'],
+        ...(place?.nationalPhoneNumber ? [['Phone', place.nationalPhoneNumber]] : []),
+      ];
+      const detailsMarkup = `<div class="detail-list">${details.map(([label, value]) => `<div class="detail-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div>`;
+      const phone = place?.nationalPhoneNumber ? `<a class="button button--outline" href="tel:${escapeHtml(place.nationalPhoneNumber.replace(/[^\d+]/g, ''))}">Call</a>` : '';
+      const directions = position
+        ? `<a class="button button--primary" href="https://www.google.com/maps/dir/?api=1&amp;destination=${position.lat},${position.lng}" target="_blank" rel="noopener noreferrer">Get directions</a>`
+        : '<button class="button button--primary" type="button" data-action="close-modal">Close</button>';
+      openInteraction('Nearby care', place?.displayName || target.dataset.service || 'Health service', detailsMarkup, `${phone}${directions}`);
     } else if (action === 'topic-filter') {
       const currentWeek = getWeekSnapshot().week;
       openInteraction('Learn & prepare', target.dataset.topic || 'Learning topic', `<p>We will show week ${currentWeek} content, Nepali audio, and trusted videos for this topic.</p>`, '<button class="button button--primary" type="button" data-action="close-modal">Show content</button>');
