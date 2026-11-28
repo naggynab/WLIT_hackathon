@@ -18,7 +18,7 @@ window.AamaBenefitsConfig = {
   travelSupport: [
     { region: 'Mountain', amountNpr: 3000 },
     { region: 'Hill', amountNpr: 2000 },
-    { region: 'Tarai', amountNpr: 1000 },
+    { region: 'Terai', amountNpr: 1000 },
   ],
   deliveryCare: {
     free: true,

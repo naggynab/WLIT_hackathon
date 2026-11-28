@@ -134,7 +134,6 @@
       if (event.target.matches('[data-birth-stage]')) { saved.stage = event.target.value; save(); renderPlan(root); }
       if (event.target.matches('[data-plan-task]')) { saved.completed ||= {}; saved.completed[event.target.dataset.planTask] = event.target.checked; save(); updateProgress(root); }
       if (event.target.matches('[data-movement-done]')) { saved.movement ||= {}; saved.movement[event.target.dataset.movementDone] = event.target.checked; save(); }
-      if (event.target.matches('[data-support-question]')) { saved.questions ||= {}; saved.questions[event.target.dataset.supportQuestion] = event.target.checked; save(); updateQuestions(root); }
       if (event.target.matches('[data-save-meal]')) { saved.meals ||= {}; saved.meals[event.target.dataset.saveMeal] = event.target.checked; save(); }
     });
     root.addEventListener('click', event => {
@@ -178,15 +177,8 @@
       ['pelvic','Pelvic floor practice','Gently tighten the muscles around your vagina and back passage, hold briefly while breathing normally, then fully relax. Ask your midwife for help if unsure.'],
       ['mobility','Gentle mobility','Try relaxed shoulder rolls, ankle circles, or a supported stretch. Keep movements pain-free and avoid overheating or fall risks.']
     ].map(([id,title,copy])=>`<article class="learn-movement">${movementVideo(id, title)}<div class="learn-movement-copy"><h3>${title}</h3><details><summary>Explore this activity</summary><p>${copy}</p></details><label class="learn-activity-done"><input type="checkbox" data-movement-done="${id}" ${saved.movement?.[id] ? 'checked' : ''}> Save to my activities</label></div></article>`).join('');
-    root.querySelectorAll('[data-support-question]').forEach(input => { input.checked = Boolean(saved.questions?.[input.dataset.supportQuestion]); });
-    updateQuestions(root);
     renderPlan(root);
     refreshLanguage();
-  }
-  function updateQuestions(root) {
-    const count = root.querySelector('[data-support-count]');
-    const total = root.querySelectorAll('[data-support-question]:checked').length;
-    if (count) setText(count, t('{count} questions saved for your next conversation · Saved on this device', {count: number(total)}));
   }
   function renderPlan(root) {
     const stage=root.querySelector('[data-birth-stage]'); const key=stage?.value || 'early';
