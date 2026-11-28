@@ -140,7 +140,7 @@
     root.addEventListener('click', event => {
       if (event.target.closest('[data-download-plan]')) {
         const text = Object.entries(plans).map(([key, [tip, tasks]]) => `${t({early: 'Early pregnancy', middle: 'Middle pregnancy', late: 'Late pregnancy'}[key])}\n${t(tip)}\n${tasks.map(([id,title,copy]) => `${saved.completed?.[id] ? '[x]' : '[ ]'} ${t(title)}\n    ${t(copy)}`).join('\n')}`).join('\n\n');
-        const url = URL.createObjectURL(new Blob([t('MatriSathi · My birth preparation checklist') + '\n\n' + text], {type:'text/plain;charset=utf-8'}));
+        const url = URL.createObjectURL(new Blob([t('MaatriSathi · My birth preparation checklist') + '\n\n' + text], {type:'text/plain;charset=utf-8'}));
         const link = document.createElement('a'); link.href = url; link.download = 'matrisathi-birth-checklist.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     });

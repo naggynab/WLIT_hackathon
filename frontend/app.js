@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Location is not available in this browser.');
       return;
     }
-    openInteraction('Weather watch', 'Use your current location?', '<p>MatriSathi will use your location to retrieve local weather. Your precise coordinates stay on this device.</p><p id="weather-location-status" class="weather-location-status" role="status">Waiting for location permission…</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button>');
+    openInteraction('Weather watch', 'Use your current location?', '<p>MaatriSathi will use your location to retrieve local weather. Your precise coordinates stay on this device.</p><p id="weather-location-status" class="weather-location-status" role="status">Waiting for location permission…</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button>');
     navigator.geolocation.getCurrentPosition(async ({ coords }) => {
       const location = { label: 'Your location', latitude: coords.latitude, longitude: coords.longitude };
       saveWeatherLocation(location);
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dashboardScreen?.classList.remove('is-hidden');
     updateProfileDisplay(getProfile());
     void refreshWeather();
-    document.title = translate('MatriSathi · My care dashboard');
+    document.title = translate('MaatriSathi · My care dashboard');
     window.AamaI18n?.translatePage();
     syncWeekReferences();
     setupScrollReveal();
@@ -865,7 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showLogin() {
     dashboardScreen?.classList.add('is-hidden');
     loginScreen?.classList.remove('is-hidden');
-    document.title = translate('MatriSathi · Pregnancy companion');
+    document.title = translate('MaatriSathi · Pregnancy companion');
     window.AamaI18n?.translatePage();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -948,7 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.breadcrumb')?.classList.toggle('breadcrumb--benefits', view === 'benefits');
     document.querySelector('.breadcrumb-learn')?.classList.toggle('is-hidden', view !== 'benefits');
     document.querySelector('.breadcrumb-learn-separator')?.classList.toggle('is-hidden', view !== 'benefits');
-    document.title = isHealthPost ? `MatriSathi · ${label}` : 'MatriSathi · My care dashboard';
+    document.title = isHealthPost ? `MaatriSathi · ${label}` : 'MaatriSathi · My care dashboard';
     window.AamaI18n?.translatePage();
     if (view === 'journey' && window.AamaPregnancyJourneyState) applyJourneyCalendar(window.AamaPregnancyJourneyState);
     syncWeekReferences();
@@ -1076,6 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openEmergencyHelplines() {
     const contacts = [
+      ['Ambulance Service', 'Emergency ambulance service', '102'],
       ['Patan Hospital', 'Hospital · Emergency department', '01-5522295'],
       ['Lagankhel Health Post', 'Health post · Lalitpur', '01-5537711'],
     ];
@@ -1151,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       closeInteraction();
       openAssistant();
     } else if (action === 'open-logout') {
-      openInteraction('Sign out', 'Leave MatriSathi for now?', '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>');
+      openInteraction('Sign out', 'Leave MaatriSathi for now?', '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>');
     } else if (action === 'today-plan') {
       openInteraction("Today's plan", 'Your care plan for today', '<div class="detail-list"><div class="detail-row"><span>Morning</span><strong>Hydrate and take your prescribed supplement</strong></div><div class="detail-row"><span>Afternoon</span><strong>Watch your weekly movement video</strong></div><div class="detail-row"><span>Evening</span><strong>Keep emergency contacts close during heavy rain</strong></div></div>', '<button class="button button--primary" type="button" data-action="close-modal">Got it</button>');
     } else if (action === 'appointment-detail') {
@@ -1211,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (action === 'add-checklist') {
       openInteraction('Small steps, big care', 'Add a checklist item', '<form class="interaction-form" id="checklist-form"><label for="checklist-title">What do you want to remember?</label><input id="checklist-title" name="title" placeholder="e.g. Take a short walk" required maxlength="80"><label for="checklist-details">Details <span class="form-label-hint">optional</span></label><input id="checklist-details" name="details" placeholder="e.g. Move gently for 10 minutes" maxlength="120"><label for="checklist-time">When?</label><input id="checklist-time" name="time" placeholder="e.g. Today or 4:00 PM" maxlength="30"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Add to checklist</button></div></form>');
     } else if (action === 'use-location') {
-      openInteraction('Nearby care', 'Use your current location?', '<p>Location helps MatriSathi sort health posts and hospitals by distance. You can also keep using the Lalitpur location already selected.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Keep Lalitpur</button><button class="button button--primary" type="button" data-action="location-confirm">Use location</button>');
+      openInteraction('Nearby care', 'Use your current location?', '<p>Location helps MaatriSathi sort health posts and hospitals by distance. You can also keep using the Lalitpur location already selected.</p>', '<button class="button button--outline" type="button" data-action="close-modal">Keep Lalitpur</button><button class="button button--primary" type="button" data-action="location-confirm">Use location</button>');
     } else if (action === 'location-confirm') {
       closeInteraction();
       showToast('Location access will be connected to the service directory.');
@@ -1450,7 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
   logoutButton?.addEventListener('click', () => {
     openInteraction(
       'Sign out',
-      'Leave MatriSathi for now?',
+      'Leave MaatriSathi for now?',
       '<p>Your dashboard will be closed, but your saved care information will remain safe.</p>',
       '<button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="button" data-action="confirm-logout">Sign out</button>'
     );
