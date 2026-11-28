@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {connectDB} from './db.mjs';
 import authRoutes from './routes/auth.routes.mjs';
 import healthRecordRoutes from './routes/healthRecords.routes.mjs';
+import communityRoutes from './routes/community.routes.mjs';
 import { requireAuth } from './middleware/requireAuth.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -89,6 +90,7 @@ app.get(['/events', '/events/'], (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/health-records', requireAuth, healthRecordRoutes);
+app.use('/api/community', requireAuth, communityRoutes);
 
 const assistantInstructions = `
 You are MaatriSaathi AI, a warm pregnancy companion for users in Nepal.

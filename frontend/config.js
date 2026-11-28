@@ -1,7 +1,8 @@
 // The frontend and backend are deployed as separate Vercel projects.
-// Keep the URL empty for local same-origin development; production requests
-// go to the public backend deployment.
-window.AAMA_API_URL = 'https://wlit-hackathon.vercel.app';
+// Local development uses the same-origin Express server; deployed frontend
+// requests go to the public backend deployment.
+const isLocalAamaHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+window.AAMA_API_URL = isLocalAamaHost ? '' : 'https://wlit-hackathon.vercel.app';
 
 // Use a browser-restricted Google Maps Platform key. Enable Maps JavaScript API
 // and Places API (New) for the same Google Cloud project. For local development

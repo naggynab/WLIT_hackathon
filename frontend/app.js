@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const weatherLocationStorageKey = 'matrisathi-weather-location';
   const defaultWeatherLocation = { label: 'Lalitpur', latitude: 27.6588, longitude: 85.3247 };
   const weatherState = { data: null, location: { ...defaultWeatherLocation }, loading: false };
+  const communityState = { posts: [], plans: [], filter: 'all', loaded: false };
   let toastTimer;
   let activeRecognition = null;
   let latestAssistantReply = null;
@@ -361,6 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/home/pregnancy-journey': { view: 'journey', label: 'Pregnancy journey' },
     '/home/health-records': { view: 'records', label: 'Health records' },
     '/home/family-hub': { view: 'family', label: 'Family hub' },
+    '/home/community-hub': { view: 'community', label: 'Community hub' },
     '/home/health-services': { view: 'services', label: 'Health services' },
     '/home/learn-prepare': { view: 'learn', label: 'Learn & prepare' },
     '/home/learn-prepare/benefits': { view: 'benefits', label: 'Benefits & support' },
@@ -782,6 +784,130 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
+  const communityDemoPosts = [
+    { id: 'demo-post-1', type: 'question', title: 'What helped with morning sickness around week 12?', body: 'I can manage small meals, but mornings are still difficult. What gentle routines helped you?', topic: 'Morning sickness', location: 'Lalitpur', authorName: 'Maya R.', authorInitials: 'MR', createdAt: new Date(Date.now() - 1000 * 60 * 42).toISOString(), replies: 18, replyItems: [] },
+    { id: 'demo-post-2', type: 'story', title: 'A small win from my antenatal visit', body: 'I was nervous about asking questions today, but writing them down first made the visit feel much easier. Sharing in case it helps someone else.', topic: 'Care visits', location: 'Kupondole', authorName: 'Sarita K.', authorInitials: 'SK', createdAt: new Date(Date.now() - 1000 * 60 * 145).toISOString(), replies: 9, replyItems: [] },
+    { id: 'demo-post-3', type: 'tip', title: 'Free prenatal stretch session this Saturday', body: 'The community room near Jawalakhel has a gentle session at 8:00 AM. Bring water and a mat if you have one.', topic: 'Movement', location: 'Jawalakhel', authorName: 'Prakriti L.', authorInitials: 'PL', createdAt: new Date(Date.now() - 1000 * 60 * 310).toISOString(), replies: 6, replyItems: [] },
+  ];
+
+  const communityDemoPlans = [
+    { id: 'demo-plan-1', title: 'Easy evening walk', description: 'A slow, friendly walk before sunset. Everyone can take breaks.', location: 'Jawalakhel Park gate', startsAt: new Date(Date.now() + 1000 * 60 * 60 * 5).toISOString(), spots: 8, attendeeCount: 5, joined: false, hostName: 'Maya R.', hostInitials: 'MR' },
+    { id: 'demo-plan-2', title: 'Prenatal stretch & tea', description: 'Gentle movement followed by tea and a little chat.', location: 'Kupondole community room', startsAt: new Date(Date.now() + 1000 * 60 * 60 * 28).toISOString(), spots: 10, attendeeCount: 7, joined: false, hostName: 'Prakriti L.', hostInitials: 'PL' },
+  ];
+
+  function getStoredAuthToken() {
+    for (const storage of [window.localStorage, window.sessionStorage]) {
+      try {
+        const token = storage.getItem(authTokenKey);
+        if (token) return token;
+      } catch (error) {
+        console.warn('Community session could not be read.', error);
+      }
+    }
+    return '';
+  }
+
+  async function communityRequest(path, options = {}) {
+    const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(options.headers || {}) };
+    const token = getStoredAuthToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(`${apiBaseUrl}/api/community${path}`, { ...options, headers, body: options.body ? JSON.stringify(options.body) : undefined });
+    const contentType = response.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await response.json() : {};
+    if (!response.ok) throw new Error(data.error || `Community request failed (HTTP ${response.status}).`);
+    return data;
+  }
+
+  function getLocalCommunity() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem('matrisathi-community-preview') || '{}');
+      return {
+        posts: Array.isArray(saved.posts) ? saved.posts : [],
+        plans: Array.isArray(saved.plans) ? saved.plans : [],
+      };
+    } catch (error) {
+      console.warn('Community preview could not be restored.', error);
+      return { posts: [], plans: [] };
+    }
+  }
+
+  function saveLocalCommunity() {
+    try {
+      window.localStorage.setItem('matrisathi-community-preview', JSON.stringify({ posts: communityState.posts, plans: communityState.plans }));
+    } catch (error) {
+      console.warn('Community preview could not be saved.', error);
+    }
+  }
+
+  function communityRelativeTime(value) {
+    const elapsed = Math.max(0, Date.now() - new Date(value).getTime());
+    const minutes = Math.floor(elapsed / 60000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  }
+
+  function communityPlanDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Date to be confirmed';
+    return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date);
+  }
+
+  function renderCommunityFeed() {
+    const list = secondaryView?.querySelector('[data-community-posts]');
+    if (!list) return;
+    const filtered = communityState.filter === 'all' ? communityState.posts : communityState.posts.filter((post) => communityState.filter === 'story' ? post.type !== 'question' : post.type === communityState.filter);
+    const labels = { question: 'Question', story: 'Story', tip: 'Tip' };
+    const count = secondaryView.querySelector('[data-community-post-count]');
+    if (count) count.textContent = String(Math.max(24, communityState.posts.length));
+    list.innerHTML = filtered.length ? filtered.map((post) => `
+      <article class="community-post-card">
+        <div class="community-post-card__top"><span class="member-avatar member-avatar--${post.type === 'question' ? 'one' : post.type === 'story' ? 'two' : 'three'}">${escapeHtml(post.authorInitials || 'Y')}</span><div><strong>${escapeHtml(post.authorName || 'Neighbour')}</strong><small>${escapeHtml(post.location || 'Nearby')} · ${escapeHtml(communityRelativeTime(post.createdAt))}</small></div><span class="community-post-type community-post-type--${escapeHtml(post.type)}">${labels[post.type] || 'Post'}</span></div>
+        <h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.body)}</p><div class="community-post-card__footer"><span>#${escapeHtml(post.topic || 'General')}</span><button class="community-post-reply" type="button" data-action="community-post-detail" data-community-post-id="${escapeHtml(post.id)}">${post.replies || 0} ${post.replies === 1 ? 'reply' : 'replies'} <span>→</span></button></div>
+      </article>
+    `).join('') : '<div class="community-empty"><strong>No posts in this view yet.</strong><span>Start the conversation with women nearby.</span></div>';
+  }
+
+  function renderCommunityPlans() {
+    const list = secondaryView?.querySelector('[data-community-plans]');
+    if (!list) return;
+    const count = secondaryView.querySelector('[data-community-plan-count]');
+    if (count) count.textContent = String(Math.max(communityState.plans.length, 6));
+    list.innerHTML = communityState.plans.length ? communityState.plans.slice(0, 3).map((plan) => {
+      const full = Number(plan.attendeeCount) >= Number(plan.spots);
+      return `<article class="community-plan"><div class="community-plan__date"><strong>${escapeHtml(communityPlanDate(plan.startsAt).split(',')[0])}</strong><small>${escapeHtml(communityPlanDate(plan.startsAt).split(',').slice(1).join(',').trim())}</small></div><div class="community-plan__copy"><strong>${escapeHtml(plan.title)}</strong><small>${escapeHtml(plan.location)}</small><span>${escapeHtml(String(plan.attendeeCount || 0))}/${escapeHtml(String(plan.spots || 8))} women joined</span></div><button class="community-plan__join${plan.joined ? ' is-joined' : ''}" type="button" data-action="community-join-plan" data-community-plan-id="${escapeHtml(plan.id)}"${full && !plan.joined ? ' disabled' : ''}>${plan.joined ? 'Joined' : full ? 'Full' : 'Join'}</button></article>`;
+    }).join('') : '<div class="community-empty"><strong>No plans yet.</strong><span>Be the first to plan a gentle get-together.</span></div>';
+  }
+
+  function renderCommunityHub() {
+    renderCommunityFeed();
+    renderCommunityPlans();
+  }
+
+  async function initCommunityHub() {
+    const local = getLocalCommunity();
+    communityState.posts = [...local.posts, ...communityDemoPosts];
+    communityState.plans = [...local.plans, ...communityDemoPlans];
+    renderCommunityHub();
+    try {
+      const [postData, planData] = await Promise.all([communityRequest('/posts?limit=30'), communityRequest('/plans?limit=20')]);
+      communityState.posts = postData.posts || [];
+      communityState.plans = planData.plans || [];
+      communityState.loaded = true;
+      renderCommunityHub();
+    } catch (error) {
+      console.warn('Community API unavailable; showing local preview.', error);
+    }
+  }
+
+  function openCommunityPost(post) {
+    if (!post) return;
+    const replies = (post.replyItems || []).map((reply) => `<div class="community-reply"><strong>${escapeHtml(reply.authorName)}</strong><p>${escapeHtml(reply.body)}</p></div>`).join('');
+    openInteraction('Community hub', post.title, `<p>${escapeHtml(post.body)}</p><div class="community-reply-list">${replies || '<p class="community-empty">No replies yet. Be the first to respond kindly.</p>'}</div><form class="interaction-form" id="community-reply-form" data-post-id="${escapeHtml(post.id)}"><label for="community-reply-body">Add a thoughtful reply</label><textarea id="community-reply-body" name="body" maxlength="1200" placeholder="Share what helped you…" required></textarea><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Close</button><button class="button button--primary" type="submit">Reply</button></div></form>`);
+  }
+
   function createChecklistRow(item) {
     const row = document.createElement('label');
     row.className = 'task-row';
@@ -943,6 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFamilyChecklist();
         updateSharedChecklistSummary();
       }
+      if (view === 'community') void initCommunityHub();
     }
     if (breadcrumbCurrent) breadcrumbCurrent.textContent = label;
     document.querySelector('.breadcrumb')?.classList.toggle('breadcrumb--benefits', view === 'benefits');
@@ -1126,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#permission-form input')?.focus();
   }
 
-  function handleAction(action, target) {
+  async function handleAction(action, target) {
     if (action === 'toggle-patient-contact') {
       const isRevealed = target.getAttribute('aria-pressed') === 'true';
       const value = target.querySelector('[data-contact-value]');
@@ -1192,6 +1319,52 @@ document.addEventListener('DOMContentLoaded', () => {
       openPermissionEditor(target.dataset.member || 'Circle member');
     } else if (action === 'family-options') {
       openInteraction('Family hub', 'Family permissions', '<p>Review who can see tasks, appointments, and selected care updates.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Review access</button>');
+    } else if (action === 'community-compose') {
+      openInteraction('Community hub', 'Share with nearby women', '<form class="interaction-form" id="community-post-form"><label for="community-post-type">What would you like to share?</label><select id="community-post-type" name="type"><option value="question">Ask a question</option><option value="story">Share a story</option><option value="tip">Share a helpful tip</option></select><label for="community-post-title">Title</label><input id="community-post-title" name="title" maxlength="140" placeholder="e.g. What helped with back pain?" required><label for="community-post-body">Your message</label><textarea id="community-post-body" name="body" maxlength="2000" placeholder="Write with as much detail as feels comfortable…" required></textarea><label for="community-post-topic">Topic <span class="form-label-hint">optional</span></label><input id="community-post-topic" name="topic" maxlength="60" placeholder="e.g. Movement, nutrition, newborn care"><label for="community-post-location">Nearby area <span class="form-label-hint">optional</span></label><input id="community-post-location" name="location" maxlength="80" value="Lalitpur" placeholder="e.g. Jawalakhel"><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Publish post</button></div></form>');
+    } else if (action === 'community-create-plan') {
+      const minimumDate = new Date(Date.now() + 60 * 60 * 1000);
+      const dateValue = new Date(minimumDate.getTime() - minimumDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      openInteraction('Community hub', 'Plan time together', `<form class="interaction-form" id="community-plan-form"><label for="community-plan-title">What are you planning?</label><input id="community-plan-title" name="title" maxlength="120" placeholder="e.g. Easy evening walk" required><label for="community-plan-location">Where should people meet?</label><input id="community-plan-location" name="location" maxlength="120" placeholder="e.g. Jawalakhel Park gate" required><label for="community-plan-starts">Date and time</label><input id="community-plan-starts" name="startsAt" type="datetime-local" min="${dateValue}" required><label for="community-plan-spots">How many women can join?</label><input id="community-plan-spots" name="spots" type="number" min="2" max="50" value="8" required><label for="community-plan-description">A few details <span class="form-label-hint">optional</span></label><textarea id="community-plan-description" name="description" maxlength="500" placeholder="Keep it gentle, friendly, and clear."></textarea><div class="interaction-actions"><button class="button button--outline" type="button" data-action="close-modal">Cancel</button><button class="button button--primary" type="submit">Create plan</button></div></form>`);
+    } else if (action === 'community-filter') {
+      communityState.filter = target.dataset.filter || 'all';
+      secondaryView?.querySelectorAll('.community-tab').forEach((tab) => {
+        const active = tab.dataset.filter === communityState.filter;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', String(active));
+      });
+      renderCommunityFeed();
+    } else if (action === 'community-post-detail') {
+      openCommunityPost(communityState.posts.find((post) => String(post.id) === String(target.dataset.communityPostId)));
+    } else if (action === 'community-join-plan') {
+      const plan = communityState.plans.find((item) => String(item.id) === String(target.dataset.communityPlanId));
+      if (!plan) return;
+      const wasJoined = Boolean(plan.joined);
+      plan.joined = !wasJoined;
+      plan.attendeeCount = Math.max(0, Number(plan.attendeeCount || 0) + (wasJoined ? -1 : 1));
+      renderCommunityPlans();
+      try {
+        if (!String(plan.id).startsWith('demo-')) {
+          const data = await communityRequest(`/plans/${encodeURIComponent(plan.id)}/join`, { method: 'POST' });
+          Object.assign(plan, data.plan);
+          renderCommunityPlans();
+        } else {
+          saveLocalCommunity();
+        }
+        showToast(plan.joined ? 'You joined the community plan.' : 'You left the community plan.');
+      } catch (error) {
+        plan.joined = wasJoined;
+        plan.attendeeCount = Math.max(0, Number(plan.attendeeCount || 0) + (wasJoined ? 1 : -1));
+        renderCommunityPlans();
+        showToast(error.message || 'The plan could not be updated.');
+      }
+    } else if (action === 'community-view-plans') {
+      openInteraction('Community hub', 'Plans near you', `<div class="detail-list">${communityState.plans.map((plan) => `<div class="detail-row"><span>${escapeHtml(communityPlanDate(plan.startsAt))}</span><strong>${escapeHtml(plan.title)} · ${escapeHtml(plan.location)}</strong></div>`).join('')}</div>`, '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
+    } else if (action === 'community-say-hello') {
+      showToast(`A hello is ready for ${target.dataset.name || 'your neighbour'}.`);
+    } else if (action === 'community-options') {
+      openInteraction('Community hub', 'A safe space for support', '<p>Keep your posts kind and general. Do not share passwords, private medical records, or your exact home address.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Got it</button>');
+    } else if (action === 'community-neighbours') {
+      openInteraction('Community hub', 'Meet women nearby', '<p>We only show approximate areas and shared interests. You decide when and how to connect.</p>', '<button class="button button--primary" type="button" data-action="close-modal">Close</button>');
     } else if (action === 'toggle-shared') {
       const taskId = target.dataset.familyTaskId;
       if (!taskId) return;
@@ -1540,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', () => {
   interactionModal?.addEventListener('click', (event) => {
     if (event.target === interactionModal) closeInteraction();
   });
-  document.addEventListener('submit', (event) => {
+  document.addEventListener('submit', async (event) => {
     if (event.target.id === 'permission-form') {
       event.preventDefault();
       const form = event.target;
@@ -1625,6 +1798,87 @@ document.addEventListener('DOMContentLoaded', () => {
       closeInteraction();
       renderFamilyChecklist();
       showToast('Family task added.');
+    }
+    if (event.target.id === 'community-post-form') {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const payload = {
+        type: String(formData.get('type') || 'question'),
+        title: String(formData.get('title') || '').trim(),
+        body: String(formData.get('body') || '').trim(),
+        topic: String(formData.get('topic') || 'General').trim() || 'General',
+        location: String(formData.get('location') || 'Nearby').trim() || 'Nearby',
+      };
+      if (!payload.title || !payload.body) return;
+      const profile = getProfile();
+      const localPost = { ...payload, id: `local-post-${Date.now()}`, authorName: profile.name || 'You', authorInitials: (profile.name || 'You').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(), createdAt: new Date().toISOString(), replies: 0, replyItems: [] };
+      try {
+        const data = await communityRequest('/posts', { method: 'POST', body: payload });
+        communityState.posts.unshift(data.post);
+        communityState.loaded = true;
+        closeInteraction();
+        renderCommunityFeed();
+        showToast('Your post is now shared with the community.');
+      } catch (error) {
+        communityState.posts.unshift(localPost);
+        saveLocalCommunity();
+        closeInteraction();
+        renderCommunityFeed();
+        showToast('Saved on this device while the community server is unavailable.');
+        console.warn('Community post could not be published.', error);
+      }
+    }
+    if (event.target.id === 'community-plan-form') {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const payload = {
+        title: String(formData.get('title') || '').trim(),
+        location: String(formData.get('location') || '').trim(),
+        startsAt: String(formData.get('startsAt') || ''),
+        spots: Number(formData.get('spots') || 8),
+        description: String(formData.get('description') || '').trim(),
+      };
+      if (!payload.title || !payload.location || !payload.startsAt) return;
+      const profile = getProfile();
+      const localPlan = { ...payload, id: `local-plan-${Date.now()}`, attendeeCount: 1, joined: true, hostName: profile.name || 'You', hostInitials: (profile.name || 'You').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase() };
+      try {
+        const data = await communityRequest('/plans', { method: 'POST', body: payload });
+        communityState.plans.unshift(data.plan);
+        communityState.loaded = true;
+        closeInteraction();
+        renderCommunityPlans();
+        showToast('Your community plan is ready.');
+      } catch (error) {
+        communityState.plans.unshift(localPlan);
+        saveLocalCommunity();
+        closeInteraction();
+        renderCommunityPlans();
+        showToast('Saved on this device while the community server is unavailable.');
+        console.warn('Community plan could not be created.', error);
+      }
+    }
+    if (event.target.id === 'community-reply-form') {
+      event.preventDefault();
+      const form = event.target;
+      const body = String(new FormData(form).get('body') || '').trim();
+      const post = communityState.posts.find((item) => String(item.id) === String(form.dataset.postId));
+      if (!post || !body) return;
+      try {
+        if (!String(post.id).startsWith('demo-') && !String(post.id).startsWith('local-')) {
+          const data = await communityRequest(`/posts/${encodeURIComponent(post.id)}/replies`, { method: 'POST', body: { body } });
+          Object.assign(post, data.post);
+        } else {
+          const profile = getProfile();
+          post.replyItems = [...(post.replyItems || []), { id: `local-reply-${Date.now()}`, authorName: profile.name || 'You', body, createdAt: new Date().toISOString() }];
+          post.replies = Number(post.replies || 0) + 1;
+          saveLocalCommunity();
+        }
+        closeInteraction();
+        renderCommunityFeed();
+        showToast('Your reply was added.');
+      } catch (error) {
+        showToast(error.message || 'Your reply could not be added.');
+      }
     }
   });
   document.addEventListener('change', (event) => {
