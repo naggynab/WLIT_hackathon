@@ -118,6 +118,7 @@
               <button class="learn-subnav-item" type="button" data-learn-nav="movement">Movement</button>
               <button class="learn-subnav-item" type="button" data-learn-nav="birth">Birth preparation</button>
               <button class="learn-subnav-item" type="button" data-learn-nav="support">Support information</button>
+              <button class="learn-subnav-item" type="button" data-route="/home/learn-prepare/benefits">Benefits &amp; support</button>
             </div>
           </nav>
           <div class="sidebar-bottom">
@@ -135,10 +136,10 @@
         <main class="dashboard-main">
           <header class="topbar">
             <button class="mobile-menu" type="button" id="menu-button" aria-label="Open navigation">☰</button>
-            <div class="breadcrumb"><span>Overview</span><span class="breadcrumb-separator">/</span><strong>My care dashboard</strong></div>
+            <div class="breadcrumb"><span>Overview</span><span class="breadcrumb-separator">/</span><span class="breadcrumb-learn is-hidden">Learn &amp; prepare</span><span class="breadcrumb-separator breadcrumb-learn-separator is-hidden">/</span><strong>My care dashboard</strong></div>
             <div class="topbar-actions">
               <button class="icon-button language-button" type="button" aria-label="Change language">ने <span>EN</span></button>
-              <button class="icon-button notification-button" type="button" aria-label="View notifications"><span>♧</span><i></i></button>
+              <button class="icon-button notification-button" type="button" aria-label="Open emergency helplines"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 3.5h3l1.4 4.1-2 1.6a15 15 0 0 0 5.2 5.2l1.6-2 4.1 1.4v3c0 1-.8 1.8-1.8 1.8A15.7 15.7 0 0 1 5.4 5.3c0-1 .8-1.8 1.8-1.8Z"/><path d="M14.5 4.5a5 5 0 0 1 5 5m-5-8a8 8 0 0 1 8 8"/></svg></button>
               <button class="profile-button" type="button" aria-label="Open profile menu" aria-haspopup="dialog" aria-expanded="false"><span class="avatar">SK</span><span class="profile-copy"><strong>Sita K.</strong><small>My profile</small></span><span class="chevron">⌄</span></button>
             </div>
           </header>
@@ -176,6 +177,7 @@
                 <div class="panel-heading"><div><p class="card-kicker">Next up</p><h2>Health checkup</h2></div><span class="date-tile"><strong>03</strong><small>DEC</small></span></div>
                 <div class="appointment-info"><span class="appointment-icon">✚</span><div><strong>Routine antenatal visit</strong><span>Thu, 3 December · 10:30 AM</span><small>Patan Hospital · Outpatient wing</small></div></div>
                 <div class="appointment-actions"><button class="button button--outline" type="button" data-action="appointment-detail">View details</button><button class="button button--lavender" type="button" data-action="appointment-reminder">Remind me</button></div>
+                <div class="benefits-teaser" data-benefits-teaser data-state="loading" aria-live="polite"><span class="benefits-teaser__copy">Loading checkup progress…</span></div>
               </article>
             </section>
 
@@ -277,6 +279,9 @@
     <script src="/config.js"></script>
     <script src="/i18n.js"></script>
     <script src="/views.js"></script>
+    <script src="/benefits.config.js"></script>
+    <script src="/benefits.data.js"></script>
+    <script src="/benefits.js"></script>
     <script src="/health-post.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="/google-maps.js"></script>
